@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>ANALYSIS OF SYLLABUS AND COURSE CONSTRUCTION</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+Job Role (नौकरी की भूमिका)
+Job role किसी संगठन (organization) में एक विशेष पद (specific position) के लिए आवश्यक कर्तव्यों और जिम्मेदारियों (duties and responsibilities) का एक विस्तृत विवरण (detailed description) होता है. यह बताता है कि किसी व्यक्ति से उस पद पर क्या काम करने की अपेक्षा की जाती है.
+•	Example (उदाहरण): इलेक्ट्रीशियन ट्रेड के लिए, "Electrician General" का काम फ़ैक्टरी या घरों में electrical equipment install और maintain करना है, जबकि "Electrical Fitter" का काम motors और transformers को assemble और test करना है.
+________________________________________
+Learning Outcome (सीखने का परिणाम)
+Learning outcome यह परिभाषित करता है कि एक सीखने की प्रक्रिया (learning process) पूरी करने के बाद एक learner को क्या जानना, समझना और करने में सक्षम होना चाहिए. इसे ज्ञान (knowledge), कौशल (skills), और योग्यता (competencies) के रूप में व्यक्त किया जाता है. ये दो प्रकार के होते हैं:
+1.	Generic Learning Outcomes (सामान्य सीखने के परिणाम): ये व्यापक कौशल हैं जो कई क्षेत्रों में लागू होते हैं. जैसे, सुरक्षित काम करने के तरीक़े (safe working practices), इंजीनियरिंग ड्राइंग को समझना (interpreting engineering drawings), और कंप्यूटर चलाना (using basic computer applications).
+2.	Specific Learning Outcomes (विशिष्ट सीखने के परिणाम): ये किसी ख़ास ट्रेड से संबंधित skills हैं. जैसे, इलेक्ट्रिकल वायर के जोड़ बनाना (preparing electrical wire joints), ट्रांसफॉर्मर की जाँच करना (testing transformers), और सोलर पैनल लगाना (installing solar panels).
+________________________________________
+Assessment Criteria (मूल्यांकन मानदंड)
+Assessment criteria वे विशिष्ट मानक (specific standards) हैं जिनका उपयोग विद्यार्थी के प्रदर्शन का मूल्यांकन करने के लिए किया जाता है. ये बताते हैं कि विद्यार्थी ने learning outcome को प्राप्त कर लिया है, यह दिखाने के लिए क्या सबूत (evidence) देना होगा. सरल शब्दों में, ये learning outcomes को मापने के लिए एक guide हैं. हर ट्रेड के लिए और हर learning outcome के लिए syllabus में ये criteria दिए गए होते हैं.
+Syllabus (पाठ्यक्रम)
+एक Syllabus किसी भी course में पढ़ाए जाने वाले topics की एक list होती है. इसे trade experts द्वारा तैयार किया जाता है ताकि किसी ख़ास job के लिए ज़रूरी knowledge और skills विकसित किए जा सकें. Syllabus को तीन भागों में बांटा जाता है:
+•	First part: Fundamental training (कुल समय का 1/6).
+•	Second part: Adequate skills सीखना (कुल समय का 2/3).
+•	Third part: Intensive practical training (कुल समय का 1/6). Syllabus, curriculum के उद्देश्यों को पूरा करने का एक tool है. Curriculum एक broader course of study है जिसमें goals, content, activities और evaluation शामिल होते हैं.
+________________________________________
+Why is Syllabus Analysis Necessary? (Syllabus का विश्लेषण क्यों ज़रूरी है?)
+Syllabus analysis instructor के लिए बहुत महत्वपूर्ण है ताकि training को प्रभावी ढंग से (effectively) दिया जा सके. इसके फ़ायदे हैं:
+•	To weed out unnecessary information: बेकार की जानकारी को हटाना.
+•	To concentrate on the essentials: ज़रूरी चीज़ों पर ध्यान केंद्रित करना.
+•	To teach from simple to complex: topics को सरल से कठिन क्रम में पढ़ाना.
+•	To prepare instructional material: teaching material को पहले से तैयार करना.
+•	To ensure the training program is completed: training को तय समय में पूरा करना.
+•	To maintain logical and psychological sequence: पढ़ाने के क्रम को logical और psychological बनाना.
+________________________________________
+Methods of Syllabus Analysis (Syllabus विश्लेषण के तरीक़े)
+Syllabus analysis के दो मुख्य तरीक़े हैं:
+1.	Job Analysis Method: यह तरीका on-the-job training के लिए सही है. इसमें एक job को उसके elements या skills में तोड़ा जाता है, और फिर उन्हें simple to difficult क्रम में rearrange किया जाता है.
+2.	Skill Analysis Method: इसमें उन सभी skills की list बनाई जाती है जिनमें proficiency चाहिए होती है. फिर उन्हें difficulty और application के क्रम में rearrange किया जाता है. इस method का focus job पर नहीं, बल्कि learner में skill development पर होता है.
+________________________________________
+Breaking up the Syllabus and Creating a Schedule (Syllabus को तोड़ना और schedule बनाना)
+Syllabus analysis का practical application syllabus को modules और units में तोड़ना और एक Schedule of Instruction बनाना है. इसके steps हैं:
+•	Study the syllabus: Syllabus को अच्छे से समझना.
+•	Prepare a list of skills: सभी basic और advanced skills की list बनाना.
+•	Arrange topics: Topics को simple to complex क्रम में group करना.
+•	Calculate time: Syllabus को पूरा करने के लिए ज़रूरी कुल घंटों की गणना करना और उन्हें हर activity के लिए distribute करना.
+•	Prepare schedules: Master schedule, monthly और weekly schedule बनाना.
+•	Create instructional materials: हर lesson के लिए teaching material तैयार करना.
+यह पूरी प्रक्रिया Schedule of Instruction के रूप में सामने आती है, जो daily instructional activities को detail में plan करती है. जैसे कि Electrician trade के लिए एक module (Safety Practices) को weekly exercises में तोड़ा गया है, जिसमें हर exercise के लिए specific hours और corresponding theory lesson दिए गए हैं.
+
+
+    </pre>
+<a href="pot3_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

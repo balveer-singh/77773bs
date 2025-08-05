@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test Portal - Your Practice Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0A66C2; /* Deep blue for primary actions/accents */
+            --secondary-sky: #6CB4EE; /* Lighter sky blue for subtle elements */
+            --dark-heading: #2C3E50; /* Dark blue-gray for main headings */
+            --text-body: #555; /* Medium gray for general text */
+            --light-bg: #F8F9FA; /* Very light background for the page */
+            --card-bg: #FFFFFF; /* White background for the main content card */
+            --shadow-light: 0 6px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+            --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+
+            /* Specific colors for question counts */
+            --theory-count-color: #28A745; /* Green */
+            --pot-count-color: #FFC107;    /* Amber */
+            --softskill-count-color: #6F42C1; /* Purple */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 40px 20px; /* Base padding */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #E0F2F7 100%); /* Subtle gradient background */
+            color: var(--text-body);
+            text-align: center;
+            overflow: hidden; /* Prevents scroll if elements temporarily go out of bounds during animation */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        .portal-container {
+            background: var(--card-bg);
+            border-radius: 16px; /* Slightly more rounded corners */
+            padding: 60px 50px; /* More padding */
+            box-shadow: var(--shadow-light);
+            width: 90%;
+            max-width: 800px; /* Wider main container */
+            box-sizing: border-box;
+            animation: fadeInScaleUp 1s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.9);
+            position: relative; /* For decorative elements */
+            overflow: hidden; /* Ensure nothing spills out */
+        }
+
+        /* Decorative top gradient border */
+        .portal-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px; /* Height of the decorative border */
+            background: linear-gradient(to right, var(--primary-blue), var(--secondary-sky));
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        @keyframes fadeInScaleUp {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            color: var(--dark-heading);
+            font-size: 3.2em; /* Larger heading */
+            margin-bottom: 15px;
+            font-weight: 900; /* Extra bold */
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .tagline {
+            font-size: 1.3em; /* Larger tagline */
+            color: var(--primary-blue); /* Accent color for tagline */
+            margin-bottom: 40px;
+            font-weight: 700;
+        }
+
+        .description {
+            font-size: 1.1em;
+            color: var(--text-body);
+            margin-bottom: 30px;
+            line-height: 1.7;
+            max-width: 600px; /* Constrain text width */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted minmax for better flexibility */
+            gap: 25px;
+            margin-bottom: 45px;
+            padding: 0 20px; /* Add horizontal padding for smaller screens */
+        }
+
+        .stat-item {
+            background-color: var(--light-bg); /* Light background for stat items */
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-count {
+            font-size: 2em;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--text-body);
+            font-weight: 700;
+        }
+
+        /* Specific colors for counts */
+        .stat-count.theory { color: var(--theory-count-color); }
+        .stat-count.pot { color: var(--pot-count-color); }
+        .stat-count.softskill { color: var(--softskill-count-color); }
+
+        .btn-container {
+            display: flex;
+            flex-direction: row; /* Default to row for larger screens */
+            justify-content: center;
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 25px; /* Space between buttons */
+            margin-top: 40px;
+        }
+
+        .btn {
+            display: inline-flex; /* Use inline-flex for alignment and content fit */
+            align-items: center;
+            justify-content: center;
+            padding: 18px 35px; /* Generous padding */
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--card-bg); /* White text on buttons */
+            background-color: var(--primary-blue);
+            border: none;
+            border-radius: 50px; /* Pill-shaped buttons */
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 102, 194, 0.3); /* Shadow matching primary blue */
+            min-width: 220px; /* Ensure buttons are wide enough on larger screens */
+        }
+
+        .btn:hover {
+            background-color: #084F93; /* Darker blue on hover */
+            transform: translateY(-5px); /* Stronger lift effect */
+            box-shadow: 0 12px 35px rgba(0, 102, 194, 0.45);
+        }
+
+        /* =================================== */
+        /* === Responsive Adjustments Start === */
+        /* =================================== */
+
+        /* Large Tablets and Small Desktops (e.g., 992px to 769px) */
+        @media (max-width: 992px) {
+            .portal-container {
+                padding: 50px 40px;
+                max-width: 700px; /* Slightly narrower */
+            }
+            h1 {
+                font-size: 2.8em;
+                letter-spacing: -0.8px;
+            }
+            .tagline {
+                font-size: 1.2em;
+                margin-bottom: 35px;
+            }
+            .description {
+                font-size: 1em;
+                margin-bottom: 25px;
+            }
+            .stats-grid {
+                gap: 20px;
+            }
+            .stat-count {
+                font-size: 1.9em;
+            }
+            .stat-label {
+                font-size: 0.8em;
+            }
+            .btn-container {
+                gap: 20px;
+            }
+            .btn {
+                padding: 16px 30px;
+                font-size: 1.1em;
+                min-width: 200px; /* Slightly smaller min-width */
+            }
+        }
+
+        /* Tablets (e.g., 768px and below) */
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px; /* Reduce overall padding */
+            }
+            .portal-container {
+                padding: 40px 30px;
+                border-radius: 12px;
+            }
+            .portal-container::before {
+                height: 8px; /* Thinner decorative border */
+                border-top-left-radius: 12px;
+                border-top-right-radius: 12px;
+            }
+            h1 {
+                font-size: 2.2em; /* Smaller heading */
+                letter-spacing: -0.5px;
+                margin-bottom: 10px;
+            }
+            .tagline {
+                font-size: 1em;
+                margin-bottom: 25px;
+            }
+            .description {
+                font-size: 0.95em;
+                margin-bottom: 20px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr; /* Stack stats vertically on tablets */
+                gap: 15px;
+                padding: 0; /* Remove horizontal padding as they are stacked */
+            }
+            .stat-item {
+                padding: 12px;
+            }
+            .stat-count {
+                font-size: 1.6em;
+            }
+            .stat-label {
+                font-size: 0.8em;
+            }
+            .btn-container {
+                flex-direction: column; /* Stack buttons vertically on tablets */
+                gap: 15px;
+            }
+            .btn {
+                font-size: 1em;
+                padding: 15px 20px;
+                min-width: unset; /* Remove min-width for stacked buttons */
+                width: 100%; /* Make buttons full width when stacked */
+                border-radius: 8px; /* Less rounded for stacked buttons */
+            }
+        }
+
+        /* Mobile Phones (e.g., 480px and below) */
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 10px; /* Even less padding */
+            }
+            .portal-container {
+                padding: 30px 20px;
+                border-radius: 10px;
+            }
+            .portal-container::before {
+                height: 6px;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+            }
+            h1 {
+                font-size: 1.8em; /* Smallest heading size */
+                margin-bottom: 8px;
+            }
+            .tagline {
+                font-size: 0.9em;
+                margin-bottom: 20px;
+            }
+            .description {
+                font-size: 0.85em;
+                margin-bottom: 15px;
+            }
+            .stats-grid {
+                gap: 10px;
+            }
+            .stat-item {
+                padding: 10px;
+            }
+            .stat-count {
+                font-size: 1.4em;
+            }
+            .stat-label {
+                font-size: 0.75em;
+            }
+            .btn-container {
+                gap: 10px;
+                margin-top: 30px;
+            }
+            .btn {
+                font-size: 0.9em;
+                padding: 12px 15px;
+                border-radius: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="portal-container">
+        <h1>Welcome to the Mock Test Portal!</h1>
+        <p class="tagline">Your ultimate hub for comprehensive exam preparation.</p>
+
+        <p class="description">
+            Dive into our extensive collection of mock tests designed to hone your skills across various domains.
+            Prepare effectively with a vast array of questions covering core concepts and practical applications.
+        </p>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-count theory">2000+</div>
+                <div class="stat-label">Theory Questions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-count pot">1000+</div>
+                <div class="stat-label">POT Questions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-count softskill">100+</div>
+                <div class="stat-label">Soft Skill Questions</div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <a href="theory_option.html" class="btn">Start Theory Test</a>
+            <a href="pot_option.html" class="btn">Start POT Test</a>
+            <a href="imp.html" class="btn">IMP Questions Test</a>
+        </div>
+    </div>
+
+</body>
+</html>

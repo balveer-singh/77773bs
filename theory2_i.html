@@ -1,0 +1,3255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        display: inline-block; /* To allow spacing */
+        margin-bottom: 10px; /* Space out rows if they wrap */
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+  {
+    question: "1. डेटाबेस क्या है?",
+    options: [
+      "a) अव्यवस्थित डेटा का संग्रह",
+      "b) आपस में जुड़े डेटा का संकलन जो कुशल संचालन को सक्षम बनाता है",
+      "c) स्प्रेडशीट्स का एक सेट",
+      "d) एक फ़ाइल भंडारण प्रणाली"
+    ],
+    answer: "b) आपस में जुड़े डेटा का संकलन जो कुशल संचालन को सक्षम बनाता है"
+  },
+  {
+    question: "2. निम्नलिखित में से कौन सा कार्य डेटाबेस मैनेजमेंट सिस्टम (DBMS) का नहीं है?",
+    options: [
+      "a) डेटा संग्रहण",
+      "b) डेटा पुनः प्राप्ति (retrieval)",
+      "c) इंटरनेट ब्राउज़िंग",
+      "d) डेटा बैकअप और रिकवरी"
+    ],
+    answer: "c) इंटरनेट ब्राउज़िंग"
+  },
+  {
+    question: "3. DBMS में कौन सा घटक यह सुनिश्चित करता है कि संग्रहीत डेटा नियमों और बाधाओं का पालन करता है?",
+    options: [
+      "a) डेटा मान्यता (Data Validation)",
+      "b) डेटा अखंडता (Data Integrity)",
+      "c) डेटा संग्रहण (Data Storage)",
+      "d) क्वेरी अनुकूलन (Query Optimization)"
+    ],
+    answer: "b) डेटा अखंडता (Data Integrity)"
+  },
+  {
+    question: "4. DBMS में डेटा बैकअप और रिकवरी सिस्टम का मुख्य कार्य क्या है?",
+    options: [
+      "a) अनधिकृत पहुंच को रोकना",
+      "b) सिस्टम विफलता की स्थिति में डेटा बैकअप और पुनर्स्थापना करना",
+      "c) कई उपयोगकर्ताओं को एक साथ डेटा संशोधित करने की अनुमति देना",
+      "d) डेटा पुनर्प्राप्ति के लिए अनुक्रमण (indexing) बनाना"
+    ],
+    answer: "b) सिस्टम विफलता की स्थिति में डेटा बैकअप और पुनर्स्थापना करना"
+  },
+  {
+    question: "5. DBMS में Concurrency Control का क्या उद्देश्य है?",
+    options: [
+      "a) केवल एक उपयोगकर्ता को डेटाबेस तक पहुँचने की अनुमति देना",
+      "b) कई उपयोगकर्ताओं को डेटा तक पहुँचने और संशोधित करने की अनुमति देना बिना टकराव के",
+      "c) डेटा को उपयोग के बाद स्थायी रूप से हटा देना",
+      "d) डेटा पुनरावृत्ति (redundancy) को बढ़ाना"
+    ],
+    answer: "b) कई उपयोगकर्ताओं को डेटा तक पहुँचने और संशोधित करने की अनुमति देना बिना टकराव के"
+  },
+  {
+    question: "6. RDBMS में Foreign Key का क्या कार्य होता है?",
+    options: [
+      "a) विभिन्न तालिकाओं (tables) के बीच संबंध स्थापित करना",
+      "b) बाइनरी डेटा को संग्रहीत करना",
+      "c) डेटा की पुनरावृत्ति (duplication) की अनुमति देना",
+      "d) तालिका के प्राथमिक पहचानकर्ता (Primary Key) के रूप में कार्य करना"
+    ],
+    answer: "a) विभिन्न तालिकाओं (tables) के बीच संबंध स्थापित करना"
+  },
+  {
+    question: "7. निम्नलिखित में से कौन सा RDBMS का उदाहरण है?",
+    options: [
+      "a) MongoDB",
+      "b) Neo4j",
+      "c) MySQL",
+      "d) Redis"
+    ],
+    answer: "c) MySQL"
+  },
+  {
+    question: "8. DBMS में Query Optimization क्या करता है?",
+    options: [
+      "a) डेटा पुनर्प्राप्ति को धीमा करता है",
+      "b) डेटाबेस सुरक्षा खतरों को रोकता है",
+      "c) डेटा पुनर्प्राप्ति संचालन की दक्षता (efficiency) में सुधार करता है",
+      "d) रिलेशनल डेटाबेस को हाइरार्किकल डेटाबेस में परिवर्तित करता है"
+    ],
+    answer: "c) डेटा पुनर्प्राप्ति संचालन की दक्षता (efficiency) में सुधार करता है"
+  },
+  {
+    question: "9. डेटाबेस में ACID गुणों (ACID Properties) का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटा सुरक्षा सुनिश्चित करना",
+      "b) भंडारण संरचना (storage structure) को परिभाषित करना",
+      "c) डेटा की सटीकता और स्थिरता बनाए रखना",
+      "d) डेटा पुनरावृत्ति (redundancy) को बढ़ाना"
+    ],
+    answer: "c) डेटा की सटीकता और स्थिरता बनाए रखना"
+  },
+  {
+    question: "10. DBMS में इंडेक्सिंग (Indexing) का क्या कार्य है?",
+    options: [
+      "a) डेटा भंडारण में सुधार करना",
+      "b) डेटा पुनर्प्राप्ति की गति को बढ़ाना",
+      "c) डेटा को डुप्लिकेट करना",
+      "d) डेटा सुरक्षा को कम करना"
+    ],
+    answer: "b) डेटा पुनर्प्राप्ति की गति को बढ़ाना"
+  },
+  {
+    question: "11. DBMS में \"डेटा डिक्शनरी\" का मुख्य कार्य क्या होता है?",
+    options: [
+      "a) डेटा को एन्क्रिप्ट करना",
+      "b) डेटाबेस के मेटाडेटा को संग्रहीत करना",
+      "c) डेटा को बैकअप करना",
+      "d) डेटा को स्वचालित रूप से अपडेट करना"
+    ],
+    answer: "b) डेटाबेस के मेटाडेटा को संग्रहीत करना"
+  },
+  {
+    question: "12. निम्नलिखित में से कौन सा DBMS का एक लाभ है?",
+    options: [
+      "a) डेटा पुनरावृत्ति (redundancy) को बढ़ाना",
+      "b) डेटा को संगठित तरीके से संग्रहीत और पुनः प्राप्त करने में सहायता करना",
+      "c) डेटा तक पहुंच को प्रतिबंधित करना",
+      "d) डेटाबेस को धीमा बनाना"
+    ],
+    answer: "b) डेटा को संगठित तरीके से संग्रहीत और पुनः प्राप्त करने में सहायता करना"
+  },
+  {
+    question: "13. RDBMS का पूरा नाम क्या है?",
+    options: [
+      "a) Relational Database Management System",
+      "b) Rapid Database Management System",
+      "c) Remote Database Management System",
+      "d) Random Database Management System"
+    ],
+    answer: "a) Relational Database Management System"
+  },
+  {
+    question: "14. निम्नलिखित में से कौन सा RDBMS की विशेषता नहीं है?",
+    options: [
+      "a) डेटा का संरचित भंडारण",
+      "b) डेटा के विभिन्न तालिकाओं में संबंध",
+      "c) डेटा पुनरावृत्ति को बढ़ाना",
+      "d) SQL का उपयोग"
+    ],
+    answer: "c) डेटा पुनरावृत्ति को बढ़ाना"
+  },
+  {
+    question: "15. DBMS में \"क्वेरी ऑप्टिमाइज़ेशन\" का उद्देश्य क्या है?",
+    options: [
+      "a) डेटा पुनर्प्राप्ति की दक्षता को बढ़ाना",
+      "b) डेटाबेस को स्वचालित रूप से बंद करना",
+      "c) डेटा सुरक्षा को कम करना",
+      "d) डेटाबेस को पुनः प्रारंभ करना"
+    ],
+    answer: "a) डेटा पुनर्प्राप्ति की दक्षता को बढ़ाना"
+  },
+  {
+    question: "16. RDBMS में \"प्राथमिक कुंजी\" (Primary Key) का क्या कार्य है?",
+    options: [
+      "a) एक अद्वितीय पहचानकर्ता प्रदान करना",
+      "b) डेटा डुप्लिकेशन को सक्षम करना",
+      "c) डेटा को असंगठित बनाना",
+      "d) केवल पढ़ने के लिए डेटा बनाना"
+    ],
+    answer: "a) एक अद्वितीय पहचानकर्ता प्रदान करना"
+  },
+  {
+    question: "17. DBMS का कौन सा घटक डेटा भंडारण और पुनर्प्राप्ति के लिए ज़िम्मेदार होता है?",
+    options: [
+      "a) डेटा कैशिंग",
+      "b) डेटा प्रोसेसिंग यूनिट",
+      "c) डेटा स्टोरेज मैनेजमेंट",
+      "d) डेटा शेड्यूलिंग"
+    ],
+    answer: "c) डेटा स्टोरेज मैनेजमेंट"
+  },
+  {
+    question: "18. DBMS में डेटा पुनरावृत्ति को नियंत्रित करने के लिए कौन सा तरीका उपयोग किया जाता है?",
+    options: [
+      "a) डेटा एन्क्रिप्शन",
+      "b) नॉर्मलाइजेशन (Normalization)",
+      "c) डेटा कंप्रेशन",
+      "d) डेटा डुप्लिकेशन"
+    ],
+    answer: "b) नॉर्मलाइजेशन (Normalization)"
+  },
+    {
+    question: "निम्नलिखित में से कौन सा RDBMS का एक लाभ है?",
+    options: [
+      "a) स्वतंत्र डेटा प्रबंधन",
+      "b) कम सुरक्षा",
+      "c) जटिल डेटा संग्रहण",
+      "d) अधिक डेटा पुनरावृत्ति"
+    ],
+    answer: "a) स्वतंत्र डेटा प्रबंधन"
+  },
+  {
+    question: "RDBMS में \"डेटा रिलेशनशिप\" का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) विभिन्न तालिकाओं के बीच संबंध स्थापित करना",
+      "b) डेटा सुरक्षा को कम करना",
+      "c) डेटाबेस को धीमा बनाना",
+      "d) डेटा को असंगठित करना"
+    ],
+    answer: "a) विभिन्न तालिकाओं के बीच संबंध स्थापित करना"
+  },
+  {
+    question: "डेटा मॉडल का मुख्य उद्देश्य क्या होता है?",
+    options: [
+      "a) डेटा को एन्क्रिप्ट करना",
+      "b) डेटाबेस की संरचना को स्पष्ट रूप से परिभाषित करना",
+      "c) डेटा को बैकअप लेना",
+      "d) डेटाबेस को धीमा बनाना"
+    ],
+    answer: "b) डेटाबेस की संरचना को स्पष्ट रूप से परिभाषित करना"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा डेटा प्रकार \"संख्यात्मक डेटा\" (Numeric Data) को संग्रहीत करने के लिए उपयोग किया जाता है?",
+    options: [
+      "a) VARCHAR",
+      "b) BOOLEAN",
+      "c) INTEGER",
+      "d) BLOB"
+    ],
+    answer: "c) INTEGER"
+  },
+  {
+    question: "ER मॉडल में \"Entity\" को किसके रूप में दर्शाया जाता है?",
+    options: [
+      "a) अंडाकार (Oval)",
+      "b) आयत (Rectangle)",
+      "c) हीरा (Diamond)",
+      "d) वृत्त (Circle)"
+    ],
+    answer: "b) आयत (Rectangle)"
+  },
+  {
+    question: "ER मॉडल में \"Attributes\" को किसके रूप में दर्शाया जाता है?",
+    options: [
+      "a) अंडाकार (Oval)",
+      "b) आयत (Rectangle)",
+      "c) हीरा (Diamond)",
+      "d) रेखा (Line)"
+    ],
+    answer: "a) अंडाकार (Oval)"
+  },
+  {
+    question: "डेटाबेस के भौतिक संरचना (Physical Structure) को परिभाषित करने वाला डेटा मॉडल कौन सा है?",
+    options: [
+      "a) अवधारणात्मक डेटा मॉडल (Conceptual Data Model)",
+      "b) प्रतिनिधित्व डेटा मॉडल (Representational Data Model)",
+      "c) भौतिक डेटा मॉडल (Physical Data Model)",
+      "d) तार्किक डेटा मॉडल (Logical Data Model)"
+    ],
+    answer: "c) भौतिक डेटा मॉडल (Physical Data Model)"
+  },
+  {
+    question: "डेटाबेस डिजाइन के दौरान \"रिलेशनल डेटा मॉडल\" किस प्रकार की जानकारी संग्रहीत करता है?",
+    options: [
+      "a) डेटा और उनके बीच के संबंधों को",
+      "b) केवल संख्यात्मक डेटा को",
+      "c) केवल पाठ्य डेटा को",
+      "d) केवल चित्र और वीडियो डेटा को"
+    ],
+    answer: "a) डेटा और उनके बीच के संबंधों को"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा डेटा प्रकार समय और तिथि (Date & Time) को संग्रहीत करने के लिए उपयोग किया जाता है?",
+    options: [
+      "a) VARCHAR",
+      "b) FLOAT",
+      "c) TIMESTAMP",
+      "d) BOOLEAN"
+    ],
+    answer: "c) TIMESTAMP"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा डेटा मॉडल मुख्य रूप से डेटाबेस के \"तार्किक स्तर\" (Logical Level) पर कार्य करता है?",
+    options: [
+      "a) अवधारणात्मक डेटा मॉडल (Conceptual Data Model)",
+      "b) प्रतिनिधित्व डेटा मॉडल (Representational Data Model)",
+      "c) भौतिक डेटा मॉडल (Physical Data Model)",
+      "d) डाटा प्रोसेसिंग मॉडल (Data Processing Model)"
+    ],
+    answer: "b) प्रतिनिधित्व डेटा मॉडल (Representational Data Model)"
+  },
+  {
+    question: "भौतिक डेटा मॉडल (Physical Data Model) मुख्य रूप से किस पर ध्यान केंद्रित करता है?",
+    options: [
+      "a) डेटा के भंडारण (Storage) और संरचना (Structure) पर",
+      "b) डेटा सुरक्षा पर",
+      "c) डेटा के लॉजिक पर",
+      "d) उपयोगकर्ताओं की गतिविधियों पर"
+    ],
+    answer: "a) डेटा के भंडारण (Storage) और संरचना (Structure) पर"
+  },
+  {
+    question: "डेटा मॉडल का कौन सा लाभ डेटा सुरक्षा (Data Security) को बढ़ाने से संबंधित है?",
+    options: [
+      "a) डेटा संबंधों को परिभाषित करना",
+      "b) डेटा अखंडता और न्यूनतम पुनरावृत्ति सुनिश्चित करना",
+      "c) डेटा सुरक्षा उपायों को लागू करना",
+      "d) स्टोर्ड प्रक्रियाओं (Stored Procedures) का उपयोग करना"
+    ],
+    answer: "c) डेटा सुरक्षा उपायों को लागू करना"
+  },
+  {
+    question: "डेटाबेस एडमिनिस्ट्रेटर (DBA) का मुख्य कार्य क्या है?",
+    options: [
+      "a) डेटाबेस को डिज़ाइन करना",
+      "b) डेटाबेस को प्रबंधित, सुरक्षित और बनाए रखना",
+      "c) प्रोग्रामिंग करना",
+      "d) नेटवर्किंग को संभालना"
+    ],
+    answer: "b) डेटाबेस को प्रबंधित, सुरक्षित और बनाए रखना"
+  },
+  {
+    question: "डेटाबेस का बैकअप और रिकवरी सुनिश्चित करने वाला DBA कौन होता है?",
+    options: [
+      "a) Performance Tuning DBA",
+      "b) Security DBA",
+      "c) Backup and Recovery DBA",
+      "d) Application DBA"
+    ],
+    answer: "c) Backup and Recovery DBA"
+  },
+  {
+    question: "डेटाबेस डिज़ाइन और संरचना को परिभाषित करने के लिए कौन जिम्मेदार होता है?",
+    options: [
+      "a) एप्लिकेशन प्रोग्रामर",
+      "b) डेटाबेस डिज़ाइनर",
+      "c) DBA",
+      "d) सिस्टम एनालिस्ट"
+    ],
+    answer: "b) डेटाबेस डिज़ाइनर"
+  },
+  {
+    question: "डेटाबेस में डेटा सुरक्षा सुनिश्चित करने के लिए कौन जिम्मेदार होता है?",
+    options: [
+      "a) Security DBA",
+      "b) Backup DBA",
+      "c) Application DBA",
+      "d) Naïve उपयोगकर्ता"
+    ],
+    answer: "a) Security DBA"
+  },
+  {
+    question: "डेटाबेस डिज़ाइन कोडिंग और परिनियोजन (deployment) के बीच मध्यस्थ के रूप में कौन कार्य करता है?",
+    options: [
+      "a) सिस्टम एनालिस्ट",
+      "b) एप्लिकेशन प्रोग्रामर",
+      "c) DBA",
+      "d) डेटाबेस डिज़ाइनर"
+    ],
+    answer: "a) सिस्टम एनालिस्ट"
+  },
+  {
+    question: "डेटाबेस को बिग डेटा विश्लेषण (Big Data Analytics) के लिए कौन प्रबंधित करता है?",
+    options: [
+      "a) Big Data DBA",
+      "b) Security DBA",
+      "c) Cloud DBA",
+      "d) Performance Tuning DBA"
+    ],
+    answer: "a) Big Data DBA"
+  },
+  {
+    question: "डेटाबेस में नए उपयोगकर्ता खाते बनाने और एक्सेस नियंत्रण प्रबंधित करने की जिम्मेदारी किसकी होती है?",
+    options: [
+      "a) सिस्टम एनालिस्ट",
+      "b) एप्लिकेशन प्रोग्रामर",
+      "c) DBA",
+      "d) डेटाबेस डिज़ाइनर"
+    ],
+    answer: "c) DBA"
+  },
+  {
+    question: "डेटाबेस में तालिकाओं (Tables), इंडेक्स (Indexes) और ट्रिगर्स (Triggers) को कौन परिभाषित करता है?",
+    options: [
+      "a) डेटाबेस डिज़ाइनर",
+      "b) एप्लिकेशन प्रोग्रामर",
+      "c) DBA",
+      "d) सिस्टम एनालिस्ट"
+    ],
+    answer: "a) डेटाबेस डिज़ाइनर"
+  },
+  {
+    question: "डेटाबेस अनुप्रयोगों के लिए कोड लिखने वाले उपयोगकर्ताओं को क्या कहा जाता है?",
+    options: [
+      "a) डेटाबेस डिज़ाइनर",
+      "b) एप्लिकेशन प्रोग्रामर",
+      "c) DBA",
+      "d) सिस्टम एनालिस्ट"
+    ],
+    answer: "b) एप्लिकेशन प्रोग्रामर"
+  },
+  {
+    question: "डेटाबेस अनुपालन (Compliance) सुनिश्चित करने वाला DBA कौन सा होता है?",
+    options: [
+      "a) Cloud DBA",
+      "b) Database Compliance DBA",
+      "c) Security DBA",
+      "d) Performance Tuning DBA"
+    ],
+    answer: "b) Database Compliance DBA"
+  },
+  {
+    question: "ER मॉडल में, आयत (Rectangle) का उपयोग किसके प्रतिनिधित्व के लिए किया जाता है?",
+    options: [
+      "a) एट्रिब्यूट (Attribute)",
+      "b) एंटिटी (Entity)",
+      "c) रिलेशनशिप (Relationship)",
+      "d) मल्टीवैल्यूड एट्रिब्यूट (Multivalued Attribute)"
+    ],
+    answer: "b) एंटिटी (Entity)"
+  },
+  {
+    question: "ER डायग्राम में डायमंड (Diamond) किसे दर्शाता है?",
+    options: [
+      "a) एट्रिब्यूट (Attribute)",
+      "b) एंटिटी (Entity)",
+      "c) रिलेशनशिप (Relationship)",
+      "d) वीक एंटिटी (Weak Entity)"
+    ],
+    answer: "c) रिलेशनशिप (Relationship)"
+  },
+  {
+    question: "कौन-सा प्रतीक ER मॉडल में एट्रिब्यूट को दर्शाने के लिए उपयोग किया जाता है?",
+    options: [
+      "a) आयत (Rectangle)",
+      "b) डायमंड (Diamond)",
+      "c) अंडाकार (Ellipse)",
+      "d) डबल आयत (Double Rectangle)"
+    ],
+    answer: "c) अंडाकार (Ellipse)"
+  },
+  {
+    question: "ER मॉडल में, मल्टीवैल्यूड एट्रिब्यूट को कैसे दर्शाया जाता है?",
+    options: [
+      "a) डबल अंडाकार (Double Ellipse)",
+      "b) आयत (Rectangle)",
+      "c) डैश्ड लाइन (Dashed Line)",
+      "d) डबल डायमंड (Double Diamond)"
+    ],
+    answer: "a) डबल अंडाकार (Double Ellipse)"
+  },
+  {
+    question: "कौन-सा प्रतीक वीक एंटिटी को दर्शाने के लिए उपयोग किया जाता है?",
+    options: [
+      "a) डबल आयत (Double Rectangle)",
+      "b) अंडाकार (Ellipse)",
+      "c) सिंगल आयत (Single Rectangle)",
+      "d) डबल डायमंड (Double Diamond)"
+    ],
+    answer: "a) डबल आयत (Double Rectangle)"
+  },
+  {
+    question: "कौन-सा घटक ER डायग्राम में रिलेशनशिप को जोड़ता है?",
+    options: [
+      "a) लाइन्स (Lines)",
+      "b) डायमंड (Diamond)",
+      "c) अंडाकार (Ellipse)",
+      "d) डबल आयत (Double Rectangle)"
+    ],
+    answer: "a) लाइन्स (Lines)"
+  },
+  {
+    question: "ER मॉडल का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटाबेस डिज़ाइन कोडिंग करना",
+      "b) डेटा और उनके बीच के संबंधों को परिभाषित करना",
+      "c) डेटाबेस का रखरखाव करना",
+      "d) डेटाबेस प्रदर्शन को अनुकूलित करना"
+    ],
+    answer: "b) डेटा और उनके बीच के संबंधों को परिभाषित करना"
+  },
+  {
+    question: "डेटाबेस में टेबल बनाने के लिए ER मॉडल को किसमें बदला जाता है?",
+    options: [
+      "a) एप्लिकेशन प्रोग्राम",
+      "b) रिलेशनल स्कीमा",
+      "c) डेटा वेयरहाउस",
+      "d) इंडेक्सिंग"
+    ],
+    answer: "b) रिलेशनल स्कीमा"
+  },
+  {
+    question: "ER मॉडल का उपयोग क्यों किया जाता है?",
+    options: [
+      "a) डेटाबेस संरचना को विज़ुअलाइज़ करने के लिए",
+      "b) डेटा को स्टोर करने के लिए",
+      "c) नेटवर्क कनेक्शन को संभालने के लिए",
+      "d) उपयोगकर्ता डेटा को एन्क्रिप्ट करने के लिए"
+    ],
+    answer: "a) डेटाबेस संरचना को विज़ुअलाइज़ करने के लिए"
+  },
+    {
+    question: "डेटाबेस में टेबल बनाने के लिए ER मॉडल को किसमें बदला जाता है?",
+    options: [
+      "a) एप्लिकेशन प्रोग्राम",
+      "b) रिलेशनल स्कीमा",
+      "c) डेटा वेयरहाउस",
+      "d) इंडेक्सिंग"
+    ],
+    answer: "b) रिलेशनल स्कीमा"
+  },
+  {
+    question: "ER मॉडल का उपयोग क्यों किया जाता है?",
+    options: [
+      "a) डेटाबेस संरचना को विज़ुअलाइज़ करने के लिए",
+      "b) डेटा को स्टोर करने के लिए",
+      "c) नेटवर्क कनेक्शन को संभालने के लिए",
+      "d) उपयोगकर्ता डेटा को एन्क्रिप्ट करने के लिए"
+    ],
+    answer: "a) डेटाबेस संरचना को विज़ुअलाइज़ करने के लिए"
+  },
+  {
+    question: "नीचे दिए गए में से कौन सा सही मेल नहीं है?",
+    options: [
+      "a) आयत (Rectangle) → एंटिटी",
+      "b) डायमंड (Diamond) → रिलेशनशिप",
+      "c) अंडाकार (Ellipse) → इंडेक्स",
+      "d) डबल आयत (Double Rectangle) → वीक एंटिटी"
+    ],
+    answer: "c) अंडाकार (Ellipse) → इंडेक्स"
+  },
+  {
+    question: "Weak Entity किस पर निर्भर करता है?",
+    options: [
+      "a) स्वयं पर (Itself)",
+      "b) अन्य एंटिटी पर (Another entity)",
+      "c) रिलेशनशिप पर (Relationship)",
+      "d) डेटाबेस स्कीमा पर (Database Schema)"
+    ],
+    answer: "b) अन्य एंटिटी पर (Another entity)"
+  },
+  {
+    question: "ER मॉडल में एक स्ट्रॉन्ग एंटिटी को कैसे दर्शाया जाता है?",
+    options: [
+      "a) डबल आयत (Double Rectangle)",
+      "b) साधारण आयत (Single Rectangle)",
+      "c) डायमंड (Diamond)",
+      "d) अंडाकार (Ellipse)"
+    ],
+    answer: "b) साधारण आयत (Single Rectangle)"
+  },
+  {
+    question: "नीचे दिए गए में से कौन सा एक Key Attribute का उदाहरण है?",
+    options: [
+      "a) नाम (Name)",
+      "b) पता (Address)",
+      "c) रोल नंबर (Roll Number)",
+      "d) फ़ोन नंबर (Phone Number)"
+    ],
+    answer: "c) रोल नंबर (Roll Number)"
+  },
+  {
+    question: "एक मल्टीवैल्यूड एट्रिब्यूट (Multivalued Attribute) को ER मॉडल में कैसे दर्शाया जाता है?",
+    options: [
+      "a) डबल अंडाकार (Double Ellipse)",
+      "b) डैश्ड अंडाकार (Dashed Ellipse)",
+      "c) डायमंड (Diamond)",
+      "d) डबल आयत (Double Rectangle)"
+    ],
+    answer: "a) डबल अंडाकार (Double Ellipse)"
+  },
+  {
+    question: "Composite Attribute क्या होता है?",
+    options: [
+      "a) एक ऐसा एट्रिब्यूट जो अन्य एट्रिब्यूट्स से बना हो",
+      "b) एक ऐसा एट्रिब्यूट जो केवल एक मान (Value) रखता हो",
+      "c) एक ऐसा एट्रिब्यूट जो अन्य एंटिटीज़ को दर्शाता हो",
+      "d) ऐसा एट्रिब्यूट जो केवल Derived हो"
+    ],
+    answer: "a) एक ऐसा एट्रिब्यूट जो अन्य एट्रिब्यूट्स से बना हो"
+  },
+  {
+    question: "One-to-One रिलेशनशिप का एक उदाहरण क्या है?",
+    options: [
+      "a) एक छात्र कई विषय पढ़ सकता है",
+      "b) एक व्यक्ति एक पासपोर्ट रख सकता है",
+      "c) एक शिक्षक कई छात्रों को पढ़ा सकता है",
+      "d) एक पुस्तक कई लाइब्रेरी में हो सकती है"
+    ],
+    answer: "b) एक व्यक्ति एक पासपोर्ट रख सकता है"
+  },
+  {
+    question: "Many-to-Many रिलेशनशिप का उदाहरण क्या है?",
+    options: [
+      "a) एक छात्र केवल एक शिक्षक से पढ़ सकता है",
+      "b) एक कर्मचारी कई प्रोजेक्ट्स पर काम कर सकता है और एक प्रोजेक्ट में कई कर्मचारी हो सकते हैं",
+      "c) एक कंपनी के पास केवल एक शाखा होती है",
+      "d) एक पुस्तक केवल एक लेखक के द्वारा लिखी जाती है"
+    ],
+    answer: "b) एक कर्मचारी कई प्रोजेक्ट्स पर काम कर सकता है और एक प्रोजेक्ट में कई कर्मचारी हो सकते हैं"
+  },
+  {
+    question: "Derived Attribute का सही उदाहरण कौन सा है?",
+    options: [
+      "a) नाम (Name)",
+      "b) जन्मतिथि (Date of Birth)",
+      "c) आयु (Age)",
+      "d) फ़ोन नंबर (Phone Number)"
+    ],
+    answer: "c) आयु (Age)"
+  },
+  {
+    question: "एक स्ट्रॉन्ग एंटिटी और वीक एंटिटी के बीच क्या मुख्य अंतर है?",
+    options: [
+      "a) स्ट्रॉन्ग एंटिटी में कोई Primary Key नहीं होती",
+      "b) वीक एंटिटी अपनी Primary Key को स्वयं डिफाइन करती है",
+      "c) वीक एंटिटी अन्य एंटिटी पर निर्भर होती है और इसकी अपनी कोई Primary Key नहीं होती",
+      "d) स्ट्रॉन्ग एंटिटी हमेशा वीक एंटिटी पर निर्भर होती है"
+    ],
+    answer: "c) वीक एंटिटी अन्य एंटिटी पर निर्भर होती है और इसकी अपनी कोई Primary Key नहीं होती"
+  },
+  {
+    question: "Many-to-One रिलेशनशिप का सही उदाहरण कौन सा है?",
+    options: [
+      "a) एक छात्र कई शिक्षकों से पढ़ सकता है",
+      "b) एक विश्वविद्यालय कई छात्रों को नामांकित कर सकता है",
+      "c) कई छात्र एक ही विश्वविद्यालय में प्रवेश ले सकते हैं",
+      "d) एक वैज्ञानिक कई आविष्कार कर सकता है"
+    ],
+    answer: "c) कई छात्र एक ही विश्वविद्यालय में प्रवेश ले सकते हैं"
+  },
+  {
+    question: "ER मॉडल का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटाबेस को स्टोर करना",
+      "b) डेटा की दृश्यात्मक (visual) प्रस्तुति देना",
+      "c) डेटा प्रोसेसिंग करना",
+      "d) ऑडियो फाइलों को स्टोर करना"
+    ],
+    answer: "b) डेटा की दृश्यात्मक (visual) प्रस्तुति देना"
+  },
+  {
+    question: "ER मॉडल में Relationship को कैसे दर्शाया जाता है?",
+    options: [
+      "a) अंडाकार (Ellipse)",
+      "b) आयत (Rectangle)",
+      "c) डायमंड (Diamond)",
+      "d) डबल आयत (Double Rectangle)"
+    ],
+    answer: "c) डायमंड (Diamond)"
+  },
+  {
+    question: "डेटाबेस स्कीमा क्या दर्शाता है?",
+    options: [
+      "a) डेटा की फिजिकल स्टोरेज",
+      "b) डेटा का ऑर्गनाइज़ेशन, संरचना और रिलेशनशिप",
+      "c) डेटा का एन्क्रिप्शन",
+      "d) केवल डेटा की सुरक्षा"
+    ],
+    answer: "b) डेटा का ऑर्गनाइज़ेशन, संरचना और रिलेशनशिप"
+  },
+  {
+    question: "Logical Schema क्या दर्शाता है?",
+    options: [
+      "a) डेटा कैसे स्टोर किया जाता है",
+      "b) डेटा को उपयोगकर्ता कैसे देख सकते हैं",
+      "c) टेबल्स, एंटिटी कनेक्शंस, और डेटा इंटीग्रिटी की संरचना",
+      "d) डेटा को नेटवर्क में कैसे भेजा जाए"
+    ],
+    answer: "c) टेबल्स, एंटिटी कनेक्शंस, और डेटा इंटीग्रिटी की संरचना"
+  },
+  {
+    question: "डेटाबेस में फिजिकल स्कीमा क्या दर्शाता है?",
+    options: [
+      "a) डेटा के भौतिक भंडारण की रूपरेखा",
+      "b) उपयोगकर्ता इंटरफेस",
+      "c) डेटा की संरचना",
+      "d) वेब एप्लिकेशन की कोडिंग"
+    ],
+    answer: "a) डेटा के भौतिक भंडारण की रूपरेखा"
+  },
+  {
+    question: "डेटाबेस स्कीमा के कितने प्रकार होते हैं?",
+    options: [
+      "a) 2",
+      "b) 3",
+      "c) 4",
+      "d) 5"
+    ],
+    answer: "b) 3 (Logical Schema, Physical Schema, View Schema)"
+  },
+  {
+    question: "View Schema किससे संबंधित होता है?",
+    options: [
+      "a) उपयोगकर्ताओं द्वारा डेटा को देखने के तरीके से",
+      "b) डेटाबेस के भौतिक स्टोरेज से",
+      "c) डेटाबेस में प्रयुक्त सुरक्षा नीतियों से",
+      "d) डेटा बैकअप प्रक्रिया से"
+    ],
+    answer: "a) उपयोगकर्ताओं द्वारा डेटा को देखने के तरीके से"
+  },
+    {
+    question: "MySQL में 'CREATE SCHEMA' का क्या उपयोग है?",
+    options: [
+      "a) एक नया उपयोगकर्ता बनाने के लिए",
+      "b) एक नई डेटाबेस स्कीमा बनाने के लिए",
+      "c) डेटाबेस बैकअप के लिए",
+      "d) केवल SQL Server में उपयोग किया जाता है"
+    ],
+    answer: "b) एक नई डेटाबेस स्कीमा बनाने के लिए"
+  },
+  {
+    question: "एक डेटाबेस स्कीमा को बनाने के लिए कौन सा SQL स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "a) CREATE SCHEMA",
+      "b) CREATE DATABASE",
+      "c) CREATE TABLE",
+      "d) केवल a और b"
+    ],
+    answer: "d) केवल a और b"
+  },
+  {
+    question: "ER मॉडल की एक मुख्य सीमा क्या है?",
+    options: [
+      "a) यह डेटा को स्टोर नहीं कर सकता",
+      "b) इसका कोई मानकीकृत (Standardized) नोटेशन नहीं है",
+      "c) यह डेटाबेस डिज़ाइन को जटिल बनाता है",
+      "d) यह केवल छोटे डेटाबेस के लिए उपयोग किया जाता है"
+    ],
+    answer: "b) इसका कोई मानकीकृत (Standardized) नोटेशन नहीं है"
+  },
+  {
+    question: "डेटाबेस स्कीमा क्या दर्शाता है?",
+    options: [
+      "a) केवल डेटा स्टोरेज",
+      "b) डेटाबेस की संरचना, रिलेशनशिप और डेटा ऑर्गनाइज़ेशन",
+      "c) केवल डेटा बैकअप",
+      "d) नेटवर्क की स्पीड"
+    ],
+    answer: "b) डेटाबेस की संरचना, रिलेशनशिप और डेटा ऑर्गनाइज़ेशन"
+  },
+  {
+    question: "Flat Model डेटाबेस में डेटा कैसे स्टोर किया जाता है?",
+    options: [
+      "a) ग्राफ फॉर्मेट में",
+      "b) टेबल या स्प्रेडशीट जैसी संरचना में",
+      "c) रिलेशनल टेबल्स में",
+      "d) OOPS संरचना में"
+    ],
+    answer: "b) टेबल या स्प्रेडशीट जैसी संरचना में"
+  },
+  {
+    question: "Hierarchical Model में डेटा संरचना कैसी होती है?",
+    options: [
+      "a) ग्राफ",
+      "b) ट्री",
+      "c) टेबल",
+      "d) वेक्टर"
+    ],
+    answer: "b) ट्री"
+  },
+  {
+    question: "Network Model और Hierarchical Model में मुख्य अंतर क्या है?",
+    options: [
+      "a) Network Model केवल एक-से-एक (One-to-One) संबंध को सपोर्ट करता है",
+      "b) Network Model केवल ग्राफिकल डेटा को सपोर्ट करता है",
+      "c) Network Model में Many-to-Many रिलेशनशिप की अनुमति होती है, जबकि Hierarchical Model में केवल One-to-Many रिलेशनशिप होती है",
+      "d) Network Model में डेटा स्टोर नहीं किया जाता"
+    ],
+    answer: "c) Network Model में Many-to-Many रिलेशनशिप की अनुमति होती है, जबकि Hierarchical Model में केवल One-to-Many रिलेशनशिप होती है"
+  },
+  {
+    question: "Relational Model में डेटा कैसे स्टोर किया जाता है?",
+    options: [
+      "a) ग्राफ में",
+      "b) XML में",
+      "c) टेबल और रिलेशन के रूप में",
+      "d) सिर्फ JSON में"
+    ],
+    answer: "c) टेबल और रिलेशन के रूप में"
+  },
+  {
+    question: "Hierarchical Model आमतौर पर किस फॉर्मेट में स्टोर किया जाता है?",
+    options: [
+      "a) XML और JSON",
+      "b) Relational Tables",
+      "c) CSV फॉर्मेट",
+      "d) Excel Sheet"
+    ],
+    answer: "a) XML और JSON"
+  },
+  {
+    question: "Star Schema और Snowflake Schema मुख्यतः किसमें उपयोग किए जाते हैं?",
+    options: [
+      "a) डेटाबेस एडमिनिस्ट्रेशन",
+      "b) डेटा वेयरहाउसिंग",
+      "c) मोबाइल ऐप डेवलपमेंट",
+      "d) वेब डिज़ाइन"
+    ],
+    answer: "b) डेटा वेयरहाउसिंग"
+  },
+  {
+    question: "डेटाबेस नॉर्मलाइजेशन का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटा रेडंडेंसी को बढ़ाना",
+      "b) डेटा की अखंडता (Integrity) और दक्षता बढ़ाना",
+      "c) डेटाबेस का आकार बढ़ाना",
+      "d) डेटा को अनऑर्गनाइज़ करना"
+    ],
+    answer: "b) डेटा की अखंडता (Integrity) और दक्षता बढ़ाना"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा नॉर्मल फॉर्म यह सुनिश्चित करता है कि प्रत्येक कॉलम में केवल एटोमिक (अविभाज्य) मान हों?",
+    options: [
+      "a) 1NF",
+      "b) 2NF",
+      "c) 3NF",
+      "d) BCNF"
+    ],
+    answer: "a) 1NF"
+  },
+  {
+    question: "एक रिलेशनल टेबल 1NF में नहीं होगी यदि उसमें क्या मौजूद हो?",
+    options: [
+      "a) प्राइमरी की",
+      "b) मल्टी-वैल्यूड एट्रिब्यूट्स (Multi-valued Attributes)",
+      "c) फॉरेन की",
+      "d) कोई इंडेक्स"
+    ],
+    answer: "b) मल्टी-वैल्यूड एट्रिब्यूट्स (Multi-valued Attributes)"
+  },
+  {
+    question: "2NF में किसी रिलेशन को रखने के लिए कौन-सी शर्त पूरी होनी चाहिए?",
+    options: [
+      "a) यह पहले से 1NF में होना चाहिए",
+      "b) इसमें कोई आंशिक निर्भरता (Partial Dependency) नहीं होनी चाहिए",
+      "c) दोनों a और b",
+      "d) इनमें से कोई नहीं"
+    ],
+    answer: "c) दोनों a और b"
+  },
+  {
+    question: "3NF में जाने के लिए, किसी टेबल को किस निर्भरता से मुक्त होना चाहिए?",
+    options: [
+      "a) फंक्शनल डिपेंडेंसी",
+      "b) ट्रांजिटिव डिपेंडेंसी",
+      "c) आंशिक निर्भरता (Partial Dependency)",
+      "d) सुपर की निर्भरता"
+    ],
+    answer: "b) ट्रांजिटिव डिपेंडेंसी"
+  },
+  {
+    question: "Star Schema मुख्य रूप से किस उद्देश्य के लिए उपयोग किया जाता है?",
+    options: [
+      "a) डेटा वेयरहाउसिंग",
+      "b) वेब होस्टिंग",
+      "c) नेटवर्किंग",
+      "d) डेटा ट्रांजैक्शन"
+    ],
+    answer: "a) डेटा वेयरहाउसिंग"
+  },
+  {
+    question: "Snowflake Schema किसका एक परिष्कृत (Advanced) रूप है?",
+    options: [
+      "a) Flat Model",
+      "b) Star Schema",
+      "c) Relational Model",
+      "d) Hierarchical Model"
+    ],
+    answer: "b) Star Schema"
+  },
+  {
+    question: "Relational Model में डेटा कैसे स्टोर किया जाता है?",
+    options: [
+      "a) ग्राफ में",
+      "b) ट्री में",
+      "c) टेबल में रिलेशन के रूप में",
+      "d) JSON फॉर्मेट में"
+    ],
+    answer: "c) टेबल में रिलेशन के रूप में"
+  },
+    {
+    question: "2NF में जाने के लिए, टेबल को पहले किस नॉर्मल फॉर्म में होना चाहिए?",
+    options: [
+      "a) 3NF",
+      "b) 1NF",
+      "c) BCNF",
+      "d) 4NF"
+    ],
+    answer: "b) 1NF"
+  },
+  {
+    question: "2NF किस प्रकार की निर्भरता (Dependency) को समाप्त करता है?",
+    options: [
+      "a) आंशिक निर्भरता (Partial Dependency)",
+      "b) ट्रांजिटिव निर्भरता (Transitive Dependency)",
+      "c) फंक्शनल निर्भरता (Functional Dependency)",
+      "d) बहुसंख्यक निर्भरता (Multi-valued Dependency)"
+    ],
+    answer: "a) आंशिक निर्भरता (Partial Dependency)"
+  },
+  {
+    question: "3NF में टेबल को क्या होना चाहिए?",
+    options: [
+      "a) 1NF में",
+      "b) 2NF में",
+      "c) ट्रांजिटिव निर्भरता (Transitive Dependency) से मुक्त",
+      "d) उपरोक्त सभी"
+    ],
+    answer: "d) उपरोक्त सभी"
+  },
+
+  // Data Integrity
+  {
+    question: "डेटा इंटीग्रिटी (Data Integrity) का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटा सुरक्षा को बढ़ाना",
+      "b) डेटा की सटीकता, स्थिरता और विश्वसनीयता सुनिश्चित करना",
+      "c) डेटा ट्रांसमिशन को तेज करना",
+      "d) डेटा स्टोरेज स्पेस को कम करना"
+    ],
+    answer: "b) डेटा की सटीकता, स्थिरता और विश्वसनीयता सुनिश्चित करना"
+  },
+  {
+    question: "डेटा इंटीग्रिटी के कितने प्रकार होते हैं?",
+    options: [
+      "a) 2",
+      "b) 3",
+      "c) 4",
+      "d) 5"
+    ],
+    answer: "d) 5 (Accuracy, Consistency, Completeness, Reliability, Security)"
+  },
+
+  // DDL, DML, DCL
+  {
+    question: "DDL (Data Definition Language) का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "a) डेटा को संशोधित करने के लिए",
+      "b) डेटाबेस की संरचना (Structure) को परिभाषित करने के लिए",
+      "c) डेटा सुरक्षा बढ़ाने के लिए",
+      "d) डेटाबेस से डेटा पुनः प्राप्त करने के लिए"
+    ],
+    answer: "b) डेटाबेस की संरचना (Structure) को परिभाषित करने के लिए"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा DDL कमांड है?",
+    options: [
+      "a) INSERT",
+      "b) DELETE",
+      "c) CREATE",
+      "d) UPDATE"
+    ],
+    answer: "c) CREATE"
+  },
+  {
+    question: "DML (Data Manipulation Language) का उपयोग किस लिए किया जाता है?",
+    options: [
+      "a) डेटा को जोड़ने, हटाने और संशोधित करने के लिए",
+      "b) डेटाबेस के उपयोगकर्ताओं को प्रबंधित करने के लिए",
+      "c) डेटाबेस में तालिकाओं को बनाने के लिए",
+      "d) डेटाबेस बैकअप लेने के लिए"
+    ],
+    answer: "a) डेटा को जोड़ने, हटाने और संशोधित करने के लिए"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा DML स्टेटमेंट है?",
+    options: [
+      "a) CREATE",
+      "b) ALTER",
+      "c) INSERT",
+      "d) DROP"
+    ],
+    answer: "c) INSERT"
+  },
+  {
+    question: "DCL (Data Control Language) का उपयोग किस लिए किया जाता है?",
+    options: [
+      "a) डेटाबेस उपयोगकर्ताओं को एक्सेस प्रदान करने और हटाने के लिए",
+      "b) डेटा का हेरफेर (Manipulation) करने के लिए",
+      "c) डेटाबेस स्कीमा को संशोधित करने के लिए",
+      "d) डेटा की ट्रांजैक्शन को नियंत्रित करने के लिए"
+    ],
+    answer: "a) डेटाबेस उपयोगकर्ताओं को एक्सेस प्रदान करने और हटाने के लिए"
+  },
+  {
+    question: "DCL के कौन-से कमांड होते हैं?",
+    options: [
+      "a) GRANT, REVOKE",
+      "b) SELECT, INSERT",
+      "c) DELETE, UPDATE",
+      "d) COMMIT, ROLLBACK"
+    ],
+    answer: "a) GRANT, REVOKE"
+  },
+  {
+    question: "डोमेन इंटीग्रिटी का मुख्य उद्देश्य क्या है?",
+    options: [
+      "a) डेटा के डुप्लिकेशन को रोकना",
+      "b) डेटाबेस में मान्य (valid) डेटा की सीमा को परिभाषित करना",
+      "c) डेटा को अधिक सुरक्षित बनाना",
+      "d) डेटाबेस की परफॉर्मेंस बढ़ाना"
+    ],
+    answer: "b) डेटाबेस में मान्य (valid) डेटा की सीमा को परिभाषित करना"
+  },
+  {
+    question: "डोमेन इंटीग्रिटी सुनिश्चित करने के लिए किसका उपयोग किया जाता है?",
+    options: [
+      "a) Primary Key",
+      "b) Foreign Key",
+      "c) Check Constraints और Data Types",
+      "d) Indexes"
+    ],
+    answer: "c) Check Constraints और Data Types"
+  },
+  {
+    question: "एंटिटी इंटीग्रिटी (Entity Integrity) में मुख्य रूप से किसका उपयोग किया जाता है?",
+    options: [
+      "a) Primary Key",
+      "b) Foreign Key",
+      "c) Candidate Key",
+      "d) Composite Key"
+    ],
+    answer: "a) Primary Key"
+  },
+  {
+    question: "प्राइमरी की (Primary Key) का क्या नियम होता है?",
+    options: [
+      "a) यह NULL हो सकता है",
+      "b) यह डुप्लिकेट हो सकता है",
+      "c) यह हमेशा यूनिक और NULL से मुक्त होना चाहिए",
+      "d) यह अन्य टेबल से जुड़ा होना चाहिए"
+    ],
+    answer: "c) यह हमेशा यूनिक और NULL से मुक्त होना चाहिए"
+  },
+
+  // Referential Integrity
+  {
+    question: "रेफरेंशियल इंटीग्रिटी (Referential Integrity) मुख्य रूप से किस पर निर्भर करती है?",
+    options: [
+      "a) Primary Key",
+      "b) Foreign Key",
+      "c) Indexes",
+      "d) Stored Procedures"
+    ],
+    answer: "b) Foreign Key"
+  },
+  {
+    question: "यदि किसी टेबल में Foreign Key मौजूद है, तो वह किससे रेफर करती है?",
+    options: [
+      "a) उसी टेबल की Primary Key",
+      "b) किसी अन्य टेबल की Primary Key",
+      "c) किसी अन्य टेबल की Foreign Key",
+      "d) Unique Key"
+    ],
+    answer: "b) किसी अन्य टेबल की Primary Key"
+  },
+  {
+    question: "रेफरेंशियल इंटीग्रिटी सुनिश्चित करती है कि:",
+    options: [
+      "a) हर फॉरेन की (Foreign Key) वैल्यू संबंधित टेबल में मौजूद हो",
+      "b) डेटा को ऑटोमैटिकली अपडेट किया जाए",
+      "c) डेटा हमेशा एन्क्रिप्टेड रहे",
+      "d) डेटा कभी भी डिलीट नहीं किया जा सके"
+    ],
+    answer: "a) हर फॉरेन की (Foreign Key) वैल्यू संबंधित टेबल में मौजूद हो"
+  },
+  {
+    question: "User-Defined Integrity क्या है?",
+    options: [
+      "डेटाबेस में Custom Rules लागू करना",
+      "डेटा को ऑटोमैटिक बैकअप में रखना",
+      "SQL Queries को तेज बनाना",
+      "डेटा ट्रांसमिशन को तेज करना"
+    ],
+    answer: "डेटाबेस में Custom Rules लागू करना"
+  },
+  {
+    question: "User-Defined Integrity किसका उपयोग करता है?",
+    options: [
+      "Default Constraints",
+      "Stored Procedures और Triggers",
+      "Indexing",
+      "Foreign Key"
+    ],
+    answer: "Stored Procedures और Triggers"
+  },
+  {
+    question: "DDL (Data Definition Language) का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "डेटा को जोड़ने और हटाने के लिए",
+      "डेटा को अपडेट करने के लिए",
+      "डेटाबेस स्ट्रक्चर को परिभाषित और संशोधित करने के लिए",
+      "डेटा को फ़िल्टर करने के लिए"
+    ],
+    answer: "डेटाबेस स्ट्रक्चर को परिभाषित और संशोधित करने के लिए"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा DDL कमांड नहीं है?",
+    options: [
+      "CREATE",
+      "DELETE",
+      "DROP",
+      "ALTER"
+    ],
+    answer: "DELETE"
+  },
+  {
+    question: "DROP और TRUNCATE में क्या अंतर है?",
+    options: [
+      "दोनों ही टेबल का डेटा डिलीट करते हैं",
+      "DROP टेबल को पूरी तरह हटा देता है, जबकि TRUNCATE केवल डेटा हटाता है",
+      "TRUNCATE टेबल को डिलीट कर देता है, जबकि DROP केवल डेटा हटाता है",
+      "दोनों एक ही काम करते हैं"
+    ],
+    answer: "DROP टेबल को पूरी तरह हटा देता है, जबकि TRUNCATE केवल डेटा हटाता है"
+  },
+  {
+    question: "DML (Data Manipulation Language) का मुख्य उद्देश्य क्या है?",
+    options: [
+      "डेटाबेस की संरचना को बदलना",
+      "डेटा जोड़ना, अपडेट करना और हटाना",
+      "उपयोगकर्ता की अनुमतियाँ प्रबंधित करना",
+      "डेटा को एन्क्रिप्ट करना"
+    ],
+    answer: "डेटा जोड़ना, अपडेट करना और हटाना"
+  },
+  {
+    question: "DML का कौन-सा कमांड डेटा को अपडेट करने के लिए उपयोग किया जाता है?",
+    options: [
+      "MODIFY",
+      "CHANGE",
+      "UPDATE",
+      "ALTER"
+    ],
+    answer: "UPDATE"
+  },
+  {
+    question: "DELETE और TRUNCATE में क्या अंतर है?",
+    options: [
+      "DELETE सभी रिकॉर्ड हटाता है और उन्हें वापस प्राप्त किया जा सकता है, लेकिन TRUNCATE में यह संभव नहीं",
+      "DELETE केवल कुछ रिकॉर्ड हटाता है, जबकि TRUNCATE पूरी टेबल को हटा देता है",
+      "DELETE और TRUNCATE दोनों ही डेटा को स्थायी रूप से हटा देते हैं",
+      "DELETE कमांड केवल व्यूज़ पर काम करता है"
+    ],
+    answer: "DELETE सभी रिकॉर्ड हटाता है और उन्हें वापस प्राप्त किया जा सकता है, लेकिन TRUNCATE में यह संभव नहीं"
+  },
+  {
+    question: "DCL (Data Control Language) का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "डेटा को जोड़ने और हटाने के लिए",
+      "उपयोगकर्ताओं और उनकी अनुमतियों को नियंत्रित करने के लिए",
+      "डेटा को संशोधित करने के लिए",
+      "डेटाबेस का बैकअप लेने के लिए"
+    ],
+    answer: "उपयोगकर्ताओं और उनकी अनुमतियों को नियंत्रित करने के लिए"
+  },
+  {
+    question: "GRANT और REVOKE का क्या कार्य है?",
+    options: [
+      "GRANT उपयोगकर्ताओं को विशेष अनुमति देता है, और REVOKE उन अनुमतियों को हटाता है",
+      "GRANT डेटा को जोड़ता है, और REVOKE डेटा को हटाता है",
+      "GRANT डेटा अपडेट करता है, और REVOKE डेटा को स्थायी रूप से हटा देता है",
+      "दोनों ही डेटा को फ़िल्टर करने के लिए उपयोग किए जाते हैं"
+    ],
+    answer: "GRANT उपयोगकर्ताओं को विशेष अनुमति देता है, और REVOKE उन अनुमतियों को हटाता है"
+  },
+    {
+    question: "Primary Key का मुख्य कार्य क्या होता है?",
+    options: [
+      "डेटा को एन्क्रिप्ट करना",
+      "डेटा की विशिष्टता (Uniqueness) सुनिश्चित करना",
+      "डेटा को पुनः प्राप्त करना",
+      "डेटा को संक्षिप्त करना"
+    ],
+    answer: "डेटा की विशिष्टता (Uniqueness) सुनिश्चित करना"
+  },
+  {
+    question: "Primary Key में कौन-सी विशेषता होती है?",
+    options: [
+      "NULL वैल्यू हो सकती है",
+      "एक से अधिक NULL वैल्यू हो सकती हैं",
+      "NULL वैल्यू नहीं हो सकती",
+      "केवल संख्यात्मक डेटा स्टोर कर सकती है"
+    ],
+    answer: "NULL वैल्यू नहीं हो सकती"
+  },
+  {
+    question: "एक तालिका (table) में कितनी Primary Key हो सकती हैं?",
+    options: [
+      "1",
+      "2",
+      "3",
+      "कोई सीमा नहीं"
+    ],
+    answer: "1"
+  },
+  {
+    question: "Primary Key को टेबल में जोड़ने के लिए कौन-सा SQL कमांड सही है?",
+    options: [
+      "ALTER TABLE employees ADD PRIMARY KEY (employee_id);",
+      "ALTER TABLE employees ADD FOREIGN KEY (employee_id);",
+      "ALTER TABLE employees ADD UNIQUE KEY (employee_id);",
+      "ALTER TABLE employees MODIFY employee_id PRIMARY;"
+    ],
+    answer: "ALTER TABLE employees ADD PRIMARY KEY (employee_id);"
+  },
+
+  // Foreign Key MCQs
+  {
+    question: "Foreign Key का मुख्य उद्देश्य क्या है?",
+    options: [
+      "टेबल को डिलीट करना",
+      "डेटा को एनक्रिप्ट करना",
+      "टेबल के बीच संबंध स्थापित करना",
+      "डेटा को तेजी से पुनः प्राप्त करना"
+    ],
+    answer: "टेबल के बीच संबंध स्थापित करना"
+  },
+  {
+    question: "Foreign Key किसका संदर्भ (reference) देती है?",
+    options: [
+      "किसी अन्य टेबल की Primary Key का",
+      "किसी अन्य टेबल की Unique Key का",
+      "किसी अन्य टेबल की Index Key का",
+      "किसी अन्य टेबल की Default Value का"
+    ],
+    answer: "किसी अन्य टेबल की Primary Key का"
+  },
+  {
+    question: "Foreign Key को जोड़ने के लिए कौन-सा SQL कमांड सही है?",
+    options: [
+      "ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers(customer_id);",
+      "ALTER TABLE orders ADD PRIMARY KEY (customer_id);",
+      "ALTER TABLE orders MODIFY FOREIGN KEY (customer_id);",
+      "ALTER TABLE orders DROP FOREIGN KEY (customer_id);"
+    ],
+    answer: "ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers(customer_id);"
+  },
+
+  // Difference between Primary Key and Foreign Key MCQs
+  {
+    question: "Primary Key और Foreign Key में मुख्य अंतर क्या है?",
+    options: [
+      "Primary Key टेबल के रिकॉर्ड को यूनिक बनाती है, जबकि Foreign Key टेबल के बीच संबंध स्थापित करती है",
+      "Primary Key NULL वैल्यू स्वीकार करती है, जबकि Foreign Key नहीं",
+      "Primary Key एक से अधिक हो सकती है, जबकि Foreign Key केवल एक हो सकती है",
+      "Primary Key हमेशा एक संख्या (number) होती है, जबकि Foreign Key नहीं"
+    ],
+    answer: "Primary Key टेबल के रिकॉर्ड को यूनिक बनाती है, जबकि Foreign Key टेबल के बीच संबंध स्थापित करती है"
+  },
+  {
+    question: "Primary Key और Foreign Key में कौन-सा कथन सही नहीं है?",
+    options: [
+      "Primary Key NULL वैल्यू नहीं ले सकती",
+      "Foreign Key किसी अन्य टेबल की Primary Key को संदर्भित करती है",
+      "एक टेबल में केवल एक ही Primary Key हो सकती है",
+      "Primary Key और Foreign Key हमेशा समान नाम की होनी चाहिए"
+    ],
+    answer: "Primary Key और Foreign Key हमेशा समान नाम की होनी चाहिए"
+  },
+
+  // ACID Properties MCQs
+  {
+    question: "ACID का पूरा नाम क्या है?",
+    options: [
+      "Atomicity, Consistency, Integrity, Durability",
+      "Atomicity, Consistency, Isolation, Durability",
+      "Accuracy, Consistency, Isolation, Dependency",
+      "Atomicity, Concurrency, Isolation, Durability"
+    ],
+    answer: "Atomicity, Consistency, Isolation, Durability"
+  },
+  {
+    question: "ACID Properties में Atomicity का क्या अर्थ है?",
+    options: [
+      "डेटा को तेज़ी से पुनः प्राप्त करना",
+      "ट्रांजैक्शन या तो पूरी तरह से सफल होगा या पूरी तरह असफल",
+      "एक से अधिक उपयोगकर्ताओं के लिए डेटा सुरक्षित करना",
+      "डेटा को हमेशा स्थायी (permanent) रूप में संग्रहीत करना"
+    ],
+    answer: "ट्रांजैक्शन या तो पूरी तरह से सफल होगा या पूरी तरह असफल"
+  },
+  {
+    question: "ACID Properties में Isolation का क्या कार्य है?",
+    options: [
+      "डेटा को एक से अधिक टेबल में स्टोर करना",
+      "एक ट्रांजैक्शन को अन्य ट्रांजैक्शन्स से स्वतंत्र बनाना",
+      "डेटा को सुरक्षित रूप से एन्क्रिप्ट करना",
+      "डेटा को हमेशा सुसंगत (consistent) बनाए रखना"
+    ],
+    answer: "एक ट्रांजैक्शन को अन्य ट्रांजैक्शन्स से स्वतंत्र बनाना"
+  },
+  {
+    question: "ACID Properties में Durability का क्या अर्थ है?",
+    options: [
+      "डेटा को एक निश्चित समय तक स्टोर करने की क्षमता",
+      "सिस्टम क्रैश होने पर भी ट्रांजैक्शन के प्रभाव को बनाए रखना",
+      "डेटा को नियमित रूप से अपडेट करना",
+      "किसी विशेष डेटा को पुनः प्राप्त करना"
+    ],
+    answer: "सिस्टम क्रैश होने पर भी ट्रांजैक्शन के प्रभाव को बनाए रखना"
+  },
+
+  // Transaction and Its States MCQs
+  {
+    question: "डेटाबेस ट्रांजैक्शन क्या है?",
+    options: [
+      "डेटा को सुरक्षित रूप से हटाने की प्रक्रिया",
+      "डेटा को बैकअप करने की प्रक्रिया",
+      "एक या अधिक डेटाबेस ऑपरेशन्स का एकल यूनिट",
+      "डेटा को एन्क्रिप्ट करने की प्रक्रिया"
+    ],
+    answer: "एक या अधिक डेटाबेस ऑपरेशन्स का एकल यूनिट"
+  },
+  {
+    question: "यदि कोई ट्रांजैक्शन विफल हो जाता है, तो कौन-सा कमांड उसे पूर्व स्थिति में ला सकता है?",
+    options: [
+      "COMMIT",
+      "DELETE",
+      "ROLLBACK",
+      "UPDATE"
+    ],
+    answer: "ROLLBACK"
+  },
+    {
+    question: "Committed State का क्या अर्थ है?",
+    options: [
+      "ट्रांजैक्शन असफल हो गया",
+      "ट्रांजैक्शन स्थायी रूप से स्टोर हो गया",
+      "ट्रांजैक्शन आंशिक रूप से सफल हुआ",
+      "ट्रांजैक्शन अभी भी प्रक्रियाधीन है"
+    ],
+    answer: "ट्रांजैक्शन स्थायी रूप से स्टोर हो गया"
+  },
+  {
+    question: "Active State में ट्रांजैक्शन का क्या होता है?",
+    options: [
+      "ट्रांजैक्शन शुरू हो चुका है और निष्पादित हो रहा है",
+      "ट्रांजैक्शन असफल हो गया",
+      "ट्रांजैक्शन समाप्त हो गया",
+      "ट्रांजैक्शन को स्थायी रूप से संग्रहीत किया गया"
+    ],
+    answer: "ट्रांजैक्शन शुरू हो चुका है और निष्पादित हो रहा है"
+  },
+  {
+    question: "यदि कोई ट्रांजैक्शन आंशिक रूप से सफल होता है और आगे की प्रक्रिया रोक दी जाती है, तो इसे क्या कहा जाता है?",
+    options: [
+      "Active State",
+      "Partially Committed State",
+      "Failed State",
+      "Terminated State"
+    ],
+    answer: "Partially Committed State"
+  },
+  {
+    question: "किस SQL कमांड का उपयोग टेबल में डेटा जोड़ने के लिए किया जाता है?",
+    options: [
+      "UPDATE",
+      "DELETE",
+      "INSERT",
+      "DROP"
+    ],
+    answer: "INSERT"
+  },
+  {
+    question: "किस SQL कमांड का उपयोग टेबल की संरचना (structure) को संशोधित करने के लिए किया जाता है?",
+    options: [
+      "SELECT",
+      "ALTER",
+      "DROP",
+      "TRUNCATE"
+    ],
+    answer: "ALTER"
+  },
+  {
+    question: "कौन सा DML कमांड टेबल से डेटा हटाने के लिए उपयोग किया जाता है?",
+    options: [
+      "TRUNCATE",
+      "DELETE",
+      "DROP",
+      "ALTER"
+    ],
+    answer: "DELETE"
+  },
+  {
+    question: "ACID गुणधर्म में \"A\" का क्या अर्थ है?",
+    options: [
+      "Accuracy",
+      "Atomicity",
+      "Authentication",
+      "Authorization"
+    ],
+    answer: "Atomicity"
+  },
+  {
+    question: "कौन सा ACID गुणधर्म यह सुनिश्चित करता है कि डेटा मान्य स्थिति में बना रहे?",
+    options: [
+      "Atomicity",
+      "Consistency",
+      "Isolation",
+      "Durability"
+    ],
+    answer: "Consistency"
+  },
+  {
+    question: "जब कोई ट्रांजैक्शन विफल हो जाता है और उसके सभी परिवर्तन (changes) पूर्व स्थिति में वापस आ जाते हैं, तो इसे क्या कहा जाता है?",
+    options: [
+      "Commit",
+      "Rollback",
+      "Savepoint",
+      "Locking"
+    ],
+    answer: "Rollback"
+  },
+  {
+    question: "जब कोई ट्रांजैक्शन अपनी सभी प्रक्रियाएं सफलतापूर्वक पूरी कर लेता है, तो यह किस स्थिति (state) में प्रवेश करता है?",
+    options: [
+      "Active",
+      "Failed",
+      "Committed",
+      "Aborted"
+    ],
+    answer: "Committed"
+  },
+  {
+    question: "यदि कोई ट्रांजैक्शन विफल हो जाता है लेकिन इसे फिर से शुरू किया जा सकता है, तो इसे क्या कहा जाता है?",
+    options: [
+      "Terminated",
+      "Aborted",
+      "Rollback",
+      "Pending"
+    ],
+    answer: "Aborted"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा ट्रांजैक्शन स्टेट नहीं है?",
+    options: [
+      "Active",
+      "Partially Committed",
+      "Deleted",
+      "Aborted"
+    ],
+    answer: "Deleted"
+  },
+  {
+    question: "एटॉमिकिटी (Atomicity) का मुख्य उद्देश्य क्या है?",
+    options: [
+      "डेटा को सुरक्षित रखना",
+      "सभी लेनदेन को सफलतापूर्वक पूरा करना या पूरी तरह से असफल करना",
+      "कई लेनदेन को एक साथ निष्पादित करना",
+      "केवल आंशिक लेनदेन की अनुमति देना"
+    ],
+    answer: "सभी लेनदेन को सफलतापूर्वक पूरा करना या पूरी तरह से असफल करना"
+  },
+  {
+    question: "किसी डेटाबेस में संगति (Consistency) बनाए रखने का क्या अर्थ है?",
+    options: [
+      "किसी भी डेटा को स्वीकार करना",
+      "केवल वही डेटा स्टोर करना जो सभी बाधाओं (constraints) को पूरा करता है",
+      "किसी भी प्रकार के डेटा परिवर्तन की अनुमति देना",
+      "आंशिक रूप से बदला हुआ डेटा संग्रहित करना"
+    ],
+    answer: "केवल वही डेटा स्टोर करना जो सभी बाधाओं (constraints) को पूरा करता है"
+  },
+  {
+    question: "आइसोलेशन (Isolation) का क्या कार्य है?",
+    options: [
+      "एक लेनदेन को अन्य समकालीन लेनदेन से अलग रखना",
+      "लेनदेन को कभी पूरा नहीं होने देना",
+      "सभी लेनदेन को एक साथ मर्ज करना",
+      "केवल सिंगल-यूज़र ट्रांजैक्शन की अनुमति देना"
+    ],
+    answer: "एक लेनदेन को अन्य समकालीन लेनदेन से अलग रखना"
+  },
+  {
+    question: "DBMS में Durability का क्या अर्थ है?",
+    options: [
+      "ट्रांजैक्शन पूरा होने के बाद भी डेटा स्थायी रूप से सुरक्षित रहता है",
+      "डेटा को बार-बार बदला जा सकता है",
+      "डेटा को केवल अस्थायी रूप से स्टोर किया जाता है",
+      "सभी लेनदेन को तुरंत हटा दिया जाता है"
+    ],
+    answer: "ट्रांजैक्शन पूरा होने के बाद भी डेटा स्थायी रूप से सुरक्षित रहता है"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा कथन सही है?",
+    options: [
+      "एक टेबल में कई प्राइमरी की हो सकते हैं",
+      "एक टेबल में केवल एक ही प्राइमरी की हो सकती है",
+      "फॉरेन की ही हमेशा प्राइमरी की होती है",
+      "टेबल में कोई की (Key) आवश्यक नहीं होती"
+    ],
+    answer: "एक टेबल में केवल एक ही प्राइमरी की हो सकती है"
+  },
+  {
+    question: "फॉरेन की (Foreign Key) का मुख्य उद्देश्य क्या होता है?",
+    options: [
+      "दो टेबल्स के बीच संबंध स्थापित करना",
+      "केवल यूनिक डेटा को स्टोर करना",
+      "इंडेक्सिंग को नियंत्रित करना",
+      "डेटा को डुप्लिकेट करना"
+    ],
+    answer: "दो टेबल्स के बीच संबंध स्थापित करना"
+  },
+   {
+    question: "किसी तालिका में इंडेक्स (Index) जोड़ने का मुख्य लाभ क्या है?",
+    options: [
+      "डेटा पुनर्प्राप्ति गति को बढ़ाना",
+      "डेटा को मर्ज करना",
+      "डेटा को डिलीट करना",
+      "स्टोरेज बढ़ाना"
+    ],
+    answer: "डेटा पुनर्प्राप्ति गति को बढ़ाना"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा DML (Data Manipulation Language) कमांड है?",
+    options: [
+      "CREATE",
+      "DELETE",
+      "DROP",
+      "ALTER"
+    ],
+    answer: "DELETE"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा कथन ACID गुणधर्मों के बारे में गलत है?",
+    options: [
+      "एटॉमिकिटी (Atomicity) यह सुनिश्चित करता है कि लेनदेन या तो पूरी तरह से निष्पादित हो या बिल्कुल भी न हो",
+      "एटॉमिकिटी (Atomicity) एक ट्रांजैक्शन को आंशिक रूप से निष्पादित होने की अनुमति देता है",
+      "आइसोलेशन (Isolation) यह सुनिश्चित करता है कि एक लेनदेन दूसरे पर प्रभाव न डाले",
+      "स्थायित्व (Durability) डेटा को सिस्टम क्रैश के बाद भी संरक्षित रखता है"
+    ],
+    answer: "एटॉमिकिटी (Atomicity) एक ट्रांजैक्शन को आंशिक रूप से निष्पादित होने की अनुमति देता है"
+  },
+  {
+    question: "यदि किसी डेटाबेस ट्रांजैक्शन के मध्य में सिस्टम क्रैश हो जाता है, तो कौन-सा ACID गुणधर्म यह सुनिश्चित करता है कि डेटाबेस को पुनः पहले की स्थिति में लाया जाए?",
+    options: [
+      "एटॉमिकिटी (Atomicity)",
+      "संगति (Consistency)",
+      "आइसोलेशन (Isolation)",
+      "स्थायित्व (Durability)"
+    ],
+    answer: "एटॉमिकिटी (Atomicity)"
+  },
+  {
+    question: "INNER JOIN का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "सभी डेटा को शामिल करने के लिए",
+      "केवल उन्हीं पंक्तियों को शामिल करने के लिए जिनका दोनों टेबल में मेल होता है",
+      "केवल पहले टेबल के सभी डेटा को प्राप्त करने के लिए",
+      "केवल दूसरे टेबल के सभी डेटा को प्राप्त करने के लिए"
+    ],
+    answer: "केवल उन्हीं पंक्तियों को शामिल करने के लिए जिनका दोनों टेबल में मेल होता है"
+  },
+  {
+    question: "LEFT JOIN का क्या कार्य है?",
+    options: [
+      "केवल उन पंक्तियों को लौटाता है जिनका दोनों टेबल में मेल होता है",
+      "बाएँ टेबल की सभी पंक्तियों को लौटाता है और दाएँ टेबल की मिलती हुई पंक्तियों को जोड़ता है",
+      "केवल दाएँ टेबल की सभी पंक्तियों को लौटाता है",
+      "किसी भी पंक्ति को वापस नहीं करता"
+    ],
+    answer: "बाएँ टेबल की सभी पंक्तियों को लौटाता है और दाएँ टेबल की मिलती हुई पंक्तियों को जोड़ता है"
+  },
+  {
+    question: "RIGHT JOIN निम्नलिखित में से क्या करता है?",
+    options: [
+      "केवल बाएँ टेबल की सभी पंक्तियों को लौटाता है",
+      "केवल उन पंक्तियों को लौटाता है जिनका दोनों टेबल में मेल होता है",
+      "दाएँ टेबल की सभी पंक्तियों को लौटाता है और बाएँ टेबल की मिलती हुई पंक्तियों को जोड़ता है",
+      "किसी भी टेबल की पंक्तियों को वापस नहीं करता"
+    ],
+    answer: "दाएँ टेबल की सभी पंक्तियों को लौटाता है और बाएँ टेबल की मिलती हुई पंक्तियों को जोड़ता है"
+  },
+  {
+    question: "FULL OUTER JOIN का उपयोग किसलिए किया जाता है?",
+    options: [
+      "केवल उन पंक्तियों को प्राप्त करने के लिए जिनका दोनों टेबल में मेल होता है",
+      "केवल पहले टेबल की सभी पंक्तियों को प्राप्त करने के लिए",
+      "केवल दूसरे टेबल की सभी पंक्तियों को प्राप्त करने के लिए",
+      "दोनों टेबल की सभी पंक्तियों को प्राप्त करने के लिए, चाहे उनका मेल हो या न हो"
+    ],
+    answer: "दोनों टेबल की सभी पंक्तियों को प्राप्त करने के लिए, चाहे उनका मेल हो या न हो"
+  },
+  {
+    question: "ACID गुणधर्मों में से कौन सा लेनदेन की स्थिरता (durability) को सुनिश्चित करता है?",
+    options: [
+      "एटॉमिकिटी (Atomicity)",
+      "संगति (Consistency)",
+      "आइसोलेशन (Isolation)",
+      "स्थायित्व (Durability)"
+    ],
+    answer: "स्थायित्व (Durability)"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा ACID गुणधर्मों का नुकसान है?",
+    options: [
+      "ACID गुणधर्म सिस्टम में अतिरिक्त प्रोसेसिंग का भार डालते हैं",
+      "ACID गुणधर्म डेटाबेस को अधिक असंगत बनाते हैं",
+      "ACID गुणधर्म डेटा को अस्थायी रूप से संग्रहीत करते हैं",
+      "ACID गुणधर्म डेटा सुरक्षा को कम करते हैं"
+    ],
+    answer: "ACID गुणधर्म सिस्टम में अतिरिक्त प्रोसेसिंग का भार डालते हैं"
+  },
+  {
+    question: "SQL में किसी दो टेबल को जोड़ने के लिए क्या आवश्यक है?",
+    options: [
+      "दोनों टेबल में एक सामान्य कॉलम होना चाहिए",
+      "दोनों टेबल का डेटा एक ही प्रकार का होना चाहिए",
+      "केवल एक ही टेबल होनी चाहिए",
+      "किसी सामान्य कॉलम की आवश्यकता नहीं होती"
+    ],
+    answer: "दोनों टेबल में एक सामान्य कॉलम होना चाहिए"
+  },
+  {
+    question: "यदि किसी लेनदेन का एक भाग विफल हो जाता है और पूरी प्रक्रिया को रोलबैक किया जाता है, तो इसे कौन-सा ACID गुणधर्म नियंत्रित करता है?",
+    options: [
+      "एटॉमिकिटी (Atomicity)",
+      "संगति (Consistency)",
+      "आइसोलेशन (Isolation)",
+      "स्थायित्व (Durability)"
+    ],
+    answer: "एटॉमिकिटी (Atomicity)"
+  },
+  {
+    question: "SQL में FULL JOIN का क्या कार्य है?",
+    options: [
+      "केवल उन पंक्तियों को लौटाता है जिनका दोनों टेबल में मेल होता है",
+      "केवल पहले टेबल की सभी पंक्तियों को प्राप्त करता है",
+      "केवल दूसरे टेबल की सभी पंक्तियों को प्राप्त करता है",
+      "दोनों टेबल की सभी पंक्तियों को प्राप्त करता है, चाहे मेल हो या न हो"
+    ],
+    answer: "दोनों टेबल की सभी पंक्तियों को प्राप्त करता है, चाहे मेल हो या न हो"
+  },
+  {
+    question: "SQL में INNER JOIN का उपयोग किसलिए किया जाता है?",
+    options: [
+      "सभी पंक्तियों को जोड़ने के लिए",
+      "केवल मेल खाने वाली पंक्तियों को जोड़ने के लिए",
+      "केवल पहले टेबल की पंक्तियों को जोड़ने के लिए",
+      "केवल दूसरे टेबल की पंक्तियों को जोड़ने के लिए"
+    ],
+    answer: "केवल मेल खाने वाली पंक्तियों को जोड़ने के लिए"
+  },
+  {
+    question: "RIGHT JOIN किस प्रकार की पंक्तियाँ लौटाता है?",
+    options: [
+      "केवल उन पंक्तियों को जिनका दोनों टेबल में मेल होता है",
+      "बाएँ टेबल की सभी पंक्तियाँ और दाएँ टेबल की मिलती हुई पंक्तियाँ",
+      "दाएँ टेबल की सभी पंक्तियाँ और बाएँ टेबल की मिलती हुई पंक्तियाँ",
+      "केवल दाएँ टेबल की मिलती हुई पंक्तियाँ"
+    ],
+    answer: "दाएँ टेबल की सभी पंक्तियाँ और बाएँ टेबल की मिलती हुई पंक्तियाँ"
+  },
+  {
+    question: "SQL में Subquery का उपयोग मुख्य रूप से किसके लिए किया जाता है?",
+    options: [
+      "डेटा को स्टोर करने के लिए",
+      "किसी मुख्य क्वेरी के लिए फ़िल्टरिंग या तुलना करने के लिए",
+      "नए टेबल बनाने के लिए",
+      "किसी डेटा को स्थायी रूप से हटाने के लिए"
+    ],
+    answer: "किसी मुख्य क्वेरी के लिए फ़िल्टरिंग या तुलना करने के लिए"
+  },
+  {
+    question: "SQL में Subquery को कहाँ रखा जाता है?",
+    options: [
+      "केवल SELECT स्टेटमेंट में",
+      "केवल FROM स्टेटमेंट में",
+      "WHERE, SELECT, FROM, या HAVING क्लॉज़ में",
+      "केवल UPDATE स्टेटमेंट में"
+    ],
+    answer: "WHERE, SELECT, FROM, या HAVING क्लॉज़ में"
+  },
+    {
+    question: "Subquery में Single-Row और Multi-Row Result का क्या अर्थ है?",
+    options: [
+      "केवल एक ही पंक्ति का परिणाम देगा",
+      "केवल एकाधिक पंक्तियों का परिणाम देगा",
+      "एक ही मान या मानों का सेट लौटाने की क्षमता होगी",
+      "केवल NULL मान लौटाएगा"
+    ],
+    answer: "एक ही मान या मानों का सेट लौटाने की क्षमता होगी"
+  },
+  {
+    question: "SQL में Subquery का उपयोग INSERT स्टेटमेंट में कैसे किया जा सकता है?",
+    options: [
+      "नए डेटा को किसी टेबल में सम्मिलित करने के लिए",
+      "डेटा को स्थायी रूप से हटाने के लिए",
+      "डेटा को अस्थायी रूप से संग्रहीत करने के लिए",
+      "डेटा को संपीड़ित (compress) करने के लिए"
+    ],
+    answer: "नए डेटा को किसी टेबल में सम्मिलित करने के लिए"
+  },
+  {
+    question: "Subquery का उपयोग करते समय Alias का क्या महत्व है?",
+    options: [
+      "यह केवल टेबल का नाम बदलने के लिए उपयोग किया जाता है",
+      "यह मुख्य क्वेरी और उप-क्वेरी के बीच संबंध स्थापित करने में मदद करता है",
+      "यह उप-क्वेरी को तेज़ी से निष्पादित करने में मदद करता है",
+      "इसका कोई विशेष महत्व नहीं होता"
+    ],
+    answer: "यह मुख्य क्वेरी और उप-क्वेरी के बीच संबंध स्थापित करने में मदद करता है"
+  },
+  {
+    question: "SQL में SUM() फ़ंक्शन का उपयोग किस लिए किया जाता है?",
+    options: [
+      "किसी कॉलम में संख्यात्मक मानों का औसत निकालने के लिए",
+      "किसी कॉलम में संख्यात्मक मानों का योग करने के लिए",
+      "किसी कॉलम में न्यूनतम मान खोजने के लिए",
+      "किसी कॉलम में अधिकतम मान खोजने के लिए"
+    ],
+    answer: "किसी कॉलम में संख्यात्मक मानों का योग करने के लिए"
+  },
+  {
+    question: "SQL में AVG() फ़ंक्शन का क्या कार्य है?",
+    options: [
+      "न्यूनतम मान खोजने के लिए",
+      "अधिकतम मान खोजने के लिए",
+      "औसत मान निकालने के लिए",
+      "कुल पंक्तियों की गणना करने के लिए"
+    ],
+    answer: "औसत मान निकालने के लिए"
+  },
+  {
+    question: "SQL में COUNT() फ़ंक्शन का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "किसी कॉलम के सभी मानों की गिनती करने के लिए",
+      "किसी कॉलम में सबसे बड़ा मान खोजने के लिए",
+      "किसी कॉलम में सबसे छोटा मान खोजने के लिए",
+      "किसी कॉलम में सभी NULL मानों की गणना करने के लिए"
+    ],
+    answer: "किसी कॉलम के सभी मानों की गिनती करने के लिए"
+  },
+  {
+    question: "SQL में MAX() फ़ंक्शन का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "किसी कॉलम में अधिकतम मान खोजने के लिए",
+      "किसी कॉलम में न्यूनतम मान खोजने के लिए",
+      "किसी कॉलम में सभी NULL मानों को हटाने के लिए",
+      "किसी कॉलम में सभी मानों की गिनती करने के लिए"
+    ],
+    answer: "किसी कॉलम में अधिकतम मान खोजने के लिए"
+  },
+  {
+    question: "SQL में MIN() फ़ंक्शन का क्या कार्य है?",
+    options: [
+      "किसी कॉलम में न्यूनतम मान खोजने के लिए",
+      "किसी कॉलम में अधिकतम मान खोजने के लिए",
+      "किसी कॉलम में सभी मानों की गिनती करने के लिए",
+      "किसी कॉलम के सभी NULL मानों को खोजने के लिए"
+    ],
+    answer: "किसी कॉलम में न्यूनतम मान खोजने के लिए"
+  },
+  {
+    question: "SQL में कौन सा फ़ंक्शन डेटा का सारांश (summary) निकालने के लिए उपयोग किया जाता है?",
+    options: [
+      "SELECT",
+      "UPDATE",
+      "DELETE",
+      "Aggregate Functions"
+    ],
+    answer: "Aggregate Functions"
+  },
+  {
+    question: "SQL में किस फंक्शन का उपयोग किसी कॉलम में संख्यात्मक मानों का योग (sum) निकालने के लिए किया जाता है?",
+    options: ["COUNT", "SUM", "AVG", "MAX"],
+    answer: "SUM"
+  },
+  {
+    question: "AVG फ़ंक्शन का क्या उपयोग है?",
+    options: [
+      "अधिकतम मान खोजने के लिए",
+      "न्यूनतम मान खोजने के लिए",
+      "किसी कॉलम के सभी मानों का औसत निकालने के लिए",
+      "कुल पंक्तियों की संख्या गिनने के लिए"
+    ],
+    answer: "किसी कॉलम के सभी मानों का औसत निकालने के लिए"
+  },
+  {
+    question: "MAX फ़ंक्शन का उपयोग किसलिए किया जाता है?",
+    options: [
+      "न्यूनतम मान खोजने के लिए",
+      "अधिकतम मान खोजने के लिए",
+      "सभी पंक्तियों की गणना करने के लिए",
+      "किसी कॉलम के सभी मानों का योग निकालने के लिए"
+    ],
+    answer: "अधिकतम मान खोजने के लिए"
+  },
+  {
+    question: "MIN फ़ंक्शन का उपयोग कब किया जाता है?",
+    options: [
+      "न्यूनतम मान खोजने के लिए",
+      "अधिकतम मान खोजने के लिए",
+      "कॉलम के सभी मानों का औसत निकालने के लिए",
+      "कॉलम के सभी मानों का योग निकालने के लिए"
+    ],
+    answer: "न्यूनतम मान खोजने के लिए"
+  },
+  {
+    question: "COUNT(*) SQL फ़ंक्शन क्या करता है?",
+    options: [
+      "सभी पंक्तियों की गणना करता है",
+      "केवल NULL मानों की गणना करता है",
+      "केवल NON-NULL मानों की गणना करता है",
+      "सभी NULL मानों को हटा देता है"
+    ],
+    answer: "सभी पंक्तियों की गणना करता है"
+  },
+  {
+    question: "INNER JOIN का उपयोग क्यों किया जाता है?",
+    options: [
+      "केवल पहली तालिका से डेटा प्राप्त करने के लिए",
+      "केवल दूसरी तालिका से डेटा प्राप्त करने के लिए",
+      "दोनों तालिकाओं के मिलते-जुलते डेटा को प्राप्त करने के लिए",
+      "दोनों तालिकाओं के सभी डेटा को प्राप्त करने के लिए"
+    ],
+    answer: "दोनों तालिकाओं के मिलते-जुलते डेटा को प्राप्त करने के लिए"
+  },
+  {
+    question: "LEFT JOIN में क्या होता है?",
+    options: [
+      "केवल दाईं तालिका के सभी डेटा को लाता है",
+      "बाईं तालिका के सभी डेटा को और दाईं तालिका से मिलते-जुलते डेटा को लाता है",
+      "केवल बाईं तालिका के सभी डेटा को लाता है",
+      "दोनों तालिकाओं के मिलते-जुलते डेटा को लाता है"
+    ],
+    answer: "बाईं तालिका के सभी डेटा को और दाईं तालिका से मिलते-जुलते डेटा को लाता है"
+  },
+  {
+    question: "RIGHT JOIN का परिणाम क्या होता है?",
+    options: [
+      "केवल बाईं तालिका के सभी डेटा को लाता है",
+      "केवल दाईं तालिका के सभी डेटा को लाता है",
+      "दाईं तालिका के सभी डेटा को और बाईं तालिका से मिलते-जुलते डेटा को लाता है",
+      "दोनों तालिकाओं के केवल मिलते-जुलते डेटा को लाता है"
+    ],
+    answer: "दाईं तालिका के सभी डेटा को और बाईं तालिका से मिलते-जुलते डेटा को लाता है"
+  },
+  {
+    question: "FULL OUTER JOIN में क्या होता है?",
+    options: [
+      "दोनों तालिकाओं के केवल मिलते-जुलते डेटा को लाता है",
+      "दोनों तालिकाओं के सभी डेटा को लाता है, भले ही उनका मिलान हो या न हो",
+      "केवल NULL मानों को निकालता है",
+      "केवल NON-NULL मानों को रखता है"
+    ],
+    answer: "दोनों तालिकाओं के सभी डेटा को लाता है, भले ही उनका मिलान हो या न हो"
+  },
+  {
+    question: "SQL में किसी कॉलम से यूनिक वैल्यू को प्राप्त करने के लिए कौन सा कमांड उपयोग किया जाता है?",
+    options: [
+      "SELECT DISTINCT",
+      "SELECT UNIQUE",
+      "SELECT DIFFERENT",
+      "SELECT DISTINCTIVE"
+    ],
+    answer: "SELECT DISTINCT"
+  },
+  {
+    question: "किस SQL फ़ंक्शन का उपयोग टेबल में कुल पंक्तियों की संख्या को लौटाने के लिए किया जाता है?",
+    options: [
+      "COUNT()",
+      "SUM()",
+      "TOTAL()",
+      "NUMBER()"
+    ],
+    answer: "COUNT()"
+  },
+  {
+    question: "कौन सा SQL क्लॉज रिकॉर्ड्स को किसी शर्त के आधार पर फ़िल्टर करने के लिए उपयोग किया जाता है?",
+    options: [
+      "SORT",
+      "GROUP BY",
+      "WHERE",
+      "ORDER BY"
+    ],
+    answer: "WHERE"
+  },
+  {
+    question: "कौन सा SQL स्टेटमेंट रिजल्ट सेट से डुप्लिकेट पंक्तियों को हटाने के लिए उपयोग किया जाता है?",
+    options: [
+      "DELETE DUPLICATES",
+      "REMOVE DUPLICATES",
+      "DISTINCT",
+      "FILTER UNIQUE"
+    ],
+    answer: "DISTINCT"
+  },
+  {
+    question: "SQL में GROUP BY क्लॉज क्या करता है?",
+    options: [
+      "डेटा को आरोही क्रम में क्रमबद्ध करता है",
+      "उन पंक्तियों को ग्रुप करता है जिनके स्पेसिफाइड कॉलम में समान मान होते हैं",
+      "किसी शर्त के आधार पर डेटा को फ़िल्टर करता है",
+      "कई टेबल को जोड़ता है"
+    ],
+    answer: "उन पंक्तियों को ग्रुप करता है जिनके स्पेसिफाइड कॉलम में समान मान होते हैं"
+  },
+  {
+    question: "किस फ़ंक्शन का उपयोग कॉलम में उच्चतम मान खोजने के लिए किया जाता है?",
+    options: [
+      "MAX()",
+      "HIGHEST()",
+      "TOP()",
+      "GREATEST()"
+    ],
+    answer: "MAX()"
+  },
+  {
+    question: "टेबल पर एक इंडेक्स बनाने के लिए कौन सा SQL कमांड उपयोग किया जाता है?",
+    options: [
+      "CREATE INDEX",
+      "ADD INDEX",
+      "INSERT INDEX",
+      "GENERATE INDEX"
+    ],
+    answer: "CREATE INDEX"
+  },
+    {
+    question: "SQL में SUM() फ़ंक्शन का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "कॉलम की अधिकतम मान निकालने के लिए",
+      "कॉलम की न्यूनतम मान निकालने के लिए",
+      "कॉलम के सभी मानों का योग निकालने के लिए",
+      "कॉलम में NULL मान गिनने के लिए"
+    ],
+    answer: "कॉलम के सभी मानों का योग निकालने के लिए"
+  },
+  {
+    question: "SQL में COUNT() फ़ंक्शन का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "कॉलम के सभी NULL मानों को गिनने के लिए",
+      "कॉलम में सभी अलग-अलग मानों को गिनने के लिए",
+      "टेबल में कुल पंक्तियों की संख्या निकालने के लिए",
+      "किसी कॉलम के अधिकतम मान निकालने के लिए"
+    ],
+    answer: "टेबल में कुल पंक्तियों की संख्या निकालने के लिए"
+  },
+  {
+    question: "SQL में क्लस्टर्ड इंडेक्स क्या करता है?",
+    options: [
+      "डेटा को किसी अलग स्थान पर स्टोर करता है",
+      "डेटा को फिजिकल ऑर्डर में स्टोर करता है",
+      "डेटा को एन्क्रिप्ट करता है",
+      "डेटा को अस्थायी रूप से स्टोर करता है"
+    ],
+    answer: "डेटा को फिजिकल ऑर्डर में स्टोर करता है"
+  },
+  {
+    question: "HAVING क्लॉज का उपयोग कब किया जाता है?",
+    options: [
+      "WHERE क्लॉज के साथ",
+      "GROUP BY क्लॉज के साथ",
+      "ORDER BY क्लॉज के साथ",
+      "INSERT स्टेटमेंट के साथ"
+    ],
+    answer: "GROUP BY क्लॉज के साथ"
+  },
+  {
+    question: "SQL में DISTINCT का उपयोग किसलिए किया जाता है?",
+    options: [
+      "टेबल से NULL मान हटाने के लिए",
+      "डुप्लिकेट मानों को हटाने के लिए",
+      "डेटा को सॉर्ट करने के लिए",
+      "टेबल को अपडेट करने के लिए"
+    ],
+    answer: "डुप्लिकेट मानों को हटाने के लिए"
+  },
+  {
+    question: "SQL में AVG() फ़ंक्शन का क्या कार्य है?",
+    options: [
+      "सभी मानों का जोड़ निकालना",
+      "अधिकतम मान निकालना",
+      "न्यूनतम मान निकालना",
+      "सभी मानों का औसत निकालना"
+    ],
+    answer: "सभी मानों का औसत निकालना"
+  },
+  {
+    question: "INDEX का उपयोग क्यों किया जाता है?",
+    options: [
+      "डेटा को डिलीट करने के लिए",
+      "डेटा को तेज़ी से खोजने के लिए",
+      "डेटा को अस्थायी रूप से स्टोर करने के लिए",
+      "डेटा को एनक्रिप्ट करने के लिए"
+    ],
+    answer: "डेटा को तेज़ी से खोजने के लिए"
+  },
+  {
+    question: "SQL में GROUP BY क्लॉज का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "डेटा को ग्रुप में व्यवस्थित करने के लिए",
+      "डेटा को सॉर्ट करने के लिए",
+      "डेटा को DELETE करने के लिए",
+      "टेबल को मर्ज करने के लिए"
+    ],
+    answer: "डेटा को ग्रुप में व्यवस्थित करने के लिए"
+  },
+  {
+    question: "SQL में ORDER BY का उपयोग क्या करता है?",
+    options: [
+      "डेटा को जोड़ने के लिए",
+      "डेटा को सॉर्ट करने के लिए",
+      "डेटा को डिलीट करने के लिए",
+      "डेटा को अपडेट करने के लिए"
+    ],
+    answer: "डेटा को सॉर्ट करने के लिए"
+  },
+  {
+    question: "SQL में WHERE क्लॉज का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "डेटा को फिल्टर करने के लिए",
+      "डेटा को जोड़ने के लिए",
+      "डेटा को मर्ज करने के लिए",
+      "डेटा को सॉर्ट करने के लिए"
+    ],
+    answer: "डेटा को फिल्टर करने के लिए"
+  },
+  {
+    question: "SQL में INDEX का उपयोग किसलिए किया जाता है?",
+    options: [
+      "डेटा को डिलीट करने के लिए",
+      "डेटा को तेजी से खोजने के लिए",
+      "डेटा को एनक्रिप्ट करने के लिए",
+      "डेटा को अस्थायी रूप से स्टोर करने के लिए"
+    ],
+    answer: "डेटा को तेजी से खोजने के लिए"
+  },
+  {
+    question: "SQL में क्लस्टर्ड इंडेक्स का क्या कार्य है?",
+    options: [
+      "डेटा को किसी अलग स्थान पर स्टोर करता है",
+      "डेटा को फिजिकल ऑर्डर में स्टोर करता है",
+      "डेटा को एन्क्रिप्ट करता है",
+      "डेटा को अस्थायी रूप से स्टोर करता है"
+    ],
+    answer: "डेटा को फिजिकल ऑर्डर में स्टोर करता है"
+  },
+  {
+    question: "नॉन-क्लस्टर्ड इंडेक्स किस प्रकार काम करता है?",
+    options: [
+      "डेटा को फिजिकल ऑर्डर में स्टोर करता है",
+      "डेटा को मुख्य टेबल से अलग स्टोर करता है और एड्रेस मैपिंग का उपयोग करता है",
+      "केवल प्राइमरी कीज़ के लिए काम करता है",
+      "डेटा को ऑटोमैटिकली डिलीट करता है"
+    ],
+    answer: "डेटा को मुख्य टेबल से अलग स्टोर करता है और एड्रेस मैपिंग का उपयोग करता है"
+  },
+  {
+    question: "SQL में STORED PROCEDURE क्या है?",
+    options: [
+      "एक प्री-डिफाइंड SQL क्वेरी का समूह",
+      "एक प्रकार का इंडेक्स",
+      "एक प्रकार का डेटा टाइप",
+      "एक प्रकार की टेबल"
+    ],
+    answer: "एक प्री-डिफाइंड SQL क्वेरी का समूह"
+  },
+  {
+    question: "स्टोर्ड प्रोसीजर को चलाने के लिए MySQL में कौन सा कमांड उपयोग किया जाता है?",
+    options: [
+      "EXEC GetEmployee(123);",
+      "RUN GetEmployee(123);",
+      "CALL GetEmployee(123);",
+      "START GetEmployee(123);"
+    ],
+    answer: "CALL GetEmployee(123);"
+  },
+  {
+    question: "SQL में PRIMARY KEY का मुख्य कार्य क्या है?",
+    options: [
+      "डुप्लिकेट डेटा को स्टोर करना",
+      "डेटा को एनक्रिप्ट करना",
+      "प्रत्येक पंक्ति की पहचान सुनिश्चित करना",
+      "डेटा को अस्थायी रूप से स्टोर करना"
+    ],
+    answer: "प्रत्येक पंक्ति की पहचान सुनिश्चित करना"
+  },
+  {
+    question: "स्टोर्ड प्रोसीजर को हटाने के लिए कौन सा SQL स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "DELETE PROCEDURE",
+      "DROP PROCEDURE",
+      "REMOVE PROCEDURE",
+      "TRUNCATE PROCEDURE"
+    ],
+    answer: "DROP PROCEDURE"
+  },
+  {
+    question: "HAVING क्लॉज का उपयोग कब किया जाता है?",
+    options: [
+      "WHERE क्लॉज के साथ",
+      "GROUP BY क्लॉज के साथ",
+      "ORDER BY क्लॉज के साथ",
+      "INSERT स्टेटमेंट के साथ"
+    ],
+    answer: "GROUP BY क्लॉज के साथ"
+  },
+  {
+    question: "SQL में DISTINCT का उपयोग किसलिए किया जाता है?",
+    options: [
+      "NULL मान हटाने के लिए",
+      "डुप्लिकेट मानों को हटाने के लिए",
+      "डेटा को सॉर्ट करने के लिए",
+      "डेटा को अपडेट करने के लिए"
+    ],
+    answer: "डुप्लिकेट मानों को हटाने के लिए"
+  },
+  {
+    question: "INDEX का उपयोग करने से क्या लाभ होता है?",
+    options: [
+      "क्वेरी की स्पीड बढ़ जाती है",
+      "डेटा स्टोरेज कम हो जाता है",
+      "टेबल में NULL मान हटा दिए जाते हैं",
+      "टेबल ऑटोमैटिकली अपडेट हो जाती है"
+    ],
+    answer: "क्वेरी की स्पीड बढ़ जाती है"
+  },
+  {
+    question: "Stored Procedure का मुख्य उद्देश्य क्या है?",
+    options: [
+      "डेटाबेस को डिलीट करना",
+      "बार-बार उपयोग होने वाले SQL स्टेटमेंट्स को संग्रहीत और निष्पादित करना",
+      "केवल डेटा को पढ़ना",
+      "डेटा को एनक्रिप्ट करना"
+    ],
+    answer: "बार-बार उपयोग होने वाले SQL स्टेटमेंट्स को संग्रहीत और निष्पादित करना"
+  },
+  {
+    question: "Stored Procedure को निष्पादित (execute) करने के लिए MySQL में कौन-सा कमांड उपयोग किया जाता है?",
+    options: ["EXEC", "CALL", "RUN", "START"],
+    answer: "CALL"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा स्टेटमेंट एक Stored Procedure को हटाने (delete) के लिए उपयोग किया जाता है?",
+    options: ["REMOVE PROCEDURE", "DELETE PROCEDURE", "DROP PROCEDURE", "ALTER PROCEDURE"],
+    answer: "DROP PROCEDURE"
+  },
+  {
+    question: "SQL में Stored Procedure को कौन-सा लाभ नहीं प्रदान करता है?",
+    options: [
+      "कोड पुन: उपयोग (Code Reusability)",
+      "बेहतर सुरक्षा (Better Security)",
+      "स्वचालित डेटा बैकअप (Automatic Data Backup)",
+      "तेज निष्पादन (Faster Execution)"
+    ],
+    answer: "स्वचालित डेटा बैकअप (Automatic Data Backup)"
+  },
+  {
+    question: "SQL Server में एक Stored Procedure को निष्पादित करने के लिए कौन-सा कमांड प्रयोग किया जाता है?",
+    options: ["EXEC", "RUN", "CALL", "PROCESS"],
+    answer: "EXEC"
+  },
+  {
+    question: "Stored Procedure में कौन-सा कंट्रोल फ्लो स्टेटमेंट उपयोग किया जा सकता है?",
+    options: ["IF-ELSE", "LOOP", "CASE", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "Stored Procedure में कौन-सा कथन गलत है?",
+    options: [
+      "यह डेटाबेस में संग्रहीत होता है",
+      "यह प्रोग्रामिंग लैंग्वेज का हिस्सा नहीं होता",
+      "इसे केवल एक बार चलाया जा सकता है",
+      "यह डेटाबेस सुरक्षा को बढ़ा सकता है"
+    ],
+    answer: "इसे केवल एक बार चलाया जा सकता है"
+  },
+  {
+    question: "ट्रिगर (Trigger) क्या है?",
+    options: [
+      "एक प्रकार की टेबल",
+      "डेटाबेस में एक स्वचालित प्रक्रिया जो किसी विशेष घटना पर निष्पादित होती है",
+      "डेटा को हटाने का एक तरीका",
+      "एक प्रकार की कुंजी (Key)"
+    ],
+    answer: "डेटाबेस में एक स्वचालित प्रक्रिया जो किसी विशेष घटना पर निष्पादित होती है"
+  },
+  {
+    question: "SQL में ट्रिगर कब निष्पादित होता है?",
+    options: [
+      "जब उपयोगकर्ता लॉग इन करता है",
+      "जब कोई टेबल या व्यू पर कोई विशिष्ट घटना (INSERT, UPDATE, DELETE) होती है",
+      "जब डेटाबेस स्टार्ट होता है",
+      "जब कोई फ़ंक्शन कॉल किया जाता है"
+    ],
+    answer: "जब कोई टेबल या व्यू पर कोई विशिष्ट घटना (INSERT, UPDATE, DELETE) होती है"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा ट्रिगर का प्रकार नहीं है?",
+    options: ["BEFORE ट्रिगर", "AFTER ट्रिगर", "ON DEMAND ट्रिगर", "INSTEAD OF ट्रिगर"],
+    answer: "ON DEMAND ट्रिगर"
+  },
+  {
+    question: "ट्रिगर का उपयोग क्यों किया जाता है?",
+    options: [
+      "डेटा को ऑटोमेटिक अपडेट करने के लिए",
+      "डेटा संशोधन को ट्रैक करने के लिए (Audit Trail)",
+      "बिजनेस लॉजिक लागू करने के लिए",
+      "उपरोक्त सभी"
+    ],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "SQL में Row-Level ट्रिगर का क्या अर्थ है?",
+    options: [
+      "ट्रिगर केवल एक ही बार निष्पादित होगा",
+      "ट्रिगर प्रत्येक प्रभावित पंक्ति (Row) के लिए निष्पादित होगा",
+      "ट्रिगर केवल स्टेटमेंट के स्तर पर कार्य करेगा",
+      "ट्रिगर तब निष्पादित होता है जब नया डेटाबेस बनाया जाता है"
+    ],
+    answer: "ट्रिगर प्रत्येक प्रभावित पंक्ति (Row) के लिए निष्पादित होगा"
+  },
+  {
+    question: "SQL में Cursor का उपयोग किसलिए किया जाता है?",
+    options: [
+      "टेबल को हटाने के लिए",
+      "एक-एक करके रिकॉर्ड को एक्सेस करने और प्रोसेस करने के लिए",
+      "डेटा एन्क्रिप्शन के लिए",
+      "केवल डेटा डालने (Insert) के लिए"
+    ],
+    answer: "एक-एक करके रिकॉर्ड को एक्सेस करने और प्रोसेस करने के लिए"
+  },
+  {
+    question: "किस स्टेटमेंट का उपयोग Cursor को खोलने के लिए किया जाता है?",
+    options: ["OPEN", "FETCH", "DECLARE", "CLOSE"],
+    answer: "OPEN"
+  },
+  {
+    question: "Cursor के साथ किस स्टेटमेंट का उपयोग डेटा को प्राप्त (fetch) करने के लिए किया जाता है?",
+    options: ["GET", "FETCH", "COLLECT", "RECEIVE"],
+    answer: "FETCH"
+  },
+  {
+    question: "SQL में ट्रिगर और स्टोरड प्रोसीजर (Stored Procedure) में क्या अंतर है?",
+    options: [
+      "स्टोरड प्रोसीजर को मैन्युअली कॉल करना पड़ता है, जबकि ट्रिगर ऑटोमेटिक चलता है",
+      "ट्रिगर को मैन्युअली कॉल करना पड़ता है, जबकि स्टोरड प्रोसीजर ऑटोमेटिक चलता है",
+      "ट्रिगर केवल SELECT क्वेरी पर काम करता है",
+      "स्टोरड प्रोसीजर केवल DELETE ऑपरेशन के लिए उपयोग होता है"
+    ],
+    answer: "स्टोरड प्रोसीजर को मैन्युअली कॉल करना पड़ता है, जबकि ट्रिगर ऑटोमेटिक चलता है"
+  },
+    {
+    question: "SQL में Cursor का मुख्य उद्देश्य क्या है?",
+    options: ["एक ही बार में पूरी टेबल प्रोसेस करना", "डेटा को स्थायी रूप से हटाना", "डेटा को रिकॉर्ड-दर-रिकॉर्ड प्रोसेस करना", "डेटाबेस स्कीमा बदलना"],
+    answer: "डेटा को रिकॉर्ड-दर-रिकॉर्ड प्रोसेस करना"
+  },
+  {
+    question: "SQL में कितने प्रकार के Cursors होते हैं?",
+    options: ["1", "2", "3", "4"],
+    answer: "2"
+  },
+  {
+    question: "Explicit Cursor का उपयोग कब किया जाता है?",
+    options: ["जब हम सभी रिकॉर्ड को एक साथ प्रोसेस करना चाहते हैं", "जब हमें प्रत्येक रिकॉर्ड को अलग-अलग प्रोसेस करने की आवश्यकता होती है", "जब डेटा को डिलीट करना हो", "जब नई टेबल बनानी हो"],
+    answer: "जब हमें प्रत्येक रिकॉर्ड को अलग-अलग प्रोसेस करने की आवश्यकता होती है"
+  },
+  {
+    question: "SQL में Implicit Cursor कब उपयोग होता है?",
+    options: ["जब कोई DML ऑपरेशन (INSERT, UPDATE, DELETE) निष्पादित होता है", "जब उपयोगकर्ता खुद Cursor बनाता है", "जब एक टेबल को हटा दिया जाता है", "जब डेटा को स्थायी रूप से सेव करना होता है"],
+    answer: "जब कोई DML ऑपरेशन (INSERT, UPDATE, DELETE) निष्पादित होता है"
+  },
+  {
+    question: "SQL में एक Cursor को खोलने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: ["OPEN", "FETCH", "EXEC", "DECLARE"],
+    answer: "OPEN"
+  },
+  {
+    question: "SQL में Cursor का उपयोग कब सबसे उपयुक्त होता है?",
+    options: ["जब डेटा को पूरी टेबल में अपडेट करना हो", "जब डेटा को बैच प्रोसेसिंग में प्रोसेस करना हो", "जब डेटा को रिकॉर्ड-दर-रिकॉर्ड प्रोसेस करना हो", "जब एक टेबल को स्थायी रूप से हटाना हो"],
+    answer: "जब डेटा को रिकॉर्ड-दर-रिकॉर्ड प्रोसेस करना हो"
+  },
+  {
+    question: "Cursor से डेटा प्राप्त करने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: ["SELECT", "FETCH NEXT", "RETRIEVE", "NEXT"],
+    answer: "FETCH NEXT"
+  },
+  {
+    question: "SQL में Cursor को बंद करने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: ["CLOSE", "DELETE", "END", "REMOVE"],
+    answer: "CLOSE"
+  },
+  {
+    question: "कर्सर को मेमोरी से मुक्त करने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: ["DROP", "REMOVE", "DEALLOCATE", "DELETE"],
+    answer: "DEALLOCATE"
+  },
+  {
+    question: "SQL में एक Cursor को कब DEALLOCATE करना चाहिए?",
+    options: ["जब Cursor का उपयोग बंद हो गया हो और इसे मेमोरी से हटाना हो", "जब एक नया Cursor बनाना हो", "जब डेटा को अपडेट करना हो", "जब डेटा को पुनः लोड करना हो"],
+    answer: "जब Cursor का उपयोग बंद हो गया हो और इसे मेमोरी से हटाना हो"
+  },
+  {
+    question: "Cursor में कौन-से Control Structures उपयोग किए जा सकते हैं?",
+    options: ["IF...ELSE", "WHILE", "LOOP", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "MySQL में Cursor के लिए कौन-सा सिंटैक्स सही है?",
+    options: [
+      "DECLARE cursor_name CURSOR FOR SELECT * FROM table_name;",
+      "CREATE cursor_name CURSOR FOR SELECT * FROM table_name;",
+      "OPEN CURSOR cursor_name;",
+      "DROP CURSOR cursor_name;"
+    ],
+    answer: "DECLARE cursor_name CURSOR FOR SELECT * FROM table_name;"
+  },
+  {
+    question: "SQL में FETCH स्टेटमेंट का उपयोग किसके लिए किया जाता है?",
+    options: ["टेबल से डेटा प्राप्त करने के लिए", "अगले रिकॉर्ड को प्राप्त करने के लिए", "Cursor को डिलीट करने के लिए", "डेटा को अपडेट करने के लिए"],
+    answer: "अगले रिकॉर्ड को प्राप्त करने के लिए"
+  },
+  {
+    question: "SQL में WHILE @@FETCH_STATUS = 0 का क्या उपयोग है?",
+    options: ["यह जांचता है कि Cursor में और रिकॉर्ड बचे हैं या नहीं", "यह डेटा को डिलीट करता है", "यह डेटा को अपडेट करता है", "यह नई टेबल बनाता है"],
+    answer: "यह जांचता है कि Cursor में और रिकॉर्ड बचे हैं या नहीं"
+  },
+  {
+    question: "SQL में एक Cursor को सीधे हटाने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: ["CLOSE", "DROP", "DELETE", "DEALLOCATE"],
+    answer: "DEALLOCATE"
+  },
+  {
+    question: "SQL में Trigger क्या होता है?",
+    options: ["एक प्रकार का स्टोर्ड प्रोसीजर जो ऑटोमेटिकली एक्सीक्यूट होता है", "डेटा को स्थायी रूप से डिलीट करने के लिए उपयोग किया जाता है", "एक प्रकार का कर्सर होता है", "एक प्रकार का इंडेक्स होता है"],
+    answer: "एक प्रकार का स्टोर्ड प्रोसीजर जो ऑटोमेटिकली एक्सीक्यूट होता है"
+  },
+  {
+    question: "SQL में Triggers कब फायर होते हैं?",
+    options: ["DML ऑपरेशन (INSERT, UPDATE, DELETE) के दौरान", "DDL ऑपरेशन (CREATE, ALTER, DROP) के दौरान", "डेटाबेस इवेंट्स (LOGON, LOGOFF, STARTUP, SHUTDOWN) के दौरान", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+   {
+    question: "किस प्रकार के ट्रिगर का उपयोग तब किया जाता है जब किसी टेबल में बदलाव से पहले कुछ लॉजिक एक्सीक्यूट करना हो?",
+    options: ["AFTER ट्रिगर", "INSTEAD OF ट्रिगर", "BEFORE ट्रिगर", "DISABLE ट्रिगर"],
+    answer: "BEFORE ट्रिगर"
+  },
+  {
+    question: "किस प्रकार के ट्रिगर का उपयोग तब किया जाता है जब किसी टेबल में बदलाव के बाद कुछ लॉजिक एक्सीक्यूट करना हो?",
+    options: ["BEFORE ट्रिगर", "AFTER ट्रिगर", "INSTEAD OF ट्रिगर", "SYSTEM ट्रिगर"],
+    answer: "AFTER ट्रिगर"
+  },
+  {
+    question: "INSTEAD OF ट्रिगर का मुख्य उपयोग क्या है?",
+    options: [
+      "यह एक टेबल में डेटा को स्टोर करता है",
+      "यह व्यूज़ (Views) पर ट्रिगर्स लगाने के लिए उपयोग किया जाता है",
+      "यह डेटाबेस को डिलीट करने के लिए उपयोग किया जाता है",
+      "यह एक प्रकार का ऑटोमेटिक इंडेक्स होता है"
+    ],
+    answer: "यह व्यूज़ (Views) पर ट्रिगर्स लगाने के लिए उपयोग किया जाता है"
+  },
+  {
+    question: "SQL में Table-Level Trigger और Row-Level Trigger में क्या अंतर है?",
+    options: [
+      "Row-Level ट्रिगर हर रिकॉर्ड के लिए चलता है, जबकि Table-Level ट्रिगर पूरी टेबल के लिए एक बार चलता है",
+      "दोनों समान होते हैं",
+      "Table-Level ट्रिगर हर रिकॉर्ड के लिए चलता है, जबकि Row-Level ट्रिगर पूरी टेबल के लिए एक बार चलता है",
+      "कोई अंतर नहीं है"
+    ],
+    answer: "Row-Level ट्रिगर हर रिकॉर्ड के लिए चलता है, जबकि Table-Level ट्रिगर पूरी टेबल के लिए एक बार चलता है"
+  },
+  {
+    question: "SQL में ट्रिगर का उपयोग किसके लिए किया जाता है?",
+    options: ["डेटा को वेरिफाई करने के लिए", "ऑडिटिंग के लिए", "सिक्योरिटी लागू करने के लिए", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "ट्रिगर में OLD और NEW कीवर्ड का उपयोग कब किया जाता है?",
+    options: [
+      "केवल INSERT ऑपरेशन के लिए",
+      "केवल DELETE ऑपरेशन के लिए",
+      "INSERT, UPDATE, DELETE ऑपरेशनों में पुराने और नए डेटा को संदर्भित करने के लिए",
+      "केवल SELECT ऑपरेशन के लिए"
+    ],
+    answer: "INSERT, UPDATE, DELETE ऑपरेशनों में पुराने और नए डेटा को संदर्भित करने के लिए"
+  },
+  {
+    question: "SQL में एक ट्रिगर बनाने के लिए सही सिंटैक्स क्या है?",
+    options: [
+      "CREATE TRIGGER trigger_name ON table_name AFTER INSERT",
+      "DECLARE TRIGGER trigger_name FOR table_name",
+      "TRIGGER trigger_name CREATE AFTER INSERT ON table_name",
+      "SET TRIGGER trigger_name ON table_name"
+    ],
+    answer: "CREATE TRIGGER trigger_name ON table_name AFTER INSERT"
+  },
+  {
+    question: "नीचे दिए गए ट्रिगर में क्या गलत है?\nCREATE TRIGGER trg_Test\nAFTER INSERT ON Customers\nFOR EACH TABLE\nBEGIN\n   INSERT INTO AuditLog VALUES ('Insert operation performed');\nEND;",
+    options: [
+      "AFTER INSERT की जगह BEFORE INSERT होना चाहिए",
+      "FOR EACH TABLE को FOR EACH ROW से बदलना चाहिए",
+      "BEGIN...END ब्लॉक नहीं होना चाहिए",
+      "इसमें कोई गलती नहीं है"
+    ],
+    answer: "FOR EACH TABLE को FOR EACH ROW से बदलना चाहिए"
+  },
+  {
+    question: "ट्रिगर को डिसेबल करने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "ALTER TRIGGER trigger_name DISABLE;",
+      "DROP TRIGGER trigger_name;",
+      "DELETE TRIGGER trigger_name;",
+      "REMOVE TRIGGER trigger_name;"
+    ],
+    answer: "ALTER TRIGGER trigger_name DISABLE;"
+  },
+  {
+    question: "ट्रिगर को हटाने के लिए कौन-सा स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "DROP TRIGGER trigger_name;",
+      "DELETE TRIGGER trigger_name;",
+      "REMOVE TRIGGER trigger_name;",
+      "DISABLE TRIGGER trigger_name;"
+    ],
+    answer: "DROP TRIGGER trigger_name;"
+  },
+  {
+    question: "ट्रिगर में WHEN क्लॉज़ का उपयोग कब किया जाता है?",
+    options: [
+      "केवल AFTER ट्रिगर के लिए",
+      "केवल BEFORE ट्रिगर के लिए",
+      "केवल ROW-LEVEL ट्रिगर में",
+      "केवल TABLE-LEVEL ट्रिगर में"
+    ],
+    answer: "केवल ROW-LEVEL ट्रिगर में"
+  },
+  {
+    question: "ट्रिगर में कौन-सा डेटा संशोधित नहीं किया जा सकता?",
+    options: [
+      "INSERTED डेटा",
+      "DELETED डेटा",
+      "OLD डेटा",
+      "NEW डेटा"
+    ],
+    answer: "OLD डेटा"
+  },
+  {
+    question: "किस स्थिति में ट्रिगर को नहीं चलाया जा सकता?",
+    options: [
+      "जब ट्रिगर डिसेबल हो",
+      "जब टेबल में डेटा न हो",
+      "जब ट्रिगर में सिंटैक्स एरर हो",
+      "उपरोक्त सभी"
+    ],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "SQL में Cursor क्या होता है?",
+    options: [
+      "डेटा को स्थायी रूप से स्टोर करने के लिए उपयोग किया जाता है",
+      "एक प्रकार का स्टोर्ड प्रोसीजर होता है",
+      "डेटा को row-by-row प्रोसेस करने के लिए उपयोग किया जाता है",
+      "डेटाबेस को डिलीट करने के लिए उपयोग किया जाता है"
+    ],
+    answer: "डेटा को row-by-row प्रोसेस करने के लिए उपयोग किया जाता है"
+  },
+  {
+    question: "SQL में Cursor का मुख्य उपयोग कब किया जाता है?",
+    options: [
+      "जब हमें पूरे डेटा सेट पर एक साथ प्रोसेसिंग करनी हो",
+      "जब हमें एक ही row को बार-बार अपडेट करना हो",
+      "जब हमें row-by-row प्रोसेसिंग करनी हो",
+      "जब हमें डेटाबेस को ड्रॉप करना हो"
+    ],
+    answer: "जब हमें row-by-row प्रोसेसिंग करनी हो"
+  },
+  {
+    question: "Cursor के लाइफ साइकल में पहला स्टेप कौन-सा होता है?",
+    options: [
+      "FETCH",
+      "CLOSE",
+      "DECLARE",
+      "DEALLOCATE"
+    ],
+    answer: "DECLARE"
+  },
+  {
+    question: "Cursor को डेटा स्टोर करने के लिए खोलने के लिए कौन-सा कमांड उपयोग किया जाता है?",
+    options: [
+      "DECLARE cursor_name;",
+      "OPEN cursor_name;",
+      "FETCH cursor_name;",
+      "CLOSE cursor_name;"
+    ],
+    answer: "OPEN cursor_name;"
+  },
+  {
+    question: "SQL में एक cursor को बंद करने के लिए कौन-सा कमांड उपयोग किया जाता है?",
+    options: [
+      "END cursor_name;",
+      "CLOSE cursor_name;",
+      "STOP cursor_name;",
+      "DISABLE cursor_name;"
+    ],
+    answer: "CLOSE cursor_name;"
+  },
+  {
+    question: "SQL में एक cursor को पूरी तरह से हटाने के लिए कौन-सा कमांड उपयोग किया जाता है?",
+    options: [
+      "CLOSE cursor_name;",
+      "DROP cursor_name;",
+      "DEALLOCATE cursor_name;",
+      "DELETE cursor_name;"
+    ],
+    answer: "DEALLOCATE cursor_name;"
+  },
+  {
+    question: "SQL में Cursor के कितने प्रकार होते हैं?",
+    options: [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    answer: "4"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा Cursor केवल आगे की दिशा में मूव कर सकता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Forward-Only Cursor",
+      "Keyset Cursor"
+    ],
+    answer: "Forward-Only Cursor"
+  },
+  {
+    question: "कौन-सा Cursor सभी अपडेट्स और डिलीशन को पहचान सकता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Keyset Cursor",
+      "Forward-Only Cursor"
+    ],
+    answer: "Dynamic Cursor"
+  },
+  {
+    question: "कौन-सा Cursor टेम्पररी डेटा स्टोर करता है और केवल read-only होता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Keyset Cursor",
+      "Forward-Only Cursor"
+    ],
+    answer: "Static Cursor"
+  },
+  {
+    question: "SQL में FETCH स्टेटमेंट किसके लिए उपयोग किया जाता है?",
+    options: [
+      "Cursor को बंद करने के लिए",
+      "Cursor से अगली row प्राप्त करने के लिए",
+      "Cursor को ओपन करने के लिए",
+      "Cursor को डिलीट करने के लिए"
+    ],
+    answer: "Cursor से अगली row प्राप्त करने के लिए"
+  },
+  {
+    question: "SQL में @@FETCHSTATUS का उपयोग किस लिए किया जाता है?",
+    options: [
+      "यह बताने के लिए कि FETCH स्टेटमेंट सफल हुआ या नहीं",
+      "यह बताने के लिए कि Cursor ओपन है या नहीं",
+      "यह बताने के लिए कि Cursor को डिलीट किया गया या नहीं",
+      "यह बताने के लिए कि Cursor को क्लोज़ किया गया या नहीं"
+    ],
+    answer: "यह बताने के लिए कि FETCH स्टेटमेंट सफल हुआ या नहीं"
+  },
+    {
+    question: "SQL में कौन-सा Cursor डिफ़ॉल्ट होता है?",
+    options: [
+      "Forward-Only Cursor",
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Keyset Cursor"
+    ],
+    answer: "Forward-Only Cursor"
+  },
+  {
+    question: "SQL में एक Cursor में लूपिंग करने के लिए किस स्टेटमेंट का उपयोग किया जाता है?",
+    options: [
+      "FOR",
+      "WHILE @@FETCH_STATUS = 0",
+      "LOOP",
+      "DO-WHILE"
+    ],
+    answer: "WHILE @@FETCH_STATUS = 0"
+  },
+  {
+    question: "कौन-सा Cursor एक स्टेटिक और डायनामिक Cursor के बीच की विशेषताओं को साझा करता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Keyset Cursor",
+      "Forward-Only Cursor"
+    ],
+    answer: "Keyset Cursor"
+  },
+  {
+    question: "SQL Server में Cursor क्या होता है?",
+    options: [
+      "यह एक Looping Structure है",
+      "यह एक Temporary Table है",
+      "यह Row-by-Row डेटा प्रोसेस करने का एक तरीका है",
+      "यह केवल SELECT क्वेरी के लिए उपयोग होता है"
+    ],
+    answer: "यह Row-by-Row डेटा प्रोसेस करने का एक तरीका है"
+  },
+  {
+    question: "Cursor को Declare करने के लिए सही सिंटैक्स क्या है?",
+    options: [
+      "DECLARE cursor_name CURSOR FOR SELECT * FROM table_name;",
+      "DECLARE CURSOR cursor_name FOR SELECT * FROM table_name;",
+      "DECLARE cursor_name AS CURSOR FOR SELECT * FROM table_name;",
+      "DECLARE cursor_name CURSOR := SELECT * FROM table_name;"
+    ],
+    answer: "DECLARE cursor_name CURSOR FOR SELECT * FROM table_name;"
+  },
+  {
+    question: "Cursor को Open करने के लिए कौन सा स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "START cursor_name;",
+      "OPEN cursor_name;",
+      "FETCH cursor_name;",
+      "RUN cursor_name;"
+    ],
+    answer: "OPEN cursor_name;"
+  },
+  {
+    question: "SQL Server में कितने प्रकार के Cursor होते हैं?",
+    options: [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    answer: "4"
+  },
+  {
+    question: "किस प्रकार का Cursor केवल आगे की दिशा में मूव करता है और सबसे तेज़ होता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Forward-Only Cursor",
+      "Keyset Cursor"
+    ],
+    answer: "Forward-Only Cursor"
+  },
+  {
+    question: "Cursor को पूरी तरह से हटाने के लिए कौन सा कमांड उपयोग किया जाता है?",
+    options: [
+      "DROP cursor_name;",
+      "DELETE cursor_name;",
+      "DEALLOCATE cursor_name;",
+      "CLOSE cursor_name;"
+    ],
+    answer: "DEALLOCATE cursor_name;"
+  },
+  {
+    question: "SQL Server में Cursor का मुख्य नुकसान क्या है?",
+    options: [
+      "यह बहुत तेज़ होता है",
+      "यह बहुत अधिक मेमोरी उपयोग करता है",
+      "यह केवल SELECT क्वेरी को सपोर्ट करता है",
+      "यह Result Set को स्टोर नहीं कर सकता"
+    ],
+    answer: "यह बहुत अधिक मेमोरी उपयोग करता है"
+  },
+  {
+    question: "किस प्रकार का Cursor तब भी अपडेट दिखाता है जब Cursor Open रहता है?",
+    options: [
+      "Static Cursor",
+      "Dynamic Cursor",
+      "Forward-Only Cursor",
+      "Keyset Cursor"
+    ],
+    answer: "Dynamic Cursor"
+  },
+  {
+    question: "Cursor का उपयोग कब किया जाना चाहिए?",
+    options: [
+      "जब हमें बड़े डेटा सेट को प्रोसेस करना हो",
+      "जब Row-by-Row डेटा अपडेट करना ज़रूरी हो",
+      "जब WHILE Loop उपयोग नहीं कर सकते",
+      "जब हमें Multi-Threading चाहिए"
+    ],
+    answer: "जब Row-by-Row डेटा अपडेट करना ज़रूरी हो"
+  },
+  {
+  question: "Cursor से अगली Row लाने के लिए कौन सा स्टेटमेंट उपयोग होता है?",
+  options: [
+    "NEXT cursor_name;",
+    "FETCH NEXT FROM cursor_name INTO variables;",
+    "GET NEXT cursor_name;",
+    "MOVE NEXT cursor_name;"
+  ],
+  answer: "FETCH NEXT FROM cursor_name INTO variables;"
+}
+];
+
+let quizData = []; // This will hold the selected subset of questions
+let currentQuestion = 0;
+let selectedAnswers = [];
+let skippedQuestions = [];
+let totalTime = 50 * 60; // 50 minutes in seconds
+let timerInterval;
+let quizStarted = false;
+
+// --- Confirmation Pop-up on Refresh/Close ---
+window.addEventListener('beforeunload', function (event) {
+    if (quizStarted && totalTime > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+// --- End Confirmation Pop-up ---
+
+
+function startTimer() {
+    updateTimer();
+    timerInterval = setInterval(() => {
+        totalTime--;
+        updateTimer();
+        if (totalTime <= 0) {
+            clearInterval(timerInterval);
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startQuiz() {
+    const selectedRadio = document.querySelector('input[name="questionSet"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a question set to start the quiz.");
+        return;
+    }
+    const selectedValue = selectedRadio.value;
+
+    if (selectedValue.startsWith('set_')) {
+        const setIndex = parseInt(selectedValue.split('_')[1]);
+        const startIndex = setIndex * 25;
+        const endIndex = startIndex + 25;
+        quizData = fullQuizData.slice(startIndex, endIndex);
+    } else if (selectedValue === 'full') {
+        quizData = shuffleArray([...fullQuizData]); // Shuffle all questions for full test
+    } else {
+        // Default to a 25 question set if something unexpected happens
+        quizData = shuffleArray([...fullQuizData]).slice(0, 25);
+    }
+
+    selectedAnswers = new Array(quizData.length).fill(null);
+    skippedQuestions = new Array(quizData.length).fill(false);
+    currentQuestion = 0;
+    quizStarted = true;
+
+    document.getElementById('quantitySelection').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+
+    loadQuestion();
+    startTimer();
+}
+
+
+function loadQuestion() {
+    if(quizData.length === 0) {
+        document.getElementById('question').innerText = "No questions available.";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('prevBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        updateQuestionTracker();
+        return;
+    }
+    const q = quizData[currentQuestion];
+    document.getElementById('question').innerText = `${currentQuestion + 1}. ${q.question}`;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = "";
+
+    const isCurrentQuestionAnswered = (selectedAnswers[currentQuestion] !== null) || skippedQuestions[currentQuestion];
+
+    q.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.classList.add("option-btn");
+        btn.innerText = option;
+        btn.setAttribute("role", "listitem");
+        btn.onclick = () => selectOption(option, btn);
+
+        if(isCurrentQuestionAnswered) {
+            btn.disabled = true;
+            if (option === q.answer) {
+                btn.classList.add("correct");
+            } else if (option === selectedAnswers[currentQuestion]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            if(selectedAnswers[currentQuestion] === option) {
+                btn.classList.add("selected");
+            }
+        }
+        optionsDiv.appendChild(btn);
+    });
+
+    document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+    document.getElementById('nextBtn').disabled = currentQuestion === quizData.length -1 || totalTime <= 0;
+    document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+    document.getElementById('skipBtn').disabled = totalTime <= 0;
+    document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+    updateQuestionTracker();
+}
+
+function selectOption(option, clickedButton) {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    selectedAnswers[currentQuestion] = option;
+    skippedQuestions[currentQuestion] = false;
+
+    const q = quizData[currentQuestion];
+    const isCorrect = (option === q.answer);
+
+    const optionButtons = document.querySelectorAll('#options .option-btn');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === q.answer) {
+            btn.classList.add("correct");
+        } else if (btn === clickedButton && !isCorrect) {
+            btn.classList.add("incorrect");
+        }
+        btn.classList.remove("selected");
+    });
+
+    updateQuestionTracker();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function skipQuestion() {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    skippedQuestions[currentQuestion] = true;
+    selectedAnswers[currentQuestion] = null;
+    updateQuestionTracker();
+    nextQuestion();
+}
+
+function updateQuestionTracker() {
+    const tracker = document.getElementById("questionTracker");
+    tracker.innerHTML = "";
+    quizData.forEach((_, index) => {
+        const indicator = document.createElement("div");
+        indicator.classList.add("question-indicator");
+
+        if(selectedAnswers[index] !== null) {
+            indicator.classList.add("answered");
+            indicator.classList.remove("skipped");
+        } else if(skippedQuestions[index]) {
+            indicator.classList.add("skipped");
+            indicator.classList.remove("answered");
+        } else {
+            indicator.classList.remove("answered", "skipped");
+        }
+
+        if(index === currentQuestion) {
+            indicator.classList.add("active");
+        }
+        indicator.innerText = index + 1;
+        indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${selectedAnswers[index] !== null ? 'answered' : skippedQuestions[index] ? 'skipped' : 'not attempted'}`);
+        indicator.onclick = () => {
+            if(totalTime <= 0) return;
+            currentQuestion = index;
+            loadQuestion();
+        };
+        tracker.appendChild(indicator);
+    });
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizStarted = false;
+    document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+    document.getElementById("prevBtn").disabled = true;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("submitBtn").disabled = true;
+
+    let correctCount = 0;
+    let incorrectQuestions = [];
+
+    quizData.forEach((q, i) => {
+        if (selectedAnswers[i] !== null) {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        } else if (skippedQuestions[i]) {
+             incorrectQuestions.push({
+                question: q.question,
+                yourAnswer: "(Skipped)",
+                correctAnswer: q.answer
+            });
+        }
+    });
+
+    sessionStorage.setItem('quizScore', correctCount);
+    sessionStorage.setItem('quizTotal', quizData.length);
+    sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+    // Redirect to results page, ensure you have a results.html file
+    window.location.href = "results.html";
+}
+
+
+// Event Listener for Skip Button
+document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+// Function to generate quantity selection radio buttons
+function generateQuantityOptions() {
+    const radioOptionsDiv = document.getElementById('radioOptions');
+    radioOptionsDiv.innerHTML = ''; // Clear existing options
+
+    const totalQuestions = fullQuizData.length;
+    const questionsPerSet = 25;
+    const num25QuestionSets = Math.floor(totalQuestions / questionsPerSet);
+    const remainingQuestions = totalQuestions % questionsPerSet;
+
+    // Add 25-question sets
+    for (let i = 0; i < num25QuestionSets; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${i}" ${i === 0 ? 'checked' : ''}> Set ${i + 1} (${questionsPerSet} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add a set for remaining questions if any
+    if (remainingQuestions > 0) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${num25QuestionSets}"> Set ${num25QuestionSets + 1} (${remainingQuestions} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add Full Test option
+    const fullTestLabel = document.createElement('label');
+    fullTestLabel.innerHTML = `
+        <input type="radio" name="questionSet" value="full" ${num25QuestionSets === 0 && remainingQuestions === 0 ? 'checked' : ''}> Full Test (${totalQuestions} Questions)
+    `;
+    radioOptionsDiv.appendChild(fullTestLabel);
+}
+
+// Initialize quiz setup on page load
+window.onload = function() {
+    document.getElementById('quiz').style.display = 'none'; // Hide quiz initially
+    document.getElementById('timer').style.display = 'none'; // Hide timer initially
+    generateQuantityOptions(); // Populate radio buttons
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>Entrepreneurship Development</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+नेतृत्व और नेतृत्व के गुण (Leadership and Leadership Traits)
+यह सामग्री नेतृत्व (leadership) की परिभाषा, एक अच्छे नेता में पाए जाने वाले व्यक्तिगत गुण, और तनाव प्रबंधन (stress management) और समय प्रबंधन (time management) जैसी महत्वपूर्ण अवधारणाओं पर केंद्रित है। इसमें उद्यमिता (entrepreneurship) और एक उद्यमी (entrepreneur) के आवश्यक गुणों की भी चर्चा की गई है।
+________________________________________
+नेतृत्व और नेता के गुण (Leadership and Leader's Qualities)
+नेतृत्व को दूसरों को स्वेच्छा से अनुसरण करने की क्षमता के रूप में परिभाषित किया जा सकता है। एक प्रभावी नेता में एक स्पष्ट दृष्टि (vision) होती है, और वह उसे दूसरों के साथ साझा कर सकता है और उस पर कार्य कर सकता है। एक अच्छे नेता में कुछ व्यक्तिगत गुण होने चाहिए:
+•	अनुकरणीय चरित्र (Exemplary Character): एक नेता का भरोसेमंद और ईमानदार होना अत्यंत महत्वपूर्ण है।
+•	उत्साह (Enthusiasm): अपने काम या उद्देश्य के प्रति उत्साही होना और दूसरों को प्रेरित करना।
+•	आत्मविश्वास (Confidence): आत्मविश्वास से भरे होने पर ही दूसरे लोग उस पर भरोसा करते हैं।
+•	विश्लेषणात्मक सोच (Analytical Thinking): किसी भी स्थिति को समग्र रूप से देखने और उसे छोटे-छोटे हिस्सों में तोड़ने की क्षमता।
+•	उत्कृष्टता के प्रति प्रतिबद्धता (Commitment to Excellence): उच्च मानकों को बनाए रखना और लगातार उनमें सुधार करना।
+ये सभी गुण एक अच्छे नेता के लिए नींव का काम करते हैं, और उन्हें विकसित और मजबूत किया जा सकता है।
+________________________________________
+समय प्रबंधन (Time Management)
+समय प्रबंधन विशिष्ट गतिविधियों पर खर्च किए गए समय की मात्रा को योजनाबद्ध तरीके से नियंत्रित करने की प्रक्रिया है, ताकि प्रभावशीलता और उत्पादकता बढ़ाई जा सके।
+•	समय प्रबंधन के तत्व: योजना बनाना, लक्ष्यों को निर्धारित करना, कार्यों को प्राथमिकता देना, और समय का विश्लेषण करना।
+•	समय प्रबंधन के लाभ: यह तनाव को कम करता है, कम समय में अधिक काम करने में मदद करता है, गलतियों और दोबारा काम करने की संभावना को घटाता है, और अधिक अवसर पैदा करता है।
+________________________________________
+तनाव प्रबंधन (Stress Management)
+तनाव (Stress) एक नकारात्मक अवधारणा है जो व्यक्ति के मानसिक और शारीरिक स्वास्थ्य पर बुरा प्रभाव डाल सकती है। यह तब उत्पन्न होता है जब नौकरी की मांग और कर्मचारी की क्षमताओं या संसाधनों के बीच तालमेल खराब होता है।
+तनाव प्रबंधन (Stress Management) तनाव को रोकने के लिए संगठनात्मक परिवर्तन और प्रबंधन तकनीकों का एक संयोजन है। तनाव को प्रभावी ढंग से प्रबंधित करने के कुछ सुझाव:
+•	अपने तनाव के कारणों को पहचानें: सबसे पहले, उन चीजों को पहचानें जो आपको तनाव देती हैं।
+•	सकारात्मक दृष्टिकोण रखें: सकारात्मक सोच तनाव को कम करने में मदद करती है।
+•	गहरी साँस लें और आराम की तकनीकें अपनाएँ: ध्यान और योग का अभ्यास करें।
+•	नियमित व्यायाम करें: एक फिट शरीर तनाव से बेहतर लड़ सकता है।
+•	स्वस्थ भोजन खाएं और पर्याप्त आराम करें: उचित पोषण और नींद तनाव को कम करने के लिए महत्वपूर्ण हैं।
+•	जो आप नियंत्रित नहीं कर सकते, उसे स्वीकार करें: कुछ घटनाओं को स्वीकार करना सीखें।
+________________________________________
+उद्यमिता और उद्यमी के गुण (Entrepreneurship and Entrepreneur's Traits)
+उद्यमिता (Entrepreneurship) एक नया व्यवसाय शुरू करने, उसे लॉन्च करने और चलाने की प्रक्रिया है। यह लाभ कमाने के लिए किसी व्यवसाय उद्यम को विकसित करने, व्यवस्थित करने और प्रबंधित करने की इच्छा और क्षमता है।
+एक उद्यमी (Entrepreneur) वह व्यक्ति होता है जो जोखिम उठाता है और मानव कल्याण के लिए उपयोगिता पैदा करने के लिए एक नया व्यवसाय स्थापित करता है। एक उद्यमी में कुछ आवश्यक गुण होते हैं:
+•	जोखिम लेने की क्षमता (Risk Taking Capability): हर व्यवसाय में जोखिम होता है, इसलिए एक उद्यमी में जोखिम लेने की क्षमता होनी चाहिए।
+•	रचनात्मकता और नवाचार (Creativity and Innovation): वह रचनात्मक और नवीन विचारों का आरंभकर्ता होता है।
+•	उपलब्धि की आवश्यकता (Need for Achievement): उसके पास व्यवसाय के लक्ष्यों को प्राप्त करने की प्रबल इच्छा होती है।
+•	आत्मनिर्भरता (Self-confidence): उसे खुद पर विश्वास होता है।
+•	नेतृत्व क्षमता (Leadership Capability): उसमें अपने कर्मचारियों का नेतृत्व करने की क्षमता होती है।
+•	निर्णय लेने की क्षमता (Decision Making Capability): वह जल्दी निर्णय ले सकता है।
+•	दूरदर्शिता (Foresightness): उसमें भविष्य के कारोबारी माहौल को समझने की दूरदर्शिता होती है।
+________________________________________
+केस स्टडी (Case Study)
+केस स्टडी एक व्यक्ति, समूह, घटना या समुदाय के विकास में गहन शोध की एक प्रक्रिया है। यह शोधकर्ता को एक विषय की अधिक विस्तार से जांच करने की अनुमति देती है। केस स्टडी अपने आप में एक शोध पद्धति नहीं है, बल्कि शोधकर्ता इसमें डेटा संग्रह और विश्लेषण के तरीकों का चयन करते हैं।
+
+
+    </pre>
+<a href="pot10_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

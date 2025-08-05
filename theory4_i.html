@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        display: inline-block; /* To allow spacing */
+        margin-bottom: 10px; /* Space out rows if they wrap */
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+  {
+    question: "PHP का पूरा नाम क्या है?",
+    options: [
+      "Personal Home Page",
+      "Preprocessed Hypertext Page",
+      "Hypertext Preprocessor",
+      "Programming HTML Processor"
+    ],
+    answer: "Hypertext Preprocessor"
+  },
+  {
+    question: "PHP को किसने बनाया था?",
+    options: [
+      "Dennis Ritchie",
+      "James Gosling",
+      "Rasmus Lerdorf",
+      "Guido van Rossum"
+    ],
+    answer: "Rasmus Lerdorf"
+  },
+  {
+    question: "PHP किस प्रकार की स्क्रिप्टिंग भाषा है?",
+    options: [
+      "Client-side",
+      "Server-side",
+      "Both A and B",
+      "None of the above"
+    ],
+    answer: "Server-side"
+  },
+  {
+    question: "PHP का पहला संस्करण किस वर्ष में आया था?",
+    options: [
+      "1991",
+      "1994",
+      "1999",
+      "2000"
+    ],
+    answer: "1994"
+  },
+  {
+    question: "PHP फाइल को चलाने के लिए निम्नलिखित में से कौन सी टैग जोड़ी का उपयोग किया जाता है?",
+    options: [
+      "<php>...</php>",
+      "<!-- php -->",
+      "<?php ... ?>",
+      "< script>...< /script>"
+    ],
+    answer: "<?php ... ?>"
+  },
+  {
+    question: "PHP को चलाने के लिए कौन-कौन से तीन मुख्य कंपोनेंट आवश्यक हैं?",
+    options: [
+      "HTML, CSS, JavaScript",
+      "Apache, MySQL, PHP",
+      "Python, Node.js, MongoDB",
+      "Java, Oracle, Tomcat"
+    ],
+    answer: "Apache, MySQL, PHP"
+  },
+  {
+    question: "Windows ऑपरेटिंग सिस्टम के लिए AMP स्टैक का कौन सा वर्जन उपयुक्त है?",
+    options: [
+      "LAMP",
+      "XAMPP",
+      "WAMP",
+      "MAMP"
+    ],
+    answer: "WAMP"
+  },
+  {
+    question: "XAMPP किसके लिए उपयुक्त है?",
+    options: [
+      "केवल Windows",
+      "केवल Linux",
+      "केवल Mac",
+      "Cross-platform (सभी के लिए)"
+    ],
+    answer: "Cross-platform (सभी के लिए)"
+  },
+  {
+    question: "PHP प्रोग्राम को चलाने के लिए फाइल को किस फोल्डर में सेव किया जाता है?",
+    options: [
+      "C:/xampp/bin",
+      "C:/xampp/mysql",
+      "C:/xampp/htdocs",
+      "C:/xampp/apache"
+    ],
+    answer: "C:/xampp/htdocs"
+  },
+  {
+    question: "PHP वर्जन जांचने के लिए कौन सा फ़ंक्शन प्रयोग किया जाता है?",
+    options: [
+      "version()",
+      "phpinfo()",
+      "get_version()",
+      "phpversion()"
+    ],
+    answer: "phpversion()"
+  },
+  {
+    question: "PHP का सिंटैक्स किस प्रोग्रामिंग भाषा से मिलता-जुलता है?",
+    options: [
+      "Java",
+      "C",
+      "Python",
+      "HTML"
+    ],
+    answer: "C"
+  },
+ {
+    question: "PHP किस प्रकार के ऑपरेटिंग सिस्टम पर काम कर सकता है?",
+    options: [
+      "Windows",
+      "Linux",
+      "MacOS",
+      "उपरोक्त सभी"
+    ],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "निम्न में से कौन सा डेटाबेस PHP द्वारा समर्थित नहीं है?",
+    options: [
+      "MySQL",
+      "PostgreSQL",
+      "SQLite",
+      "Oracle Forms"
+    ],
+    answer: "Oracle Forms"
+  },
+  {
+    question: "PHP किस प्रकार की कंटेंट जेनरेट कर सकता है?",
+    options: [
+      "Static",
+      "Dynamic",
+      "Text only",
+      "Images only"
+    ],
+    answer: "Dynamic"
+  },
+  {
+    question: "PHP को किन तकनीकों के साथ आसानी से जोड़ा जा सकता है?",
+    options: [
+      "Java",
+      "HTML, CSS, JavaScript",
+      ".NET",
+      "COBOL"
+    ],
+    answer: "HTML, CSS, JavaScript"
+  },
+  {
+    question: "PHP स्क्रिप्ट किस स्थान पर रखी जा सकती है?",
+    options: [
+      "केवल <head> टैग में",
+      "केवल <body> टैग में",
+      "HTML डॉक्युमेंट के किसी भी हिस्से में",
+      "केवल <footer> में"
+    ],
+    answer: "HTML डॉक्युमेंट के किसी भी हिस्से में"
+  },
+  {
+    question: "PHP स्क्रिप्ट शुरू और समाप्त कैसे होती है?",
+    options: [
+      "<php> और </php>",
+      "<script> और < /script>",
+      "<?php और ?>",
+      "<!-- और -->"
+    ],
+    answer: "<?php और ?>"
+  },
+  {
+    question: "PHP में वैरिएबल कैसे डिक्लेयर किया जाता है?",
+    options: [
+      "var x = 5;",
+      "$x = 5;",
+      "int x = 5;",
+      "let x = 5;"
+    ],
+    answer: "$x = 5;"
+  },
+  {
+    question: "PHP में कौन-कौन से डेटा टाइप होते हैं?",
+    options: [
+      "केवल String और Integer",
+      "Integer, Float, Array",
+      "Integer, Float, String, Boolean, Array, Object, NULL, Resource",
+      "केवल Object और Array"
+    ],
+    answer: "Integer, Float, String, Boolean, Array, Object, NULL, Resource"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा वैरिएबल नाम वैध (Valid) है?",
+    options: [
+      "$4name",
+      "$*user",
+      "$_value",
+      "$user name"
+    ],
+    answer: "$_value"
+  },
+  {
+    question: "PHP में कौन-सी स्टेटमेंट \"Hello World!\" प्रिंट करने के लिए सही है?",
+    options: [
+      "echo \"Hello World!\";",
+      "print(\"Hello World!\")",
+      "printf \"Hello World!\"",
+      "cout << \"Hello World!\""
+    ],
+    answer: "echo \"Hello World!\";"
+  },
+ {
+    question: "PHP में वैरिएबल नाम किस रूप में सेंसिटिव होता है?",
+    options: [
+      "कीवर्ड्स की तरह केस इंसेंसिटिव",
+      "केस सेंसिटिव",
+      "केवल लोअरकेस",
+      "केवल अपरकेस"
+    ],
+    answer: "केस सेंसिटिव"
+  },
+  {
+    question: "PHP में constant कैसे बनाई जाती है?",
+    options: [
+      'const("MSG", "Hello");',
+      'define("MSG", "Hello");',
+      '$MSG = constant("Hello");',
+      'constant MSG = "Hello";'
+    ],
+    answer: 'define("MSG", "Hello");'
+  },
+  {
+    question: "निम्न में से कौन-सा एक लॉजिकल ऑपरेटर नहीं है?",
+    options: [
+      "&&",
+      "||",
+      "++",
+      "!"
+    ],
+    answer: "++"
+  },
+  {
+    question: "PHP में float डेटा टाइप का उदाहरण क्या है?",
+    options: [
+      '$x = "10";',
+      '$x = 10.5;',
+      '$x = TRUE;',
+      '$x = [10];'
+    ],
+    answer: '$x = 10.5;'
+  },
+  {
+    question: "किस फंक्शन से किसी वैरिएबल की डेटा टाइप और वैल्यू पता की जाती है?",
+    options: [
+      "gettype()",
+      "type()",
+      "checktype()",
+      "var_dump()"
+    ],
+    answer: "var_dump()"
+  },
+  {
+    question: "PHP में किस ऑपरेटर का प्रयोग string को जोड़ने के लिए किया जाता है?",
+    options: [
+      "+",
+      ".",
+      "*",
+      "&"
+    ],
+    answer: "."
+  },
+  {
+    question: "PHP एक किस प्रकार की भाषा है?",
+    options: [
+      "क्लाइंट-साइड",
+      "मार्कअप",
+      "सर्वर-साइड",
+      "सिस्टम प्रोग्रामिंग"
+    ],
+    answer: "सर्वर-साइड"
+  },
+  {
+    question: "PHP में कौन-सा ऑपरेटर एक्सपोनेंशिएशन (घात) करता है?",
+    options: [
+      "^",
+      "**",
+      "#",
+      "exp()"
+    ],
+    answer: "**"
+  },
+  {
+    question: "PHP में pre-increment ऑपरेटर क्या करता है?",
+    options: [
+      "पहले वैल्यू लौटाता है, फिर बढ़ाता है",
+      "वैल्यू को घटाता है",
+      "पहले वैल्यू बढ़ाता है, फिर लौटाता है",
+      "कुछ नहीं करता"
+    ],
+    answer: "पहले वैल्यू बढ़ाता है, फिर लौटाता है"
+  },
+   {
+    question: "PHP में Array के लिए कौन-सा ऑपरेटर दोनों arrays को मिलाकर एक नया array बनाता है?",
+    options: ["+", "==", "!=", "==="],
+    answer: "+"
+  },
+  {
+    question: "निम्न में से कौन-सा Conditional Assignment Operator है?",
+    options: ["? :", "+=", "==", "=>"],
+    answer: "? :"
+  },
+  {
+    question: "Pagination का उपयोग किस लिए किया जाता है?",
+    options: [
+      "डेटा को एन्क्रिप्ट करने के लिए",
+      "डेटा को पेजों में विभाजित करने के लिए",
+      "डेटा को स्टाइलिश बनाने के लिए",
+      "डेटा को कैश करने के लिए"
+    ],
+    answer: "डेटा को पेजों में विभाजित करने के लिए"
+  },
+  {
+    question: "Bootstrap में popover को सक्रिय करने के लिए कौन-सी attribute का उपयोग होता है?",
+    options: [
+      'data-show="popover"',
+      'data-display="popover"',
+      'data-toggle="popover"',
+      'data-action="popover"'
+    ],
+    answer: 'data-toggle="popover"'
+  },
+  {
+    question: "Progress bar को HTML और CSS में प्रदर्शित करने के लिए कौन-से class का उपयोग किया जाता है?",
+    options: ["progress-bar", "bar-progress", "loading-bar", "bar"],
+    answer: "progress-bar"
+  },
+  {
+    question: "PHP में isset($_GET['page']) का प्रयोग किस लिए किया जाता है?",
+    options: [
+      "यह पेज का टाइटल सेट करता है",
+      "यह चेक करता है कि URL में 'page' पैरामीटर है या नहीं",
+      "यह डेटा को एन्क्रिप्ट करता है",
+      "यह MySQL को कॉल करता है"
+    ],
+    answer: "यह चेक करता है कि URL में 'page' पैरामीटर है या नहीं"
+  },
+  {
+    question: "PHP में $a == $b क्या जांचता है?",
+    options: [
+      "दोनों arrays एक ही reference को point करते हैं",
+      "दोनों arrays का structure समान है",
+      "दोनों arrays का value समान है लेकिन type को नहीं देखता",
+      "दोनों arrays का type और value दोनों समान होने चाहिए"
+    ],
+    answer: "दोनों arrays का value समान है लेकिन type को नहीं देखता"
+  },
+  {
+    question: "!== ऑपरेटर का कार्य क्या है?",
+    options: [
+      "बराबरी की जांच",
+      "बराबरी और टाइप की जांच",
+      "न बराबर और टाइप भी अलग",
+      "केवल टाइप की जांच"
+    ],
+    answer: "न बराबर और टाइप भी अलग"
+  },
+  {
+    question: "PHP में Pagination का मुख्य उद्देश्य क्या है?",
+    options: [
+      "डाटा को एन्क्रिप्ट करना",
+      "डाटा को पेजों में विभाजित करना",
+      "यूजर से इनपुट लेना",
+      "कोड को छोटा करना"
+    ],
+    answer: "डाटा को पेजों में विभाजित करना"
+  },
+  {
+    question: "Bootstrap में Tooltip को सक्रिय करने के लिए किस attribute का उपयोग होता है?",
+    options: [
+      "data-title",
+      "title-toggle",
+      'data-toggle="tooltip"',
+      "tooltip-on"
+    ],
+    answer: 'data-toggle="tooltip"'
+  },
+    {
+    question: "PHP का कौन सा ऑपरेटर दो arrays को compare करने के लिए प्रयोग किया जाता है?",
+    options: ["==", "===", "!=", "ऊपर के सभी"],
+    answer: "ऊपर के सभी"
+  },
+  {
+    question: "Toast क्या है?",
+    options: [
+      "एक डाटा संरचना",
+      "एक प्रकार का बटन",
+      "एक अस्थायी सूचना बॉक्स",
+      "एक PHP फ़ंक्शन"
+    ],
+    answer: "एक अस्थायी सूचना बॉक्स"
+  },
+  {
+    question: "Spinner किसलिए प्रयोग किया जाता है?",
+    options: [
+      "टेक्स्ट इनपुट के लिए",
+      "प्रोग्रामिंग लॉजिक के लिए",
+      "प्रक्रिया की प्रगति दर्शाने के लिए",
+      "फॉर्म सबमिट करने के लिए"
+    ],
+    answer: "प्रक्रिया की प्रगति दर्शाने के लिए"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा PHP Array Operator है?",
+    options: ["+", "==", "===", "सभी"],
+    answer: "सभी"
+  },
+  {
+    question: "PHP में conditional assignment operator का उदाहरण क्या है?",
+    options: ["=", "?:", "++", "--"],
+    answer: "?:"
+  },
+  {
+    question: "Bootstrap में Toast को दिखाने के लिए कौन-सा JS मेथड इस्तेमाल होता है?",
+    options: [".show()", ".toast()", ".tooltip()", ".display()"],
+    answer: ".toast()"
+  },
+  {
+    question: "प्रगति (Progress Bar) दिखाने के लिए Bootstrap में किस CSS क्लास का प्रयोग होता है?",
+    options: [".bar", ".progress", ".loader", ".status"],
+    answer: ".progress"
+  },
+  {
+    question: "HTML में Bootstrap टेबल को स्टाइल देने के लिए किस क्लास का उपयोग होता है?",
+    options: [".bootstrap-table", ".table", ".data-table", ".tabular"],
+    answer: ".table"
+  },
+  {
+    question: "Bootstrap क्या है?",
+    options: [
+      "एक डेटाबेस",
+      "एक फ्रंट-एंड CSS framework",
+      "एक सर्वर साइड भाषा",
+      "एक वेब होस्टिंग सेवा"
+    ],
+    answer: "एक फ्रंट-एंड CSS framework"
+  },
+  {
+    question: "Bootstrap किस कंपनी द्वारा बनाया गया था?",
+    options: ["Google", "Facebook", "Twitter", "Microsoft"],
+    answer: "Twitter"
+  },
+  {
+    question: "Bootstrap में रेस्पॉन्सिव डिजाइन का क्या मतलब है?",
+    options: [
+      "वेबसाइट केवल मोबाइल पर सही दिखती है",
+      "वेबसाइट हर स्क्रीन साइज़ पर अपने आप एडजस्ट होती है",
+      "वेबसाइट केवल डेस्कटॉप पर काम करती है",
+      "वेबसाइट को मैन्युअली एडजस्ट करना पड़ता है"
+    ],
+    answer: "वेबसाइट हर स्क्रीन साइज़ पर अपने आप एडजस्ट होती है"
+  },
+    {
+    question: "Bootstrap में .text-center क्लास का क्या कार्य है?",
+    options: [
+      "टेक्स्ट को बाएँ संरेखित करना",
+      "टेक्स्ट को दाएँ संरेखित करना",
+      "टेक्स्ट को केंद्र में संरेखित करना",
+      "टेक्स्ट को छुपाना"
+    ],
+    answer: "टेक्स्ट को केंद्र में संरेखित करना"
+  },
+  {
+    question: "Bootstrap में फ्लोट क्लासेस कौन-कौन सी हैं?",
+    options: [
+      ".float-up और .float-down",
+      ".float-left और .float-right",
+      ".float-center",
+      ".float-top और .float-bottom"
+    ],
+    answer: ".float-left और .float-right"
+  },
+  {
+    question: "Bootstrap के Flexbox का उपयोग किस लिए होता है?",
+    options: [
+      "फॉर्म डिजाइन करने के लिए",
+      "एलिमेंट्स को फ्लोट करने के लिए",
+      "फ्लेक्सिबल और रेस्पॉन्सिव लेआउट बनाने के लिए",
+      "डेटाबेस कनेक्शन के लिए"
+    ],
+    answer: "फ्लेक्सिबल और रेस्पॉन्सिव लेआउट बनाने के लिए"
+  },
+  {
+    question: "Bootstrap में .shadow-lg क्लास का क्या प्रभाव होता है?",
+    options: [
+      "बड़े साइज का बॉर्डर जोड़ती है",
+      "बड़े साइज का शैडो (छाया) जोड़ती है",
+      "एलिमेंट को छुपाती है",
+      "एलिमेंट को स्थिर करती है"
+    ],
+    answer: "बड़े साइज का शैडो (छाया) जोड़ती है"
+  },
+  {
+    question: "Bootstrap में visibility कंट्रोल करने के लिए कौन-सी क्लासेस उपयोग होती हैं?",
+    options: [
+      ".show और .hide",
+      ".visible-* और .invisible-*",
+      ".open और .close",
+      ".active और .inactive"
+    ],
+    answer: ".visible-* और .invisible-*"
+  },
+  {
+    question: "Bootstrap में .position-fixed क्लास का उपयोग कहाँ होता है?",
+    options: [
+      "एलिमेंट को पेज के स्क्रॉल के साथ स्थिर रखने के लिए",
+      "एलिमेंट को छुपाने के लिए",
+      "एलिमेंट को फ्लोट करने के लिए",
+      "एलिमेंट को डिफ़ॉल्ट स्थिति में रखने के लिए"
+    ],
+    answer: "एलिमेंट को पेज के स्क्रॉल के साथ स्थिर रखने के लिए"
+  },
+  {
+    question: "Bootstrap का कौन-सा वर्शन मोबाइल-फर्स्ट अप्रोच को पेश करता है?",
+    options: ["Bootstrap 2", "Bootstrap 3", "Bootstrap 4", "Bootstrap 5"],
+    answer: "Bootstrap 3"
+  },
+  {
+    question: "PHP में सबसे सरल conditional statement कौन सा है?",
+    options: ["switch", "if", "for", "foreach"],
+    answer: "if"
+  },
+  {
+    question: "if...else statement का उपयोग कब किया जाता है?",
+    options: [
+      "केवल एक condition के लिए",
+      "दो conditions में से किसी एक के लिए",
+      "एक से अधिक loop के लिए",
+      "switch statement के विकल्प के लिए"
+    ],
+    answer: "दो conditions में से किसी एक के लिए"
+  },
+  {
+    question: "PHP में switch statement का उपयोग कब किया जाता है?",
+    options: [
+      "दो conditions के लिए",
+      "एक condition के लिए",
+      "कई possible values के लिए जो एक variable में हो",
+      "loop के लिए"
+    ],
+    answer: "कई possible values के लिए जो एक variable में हो"
+  },
+   {
+    question: "PHP में break statement का क्या काम है?",
+    options: [
+      "loop को continue करना",
+      "loop को रोकना और बाहर निकलना",
+      "condition check करना",
+      "code को comment करना"
+    ],
+    answer: "loop को रोकना और बाहर निकलना"
+  },
+  {
+    question: "PHP में while loop कब तक चलता है?",
+    options: [
+      "जब तक condition false हो",
+      "जब तक condition true हो",
+      "निश्चित संख्या बार",
+      "एक बार भी नहीं चलता"
+    ],
+    answer: "जब तक condition true हो"
+  },
+  {
+    question: "do...while loop और while loop में क्या फर्क है?",
+    options: [
+      "do...while loop कम चलता है",
+      "do...while loop condition के बाद चलता है, while loop condition से पहले",
+      "while loop condition के बाद चलता है, do...while से पहले",
+      "दोनों एक जैसे हैं"
+    ],
+    answer: "do...while loop condition के बाद चलता है, while loop condition से पहले"
+  },
+  {
+    question: "for loop के तीन मुख्य भाग कौन से हैं?",
+    options: [
+      "initialization, condition, increment/decrement",
+      "start, stop, continue",
+      "input, output, processing",
+      "none of the above"
+    ],
+    answer: "initialization, condition, increment/decrement"
+  },
+  {
+    question: "foreach loop का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "single variable के लिए",
+      "array के हर element पर काम करने के लिए",
+      "loops को रोकने के लिए",
+      "condition check के लिए"
+    ],
+    answer: "array के हर element पर काम करने के लिए"
+  },
+  {
+    question: "continue statement का क्या काम है?",
+    options: [
+      "loop को पूरा रोकना",
+      "current iteration छोड़कर अगली iteration पर जाना",
+      "condition check करना",
+      "code को execute करना"
+    ],
+    answer: "current iteration छोड़कर अगली iteration पर जाना"
+  },
+  {
+    question: "अगर switch statement में break statement नहीं होगा तो क्या होगा?",
+    options: [
+      "code error देगा",
+      "केवल पहला case execute होगा",
+      "matching case के बाद के सारे cases भी execute होंगे",
+      "switch block skip हो जाएगा"
+    ],
+    answer: "matching case के बाद के सारे cases भी execute होंगे"
+  },
+  {
+    question: "PHP में फ़ंक्शन क्या है?",
+    options: [
+      "एक प्रकार का डेटा",
+      "एक HTML टैग",
+      "एक कोड ब्लॉक जो एक विशिष्ट कार्य करता है",
+      "एक प्रकार का कमेंट"
+    ],
+    answer: "एक कोड ब्लॉक जो एक विशिष्ट कार्य करता है"
+  },
+  {
+    question: "PHP में एक फ़ंक्शन को परिभाषित करने के लिए कौन-सा कीवर्ड उपयोग होता है?",
+    options: [
+      "define",
+      "function",
+      "declare",
+      "set"
+    ],
+    answer: "function"
+  },
+  {
+    question: "नीचे दिए गए विकल्पों में से कौन-सी विशेषता PHP फ़ंक्शनों की नहीं है?",
+    options: [
+      "कोड को मॉड्यूलर बनाना",
+      "कोड की पुन: उपयोगिता",
+      "केवल एक बार चलना",
+      "मेंटेनेंस को आसान बनाना"
+    ],
+    answer: "केवल एक बार चलना"
+  },
+  {
+    question: `नीचे दिए गए फ़ंक्शन को कॉल करने का सही तरीका क्या है?\nfunction greet() {\n  echo "Hello!";\n}`,
+    options: [
+      "call greet();",
+      "greet;",
+      "echo greet();",
+      "greet();"
+    ],
+    answer: "greet();"
+  },
+  {
+    question: "PHP में फ़ंक्शन नाम कैसा होना चाहिए?",
+    options: [
+      "नंबर से शुरू हो सकता है",
+      "किसी भी विशेष कैरेक्टर से शुरू हो सकता है",
+      "अक्षर या अंडरस्कोर (_) से शुरू होना चाहिए",
+      "डॉट (.) से शुरू हो सकता है"
+    ],
+    answer: "अक्षर या अंडरस्कोर (_) से शुरू होना चाहिए"
+  },
+    {
+    question: "नीचे दिए गए उदाहरण में कितनी बार setHeight() function कॉल हुआ है?\n\nsetHeight(350);\nsetHeight();\nsetHeight(135);\nsetHeight(80);",
+    options: [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    answer: "4"
+  },
+  {
+    question: "PHP में default parameter का उपयोग कब किया जाता है?",
+    options: [
+      "जब सभी पैरामीटर अनिवार्य हों",
+      "जब कोई पैरामीटर ना दिया गया हो",
+      "जब पैरामीटर का टाइप बदलना हो",
+      "कभी नहीं"
+    ],
+    answer: "जब कोई पैरामीटर ना दिया गया हो"
+  },
+  {
+    question: "नीचे दिए गए कोड में return value क्या होगी?\n\nfunction multiply($a, $b = 2) {\n  return $a * $b;\n}\n$result = multiply(5);",
+    options: [
+      "7",
+      "10",
+      "5",
+      "Error"
+    ],
+    answer: "10"
+  },
+  {
+    question: "Variadic functions क्या करती हैं?",
+    options: [
+      "केवल एक पैरामीटर लेती हैं",
+      "error देती हैं",
+      "अनिश्चित संख्या में arguments ले सकती हैं",
+      "सिर्फ string पैरामीटर लेती हैं"
+    ],
+    answer: "अनिश्चित संख्या में arguments ले सकती हैं"
+  },
+  {
+    question: "PHP में किसी फ़ंक्शन को वैल्यू लौटाने के लिए किस स्टेटमेंट का उपयोग होता है?",
+    options: [
+      "echo",
+      "print",
+      "return",
+      "result"
+    ],
+    answer: "return"
+  },
+  {
+    question: "PHP में कौन-सी function built-in function नहीं है?",
+    options: [
+      "strlen()",
+      "str_replace()",
+      "calculateSum()",
+      "count()"
+    ],
+    answer: "calculateSum()"
+  },
+  {
+    question: "नीचे दिए गए कोड का आउटपुट क्या होगा?\n\nfunction sum($x, $y) {\n  return $x + $y;\n}\necho sum(2, 4);",
+    options: [
+      "24",
+      "6",
+      "2 + 4",
+      "sum(2, 4)"
+    ],
+    answer: "6"
+  },
+  {
+    question: "एक यूज़र डिफाइंड फ़ंक्शन कब execute होता है?",
+    options: [
+      "जब पेज लोड होता है",
+      "जब explicitly call किया जाता है",
+      "ऑटोमेटिकली",
+      "रनटाइम error आने पर"
+    ],
+    answer: "जब explicitly call किया जाता है"
+  },
+  {
+    question: "Functions में Scope का क्या मतलब है?",
+    options: [
+      "Global variables सब जगह access हो सकते हैं",
+      "Function के अंदर की variables बाहर से access किए जा सकते हैं",
+      "Function के variables सिर्फ उसी के अंदर access होते हैं",
+      "कोई Scope नहीं होता"
+    ],
+    answer: "Function के variables सिर्फ उसी के अंदर access होते हैं"
+  },
+  {
+    question: "नीचे दिए गए कोड में कितने पैरामीटर हैं?\n\nfunction addNumbers($a, $b) {\n  return $a + $b;\n}",
+    options: [
+      "0",
+      "1",
+      "2",
+      "अनगिनत"
+    ],
+    answer: "2"
+  },
+  {
+    question: "PHP में MySQL डेटाबेस से कनेक्शन स्थापित करने के लिए कौन-सा फ़ंक्शन उपयोग किया जाता है?",
+    options: [
+      "mysql_connect()",
+      "mysqli_connect()",
+      "connect_db()",
+      "open_mysql_connection()"
+    ],
+    answer: "mysqli_connect()"
+  },
+  {
+    question: "किसी MySQL टेबल में PRIMARY KEY का क्या कार्य होता है?",
+    options: [
+      "कॉलम में null वैल्यू की अनुमति देना",
+      "टेबल में पंक्तियों की विशिष्ट पहचान करना",
+      "एक foreign key बनाना",
+      "अपने आप टाइमस्टैम्प बनाना"
+    ],
+    answer: "टेबल में पंक्तियों की विशिष्ट पहचान करना"
+  },
+  {
+    question: "किसी टेबल में नया रिकॉर्ड जोड़ने के लिए कौन-सा SQL स्टेटमेंट उपयोग किया जाता है?",
+    options: [
+      "ADD RECORD",
+      "INSERT INTO",
+      "UPDATE TABLE",
+      "NEW ENTRY"
+    ],
+    answer: "INSERT INTO"
+  },
+  {
+    question: "UPDATE या DELETE क्वेरी में कौन-सा क्लॉज सभी रिकॉर्ड्स को प्रभावित करने से रोकता है?",
+    options: [
+      "ORDER BY",
+      "LIMIT",
+      "WHERE",
+      "GROUP BY"
+    ],
+    answer: "WHERE"
+  },
+  {
+    question: "MySQL कॉलम में AUTO_INCREMENT क्या करता है?",
+    options: [
+      "हर नए रिकॉर्ड के लिए वैल्यू अपने आप बढ़ाता है",
+      "केवल यूनिक वैल्यू को स्टोर करता है",
+      "डिफ़ॉल्ट वैल्यू सेट करता है",
+      "एक foreign key बनाता है"
+    ],
+    answer: "हर नए रिकॉर्ड के लिए वैल्यू अपने आप बढ़ाता है"
+  },
+  {
+    question: "SQL क्वेरी को चलाने के लिए PHP MySQLi में कौन-सा method उपयोग होता है?",
+    options: [
+      "execute()",
+      "query()",
+      "runQuery()",
+      "mysqli_exec()"
+    ],
+    answer: "query()"
+  },
+  {
+    question: "किसी टेबल से सभी कॉलम चुनने के लिए कौन-सा SQL कमांड सही है?",
+    options: [
+      "SELECT ALL",
+      "SELECT *",
+      "SELECT COLUMNS",
+      "GET ALL"
+    ],
+    answer: "SELECT *"
+  },
+  {
+    question: "PHP MySQLi (object-oriented) में कनेक्शन बनाने का सही तरीका क्या है?",
+    options: [
+      "$conn = mysql($host, $user, $pass, $db);",
+      "$conn = new mysqli($host, $user, $pass, $db);",
+      "$conn = connect($host, $user, $pass, $db);",
+      "$conn = mysqli_connect();"
+    ],
+    answer: "$conn = new mysqli($host, $user, $pass, $db);"
+  },
+  {
+    question: "यदि UPDATE क्वेरी में WHERE क्लॉज नहीं दिया जाए तो क्या होगा?",
+    options: [
+      "केवल पहली पंक्ति अपडेट होगी",
+      "टेबल के सभी रिकॉर्ड्स अपडेट हो जाएंगे",
+      "एक एरर आएगा",
+      "क्वेरी इग्नोर कर दी जाएगी"
+    ],
+    answer: "टेबल के सभी रिकॉर्ड्स अपडेट हो जाएंगे"
+  },
+   {
+    question: "टेबल की सारी पंक्तियाँ हटाने के लिए पर उसका स्ट्रक्चर बनाए रखने के लिए कौन-सा SQL कमांड उपयोग होता है?",
+    options: [
+      "DELETE * FROM table",
+      "REMOVE ALL FROM table",
+      "TRUNCATE TABLE table_name",
+      "DROP TABLE table_name"
+    ],
+    answer: "TRUNCATE TABLE table_name"
+  },
+  {
+    question: "पासवर्ड को सुरक्षित तरीके से स्टोर करने के लिए PHP में कौन-सा फ़ंक्शन उपयोग किया जाता है?",
+    options: [
+      "md5()",
+      "sha1()",
+      "password_hash()",
+      "encrypt_password()"
+    ],
+    answer: "password_hash()"
+  },
+  {
+    question: "password_hash() फंक्शन किसका उपयोग करता है डिफ़ॉल्ट रूप से पासवर्ड को हैश करने के लिए?",
+    options: [
+      "SHA1",
+      "SHA256",
+      "bcrypt",
+      "MD5"
+    ],
+    answer: "bcrypt"
+  },
+  {
+    question: "password_verify() फंक्शन का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "पासवर्ड को डेटाबेस में सेव करने के लिए",
+      "पासवर्ड को बदलने के लिए",
+      "पासवर्ड को डिक्रिप्ट करने के लिए",
+      "उपयोगकर्ता द्वारा दर्ज पासवर्ड को हैश से मिलाने के लिए"
+    ],
+    answer: "उपयोगकर्ता द्वारा दर्ज पासवर्ड को हैश से मिलाने के लिए"
+  },
+  {
+    question: "पासवर्ड को हैश करने का मुख्य उद्देश्य क्या है?",
+    options: [
+      "पासवर्ड छोटा करना",
+      "पासवर्ड को human-readable बनाना",
+      "पासवर्ड को सुरक्षित करना",
+      "पासवर्ड को आसान बनाना"
+    ],
+    answer: "पासवर्ड को सुरक्षित करना"
+  },
+  {
+    question: "यदि password_verify() फंक्शन true रिटर्न करता है, तो इसका अर्थ है —",
+    options: [
+      "पासवर्ड गलत है",
+      "उपयोगकर्ता का खाता सक्रिय नहीं है",
+      "पासवर्ड सही है",
+      "पासवर्ड expire हो गया है"
+    ],
+    answer: "पासवर्ड सही है"
+  },
+  {
+    question: "password_hash() से प्राप्त हैश वैल्यू को कहाँ स्टोर किया जाता है?",
+    options: [
+      "सेशन में",
+      "कुकी में",
+      "डेटाबेस में",
+      "URL में"
+    ],
+    answer: "डेटाबेस में"
+  },
+  {
+    question: "SHA का फुल फॉर्म क्या है?",
+    options: [
+      "Secure Host Algorithm",
+      "Safe Hash Algorithm",
+      "Secure Hash Algorithm",
+      "Secret Hacking Algorithm"
+    ],
+    answer: "Secure Hash Algorithm"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा हैशिंग एल्गोरिदम reversible (वापस plaintext में बदलने योग्य) होता है?",
+    options: [
+      "bcrypt",
+      "SHA256",
+      "MD5",
+      "कोई नहीं"
+    ],
+    answer: "कोई नहीं"
+  },
+  {
+    question: "Cookie क्या होता है? (What is a Cookie?)",
+    options: [
+      "एक प्रकार का डेटाबेस",
+      "यूज़र की पहचान के लिए एक छोटा फ़ाइल जो सर्वर उपयोग करता है",
+      "एक PHP function",
+      "एक डेटा स्ट्रक्चर"
+    ],
+    answer: "यूज़र की पहचान के लिए एक छोटा फ़ाइल जो सर्वर उपयोग करता है"
+  },
+  {
+    question: "PHP में cookie सेट करने के लिए कौन-सा function उपयोग होता है? (Which function is used to set a cookie in PHP?)",
+    options: [
+      "create_cookie()",
+      "cookie_set()",
+      "setcookie()",
+      "makecookie()"
+    ],
+    answer: "setcookie()"
+  },
+   {
+    question: "setcookie() function में केवल कौन-सा parameter अनिवार्य है? (Which parameter is mandatory in setcookie() function?)",
+    options: ["path", "domain", "name", "expire"],
+    answer: "name"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सी superglobal cookie को retrieve करने के लिए उपयोग होती है? (Which superglobal is used to retrieve a cookie in PHP?)",
+    options: ["$_GET", "$_POST", "$_COOKIE", "$_SESSION"],
+    answer: "$_COOKIE"
+  },
+  {
+    question: "PHP में cookie delete करने के लिए क्या किया जाता है? (How do you delete a cookie in PHP?)",
+    options: [
+      "unset($_COOKIE[\"name\"])",
+      "setcookie(\"name\", \"\", time() - 3600)",
+      "deletecookie(\"name\")",
+      "$_COOKIE[\"name\"] = null"
+    ],
+    answer: "setcookie(\"name\", \"\", time() - 3600)"
+  },
+  {
+    question: "एक cookie को पूरे वेबसाइट पर उपलब्ध कराने के लिए कौन-सा path देना चाहिए? (Which path makes the cookie available across the entire website?)",
+    options: ["/admin", "/index.php", "/", "/user"],
+    answer: "/"
+  },
+  {
+    question: "Cookie को चेक करने के लिए कौन-सा function उपयोग होता है? (Which function is used to check if a cookie is set?)",
+    options: ["isset()", "checkcookie()", "cookie_exists()", "iscookie()"],
+    answer: "isset()"
+  },
+  {
+    question: "Cookies enabled हैं या नहीं, यह कैसे चेक करते हैं? (How can we check whether cookies are enabled?)",
+    options: [
+      "PHP automatically shows an alert",
+      "By counting the $_SESSION array",
+      "By checking count($_COOKIE)",
+      "By using the isset($_COOKIE) function"
+    ],
+    answer: "By checking count($_COOKIE)"
+  },
+  {
+    question: "CAPTCHA का मुख्य उद्देश्य क्या है? (What is the primary purpose of CAPTCHA?)",
+    options: [
+      "वेबसाइट डिज़ाइन को बेहतर बनाना",
+      "इंसानों और बॉट्स के बीच फर्क करना",
+      "पासवर्ड encrypt करना",
+      "वेबसाइट को फास्ट बनाना"
+    ],
+    answer: "इंसानों और बॉट्स के बीच फर्क करना"
+  },
+  {
+    question: "PHP में text-based CAPTCHA में कौन-सी PHP लाइब्रेरी का उपयोग होता है? (Which PHP library is used to create text-based CAPTCHA images?)",
+    options: ["MySQL", "GD", "PDO", "jQuery"],
+    answer: "GD"
+  },
+  {
+    question: "CAPTCHA टेक्स्ट को temporarily कहाँ store किया जाता है? (Where is the CAPTCHA text stored temporarily for validation?)",
+    options: ["Database", "Cookie", "File System", "Session"],
+    answer: "Session"
+  },
+  {
+    question: "CAPTCHA के लिए random string generate करने के लिए निम्न में से कौन-सा method उपयोग किया गया है? (Which method is used to generate a random string for CAPTCHA?)",
+    options: ["rand()", "password_hash()", "md5(time())", "uniqid()"],
+    answer: "md5(time())"
+  },
+    {
+    question: "PHP में image के output को PNG format में दिखाने के लिए कौन-सा function उपयोग होता है? (Which PHP function is used to output the image in PNG format?)",
+    options: ["imagejpg()", "imagepng()", "imagetext()", "imagewrite()"],
+    answer: "imagepng()"
+  },
+  {
+    question: "CAPTCHA image पर text print करने के लिए कौन-सा function प्रयोग होता है? (Which function is used to print text on the CAPTCHA image?)",
+    options: ["imagetext()", "drawtext()", "imagestring()", "imageprint()"],
+    answer: "imagestring()"
+  },
+  {
+    question: "CAPTCHA validation में किस comparison का उपयोग होता है? (Which comparison is used in CAPTCHA validation?)",
+    options: [
+      "$enteredText == $_COOKIE['captcha']",
+      "$enteredText === $_SESSION['captcha']",
+      "$enteredText === $_POST['captcha']",
+      "$enteredText == $_GET['captcha']"
+    ],
+    answer: "$enteredText === $_SESSION['captcha']"
+  },
+  {
+    question: "CAPTCHA image दिखाने के लिए HTML में कौन-सा टैग उपयोग किया जाता है? (Which HTML tag is used to display the CAPTCHA image?)",
+    options: ["<input>", "<script>", "<img>", "<canvas>"],
+    answer: "<img>"
+  },
+  {
+    question: "PHP में image destroy करने के लिए कौन-सा function उपयोग होता है? (Which PHP function is used to destroy the image resource after output?)",
+    options: ["imageclose()", "destroyimage()", "imagedestroy()", "unsetimage()"],
+    answer: "imagedestroy()"
+  },
+  {
+    question: "CAPTCHA टेक्स्ट की सुरक्षा बढ़ाने के लिए क्या ध्यान रखना चाहिए? (What should be considered to enhance CAPTCHA text security?)",
+    options: [
+      "Simple text and short length",
+      "Predictable text patterns",
+      "High randomness and complexity",
+      "Storing it in a cookie"
+    ],
+    answer: "High randomness and complexity"
+  }
+];
+
+let quizData = []; // This will hold the selected subset of questions
+let currentQuestion = 0;
+let selectedAnswers = [];
+let skippedQuestions = [];
+let totalTime = 50 * 60; // 50 minutes in seconds
+let timerInterval;
+let quizStarted = false;
+
+// --- Confirmation Pop-up on Refresh/Close ---
+window.addEventListener('beforeunload', function (event) {
+    if (quizStarted && totalTime > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+// --- End Confirmation Pop-up ---
+
+
+function startTimer() {
+    updateTimer();
+    timerInterval = setInterval(() => {
+        totalTime--;
+        updateTimer();
+        if (totalTime <= 0) {
+            clearInterval(timerInterval);
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startQuiz() {
+    const selectedRadio = document.querySelector('input[name="questionSet"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a question set to start the quiz.");
+        return;
+    }
+    const selectedValue = selectedRadio.value;
+
+    if (selectedValue.startsWith('set_')) {
+        const setIndex = parseInt(selectedValue.split('_')[1]);
+        const startIndex = setIndex * 25;
+        const endIndex = startIndex + 25;
+        quizData = fullQuizData.slice(startIndex, endIndex);
+    } else if (selectedValue === 'full') {
+        quizData = shuffleArray([...fullQuizData]); // Shuffle all questions for full test
+    } else {
+        // Default to a 25 question set if something unexpected happens
+        quizData = shuffleArray([...fullQuizData]).slice(0, 25);
+    }
+
+    selectedAnswers = new Array(quizData.length).fill(null);
+    skippedQuestions = new Array(quizData.length).fill(false);
+    currentQuestion = 0;
+    quizStarted = true;
+
+    document.getElementById('quantitySelection').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+
+    loadQuestion();
+    startTimer();
+}
+
+
+function loadQuestion() {
+    if(quizData.length === 0) {
+        document.getElementById('question').innerText = "No questions available.";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('prevBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        updateQuestionTracker();
+        return;
+    }
+    const q = quizData[currentQuestion];
+    document.getElementById('question').innerText = `${currentQuestion + 1}. ${q.question}`;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = "";
+
+    const isCurrentQuestionAnswered = (selectedAnswers[currentQuestion] !== null) || skippedQuestions[currentQuestion];
+
+    q.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.classList.add("option-btn");
+        btn.innerText = option;
+        btn.setAttribute("role", "listitem");
+        btn.onclick = () => selectOption(option, btn);
+
+        if(isCurrentQuestionAnswered) {
+            btn.disabled = true;
+            if (option === q.answer) {
+                btn.classList.add("correct");
+            } else if (option === selectedAnswers[currentQuestion]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            if(selectedAnswers[currentQuestion] === option) {
+                btn.classList.add("selected");
+            }
+        }
+        optionsDiv.appendChild(btn);
+    });
+
+    document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+    document.getElementById('nextBtn').disabled = currentQuestion === quizData.length -1 || totalTime <= 0;
+    document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+    document.getElementById('skipBtn').disabled = totalTime <= 0;
+    document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+    updateQuestionTracker();
+}
+
+function selectOption(option, clickedButton) {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    selectedAnswers[currentQuestion] = option;
+    skippedQuestions[currentQuestion] = false;
+
+    const q = quizData[currentQuestion];
+    const isCorrect = (option === q.answer);
+
+    const optionButtons = document.querySelectorAll('#options .option-btn');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === q.answer) {
+            btn.classList.add("correct");
+        } else if (btn === clickedButton && !isCorrect) {
+            btn.classList.add("incorrect");
+        }
+        btn.classList.remove("selected");
+    });
+
+    updateQuestionTracker();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function skipQuestion() {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    skippedQuestions[currentQuestion] = true;
+    selectedAnswers[currentQuestion] = null;
+    updateQuestionTracker();
+    nextQuestion();
+}
+
+function updateQuestionTracker() {
+    const tracker = document.getElementById("questionTracker");
+    tracker.innerHTML = "";
+    quizData.forEach((_, index) => {
+        const indicator = document.createElement("div");
+        indicator.classList.add("question-indicator");
+
+        if(selectedAnswers[index] !== null) {
+            indicator.classList.add("answered");
+            indicator.classList.remove("skipped");
+        } else if(skippedQuestions[index]) {
+            indicator.classList.add("skipped");
+            indicator.classList.remove("answered");
+        } else {
+            indicator.classList.remove("answered", "skipped");
+        }
+
+        if(index === currentQuestion) {
+            indicator.classList.add("active");
+        }
+        indicator.innerText = index + 1;
+        indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${selectedAnswers[index] !== null ? 'answered' : skippedQuestions[index] ? 'skipped' : 'not attempted'}`);
+        indicator.onclick = () => {
+            if(totalTime <= 0) return;
+            currentQuestion = index;
+            loadQuestion();
+        };
+        tracker.appendChild(indicator);
+    });
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizStarted = false;
+    document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+    document.getElementById("prevBtn").disabled = true;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("submitBtn").disabled = true;
+
+    let correctCount = 0;
+    let incorrectQuestions = [];
+
+    quizData.forEach((q, i) => {
+        if (selectedAnswers[i] !== null) {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        } else if (skippedQuestions[i]) {
+             incorrectQuestions.push({
+                question: q.question,
+                yourAnswer: "(Skipped)",
+                correctAnswer: q.answer
+            });
+        }
+    });
+
+    sessionStorage.setItem('quizScore', correctCount);
+    sessionStorage.setItem('quizTotal', quizData.length);
+    sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+    // Redirect to results page, ensure you have a results.html file
+    window.location.href = "results.html";
+}
+
+
+// Event Listener for Skip Button
+document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+// Function to generate quantity selection radio buttons
+function generateQuantityOptions() {
+    const radioOptionsDiv = document.getElementById('radioOptions');
+    radioOptionsDiv.innerHTML = ''; // Clear existing options
+
+    const totalQuestions = fullQuizData.length;
+    const questionsPerSet = 25;
+    const num25QuestionSets = Math.floor(totalQuestions / questionsPerSet);
+    const remainingQuestions = totalQuestions % questionsPerSet;
+
+    // Add 25-question sets
+    for (let i = 0; i < num25QuestionSets; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${i}" ${i === 0 ? 'checked' : ''}> Set ${i + 1} (${questionsPerSet} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add a set for remaining questions if any
+    if (remainingQuestions > 0) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${num25QuestionSets}"> Set ${num25QuestionSets + 1} (${remainingQuestions} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add Full Test option
+    const fullTestLabel = document.createElement('label');
+    fullTestLabel.innerHTML = `
+        <input type="radio" name="questionSet" value="full" ${num25QuestionSets === 0 && remainingQuestions === 0 ? 'checked' : ''}> Full Test (${totalQuestions} Questions)
+    `;
+    radioOptionsDiv.appendChild(fullTestLabel);
+}
+
+// Initialize quiz setup on page load
+window.onload = function() {
+    document.getElementById('quiz').style.display = 'none'; // Hide quiz initially
+    document.getElementById('timer').style.display = 'none'; // Hide timer initially
+    generateQuantityOptions(); // Populate radio buttons
+};
+</script>
+</body>
+</html>

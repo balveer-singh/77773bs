@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* New style for explanation box */
+    .explanation-box {
+        background-color: #f0f8ff; /* Light blue background */
+        border: 1px solid #cceeff; /* Light blue border */
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.5;
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="explanation-box" id="explanationBox"></div>        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" onclick="skipQuestion()" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+
+  const fullQuizData = [
+  {
+    "question": "Which sentence is correctly constructed? | कौन सा वाक्य सही ढंग से निर्मित है?",
+    "options": [
+      "We going to school",
+      "School we going",
+      "We are going to school",
+      "Going to school we are"
+    ],
+    "answer": "We are going to school",
+    "explanation": "The sentence **'We are going to school'** is grammatically correct. It uses the proper subject-verb agreement and continuous tense structure. (यह वाक्य व्याकरणिक रूप से सही है। इसमें सही कर्ता-क्रिया समझौता और कंटीन्यूअस टेंस संरचना का उपयोग किया गया है।)"
+  },
+  {
+    "question": "What does the sentence ʺThe room is very spaciousʺ imply? | वाक्य ʺThe room is very spaciousʺ का क्या अर्थ है?",
+    "options": [
+      "The room is small",
+      "The room is large",
+      "The room is dark",
+      "The room is noisy"
+    ],
+    "answer": "The room is large",
+    "explanation": "The word 'spacious' means having ample space or a lot of room. Therefore, a very spacious room implies that **the room is large**. ('Spacious' शब्द का अर्थ है बहुत जगह या खूब कमरा होना। इसलिए, एक बहुत विशाल कमरा का मतलब है कि **कमरा बड़ा है।**)"
+  },
+  {
+    "question": "Transform the sentence ʺShe is eating an appleʺ into past tense. | वाक्य ʺShe is eating an appleʺ को भूतकाल में बदलें।",
+    "options": [
+      "She was eating an apple",
+      "She ate an apple",
+      "She is going to eat an apple",
+      "She will eat an apple"
+    ],
+    "answer": "She was eating an apple",
+    "explanation": "The sentence 'She is eating an apple' is in the present continuous tense. To change it to the past continuous tense, 'is' becomes 'was'. So, the correct past tense form is **'She was eating an apple'**. ('She is eating an apple' वाक्य प्रेजेंट कंटीन्यूअस टेंस में है। इसे पास्ट कंटीन्यूअस टेंस में बदलने के लिए, 'is' को 'was' में बदल दिया जाता है। इसलिए, सही भूतकाल रूप **'She was eating an apple'** है।)"
+  },
+  {
+    "question": "What should be included in the ʹEducationʹ section of a resume? | रिज्यूमे के ʹशिक्षाʹ अनुभाग में क्या शामिल किया जाना चाहिए?",
+    "options": [
+      "Job titles | नौकरी के शीर्षक",
+      "Degrees and Certifications | डिग्री और प्रमाणपत्र",
+      "Personal opinions | व्यक्तिगत राय",
+      "Travel history | यात्रा इतिहास"
+    ],
+    "answer": "Degrees and Certifications | डिग्री और प्रमाणपत्र",
+    "explanation": "The 'Education' section of a resume is dedicated to your academic background and professional qualifications. Therefore, **Degrees and Certifications** are the appropriate items to include. (रिज्यूमे का 'शिक्षा' अनुभाग आपकी शैक्षणिक पृष्ठभूमि और पेशेवर योग्यताओं के लिए समर्पित है। इसलिए, **डिग्री और प्रमाणपत्र** शामिल करने के लिए उपयुक्त चीजें हैं।)"
+  },
+  {
+    "question": "How should you reference previous communication in a letter? | आपको एक पत्र में पिछले संचार का संदर्भ कैसे देना चाहिए?",
+    "options": [
+      "By ignoring it | इसे नजरअंदाज करके",
+      "By mentioning the date and content of the previous communication | पिछले संचार की तारीख और सामग्री का उल्लेख करके",
+      "By being vague | अस्पष्ट होकर",
+      "By making assumptions | अनुमान लगाकर"
+    ],
+    "answer": "By mentioning the date and content of the previous communication | पिछले संचार की तारीख और सामग्री का उल्लेख करके",
+    "explanation": "When referencing previous communication in a letter, it's crucial to be clear and specific. Mentioning **the date and content of the previous communication** helps the recipient easily recall the context. (पत्र में पिछले संचार का संदर्भ देते समय, स्पष्ट और विशिष्ट होना महत्वपूर्ण है। **पिछले संचार की तारीख और सामग्री का उल्लेख करने** से प्राप्तकर्ता को संदर्भ को आसानी से याद रखने में मदद मिलती है।)"
+  },
+  {
+    "question": "Which sentence correctly describes an environment? | कौन सा वाक्य एक पर्यावरण को सही ढंग से वर्णित करता है?",
+    "options": [
+      "The chair is red",
+      "The sky is cloudy",
+      "She is very happy",
+      "He reads a book"
+    ],
+    "answer": "The sky is cloudy",
+    "explanation": "An 'environment' refers to the surroundings or conditions in which a person, animal, or plant lives or operates. **'The sky is cloudy'** describes a condition of the natural surroundings, making it the correct option. (एक 'पर्यावरण' उस परिवेश या स्थितियों को संदर्भित करता है जिसमें कोई व्यक्ति, जानवर या पौधा रहता है या कार्य करता है। **'The sky is cloudy'** प्राकृतिक परिवेश की एक स्थिति का वर्णन करता है, जिससे यह सही विकल्प बनता है।)"
+  },
+  {
+    "question": "What is the primary purpose of role-playing in discussions? | चर्चाओं में भूमिका निभाने का प्राथमिक उद्देश्य क्या है?",
+    "options": [
+      "To confuse participants | प्रतिभागियों को भ्रमित करना",
+      "To practice real-life scenarios | वास्तविक जीवन परिदृश्यों का अभ्यास करना",
+      "To memorize scripts | स्क्रिप्ट को याद करना",
+      "To avoid communication | संचार से बचना"
+    ],
+    "answer": "To practice real-life scenarios | वास्तविक जीवन परिदृश्यों का अभ्यास करना",
+    "explanation": "Role-playing is a technique used to simulate real-life situations. Its primary purpose is **to practice real-life scenarios**, allowing participants to develop and refine their skills in a safe environment. (भूमिका निभाना वास्तविक जीवन की स्थितियों का अनुकरण करने के लिए इस्तेमाल की जाने वाली एक तकनीक है। इसका प्राथमिक उद्देश्य **वास्तविक जीवन परिदृश्यों का अभ्यास करना** है, जिससे प्रतिभागियों को एक सुरक्षित वातावरण में अपने कौशल को विकसित और परिष्कृत करने की अनुमति मिलती है।)"
+  },
+  {
+    "question": "What is the correct spelling of the word meaning ʺA place where people liveʺ? | ʺA place where people liveʺ का सही वर्तनी क्या है?",
+    "options": [
+      "Resedence",
+      "Residence",
+      "Residance",
+      "Resedance"
+    ],
+    "answer": "Residence",
+    "explanation": "The correct spelling of the word meaning 'A place where people live' is **'Residence'**. (जिस शब्द का अर्थ है 'वह स्थान जहाँ लोग रहते हैं' उसकी सही वर्तनी **'Residence'** है।)"
+  },
+  {
+    "question": "Construct a simple sentence about a family member. | एक परिवार के सदस्य के बारे में एक सरल वाक्य बनाएं।",
+    "options": [
+      "Brother is my tall",
+      "My brother is tall",
+      "Tall is my brother",
+      "Is tall brother my"
+    ],
+    "answer": "My brother is tall",
+    "explanation": "**'My brother is tall'** is a simple and grammatically correct sentence following the subject-verb-complement structure. ( **'My brother is tall'** विषय-क्रिया-पूरक संरचना का पालन करने वाला एक सरल और व्याकरणिक रूप से सही वाक्य है।)"
+  },
+  {
+    "question": "What is an important aspect of taking a message? | संदेश लेने का एक महत्वपूर्ण पहलू क्या है?",
+    "options": [
+      "Writing neatly | साफ-सुथरा लिखना",
+      "Ignoring details | विवरण को नजरअंदाज करना",
+      "Forgetting the message | संदेश को भूल जाना",
+      "Making assumptions | अनुमान लगाना"
+    ],
+    "answer": "Writing neatly | साफ-सुथरा लिखना",
+    "explanation": "When taking a message, it's essential that the message is legible and understandable for the recipient. Therefore, **writing neatly** is an important aspect to ensure clarity and avoid miscommunication. (एक संदेश लेते समय, यह महत्वपूर्ण है कि संदेश प्राप्तकर्ता के लिए सुपाठ्य और समझने योग्य हो। इसलिए, स्पष्टता सुनिश्चित करने और गलत संचार से बचने के लिए **साफ-सुथरा लिखना** एक महत्वपूर्ण पहलू है।)"
+  },
+  {
+    "question": "What is the purpose of a letter of application? | आवेदन पत्र का उद्देश्य क्या है?",
+    "options": [
+      "To request a job interview | नौकरी साक्षात्कार का अनुरोध करना",
+      "To complain about a product | उत्पाद की शिकायत करना",
+      "To ask for a loan | ऋण मांगना",
+      "To inform about a vacation | छुट्टी की जानकारी देना"
+    ],
+    "answer": "To request a job interview | नौकरी साक्षात्कार का अनुरोध करना",
+    "explanation": "A letter of application, also known as a cover letter, is sent with a resume to express interest in a job and **to request a job interview**. (एक आवेदन पत्र, जिसे कवर लेटर भी कहा जाता है, एक नौकरी में रुचि व्यक्त करने और **नौकरी साक्षात्कार का अनुरोध करने** के लिए एक रिज्यूमे के साथ भेजा जाता है।)"
+  },
+  {
+    "question": "Which sentence is correctly transformed into a passive voice? | कौन सा वाक्य सही रूप से निष्क्रिय वाक्य में परिवर्तित किया गया है?",
+    "options": [
+      "The cake bakes the chef",
+      "The chef baked the cake",
+      "The cake is baked by the chef",
+      "The cake is baking the chef"
+    ],
+    "answer": "The cake is baked by the chef",
+    "explanation": "In a passive voice sentence, the action's receiver (the cake) becomes the subject, and the doer (the chef) is introduced by 'by'. So, **'The cake is baked by the chef'** is the correct passive form. (निष्क्रिय वाक्य में, क्रिया का प्राप्तकर्ता (केक) विषय बन जाता है, और करने वाला (रसोइया) 'by' द्वारा पेश किया जाता है। इसलिए, **'The cake is baked by the chef'** सही निष्क्रिय रूप है।)"
+  },
+  {
+    "question": "What is a key component of a resume? | रिज्यूमे का एक मुख्य घटक क्या है?",
+    "options": [
+      "Personal likes | व्यक्तिगत पसंद",
+      "Professional experience | पेशेवर अनुभव",
+      "Favorite movies | पसंदीदा फिल्में",
+      "Hobbies | शौक"
+    ],
+    "answer": "Professional experience | पेशेवर अनुभव",
+    "explanation": "A resume is a formal document that provides a summary of your professional background and skills. **Professional experience** is a critical component as it showcases your work history and relevant skills to potential employers. (एक रिज्यूमे एक औपचारिक दस्तावेज़ है जो आपकी पेशेवर पृष्ठभूमि और कौशल का सारांश प्रदान करता है। **पेशेवर अनुभव** एक महत्वपूर्ण घटक है क्योंकि यह संभावित नियोक्ताओं को आपके कार्य इतिहास और प्रासंगिक कौशल को प्रदर्शित करता है।)"
+  },
+  {
+    "question": "What is the subject in the sentence ʺJohn works at a bankʺ? | वाक्य ʺJohn works at a bankʺ में विषय क्या है?",
+    "options": [
+      "Works",
+      "Bank",
+      "John",
+      "At"
+    ],
+    "answer": "John",
+    "explanation": "The subject of a sentence is the person, place, thing, or idea that is doing or being something. In this sentence, **'John'** is performing the action 'works', making him the subject. (एक वाक्य का विषय वह व्यक्ति, स्थान, वस्तु या विचार होता है जो कुछ कर रहा है या कुछ हो रहा है। इस वाक्य में, **'John'** 'काम करता है' क्रिया कर रहा है, जिससे वह विषय बन जाता है।)"
+  },
+  {
+    "question": "How should you pass on instructions effectively? | आपको निर्देश कैसे प्रभावी ढंग से देने चाहिए?",
+    "options": [
+      "By being vague | अस्पष्ट होकर",
+      "By giving clear and specific details | स्पष्ट और विशिष्ट विवरण देकर",
+      "By mumbling | बुदबुदाते हुए",
+      "By being dismissive | तिरस्कारपूर्ण होकर"
+    ],
+    "answer": "By giving clear and specific details | स्पष्ट और विशिष्ट विवरण देकर",
+    "explanation": "Effective instructions are unambiguous and leave no room for misunderstanding. Therefore, you should always aim **by giving clear and specific details** to ensure the message is understood correctly. (प्रभावी निर्देश स्पष्ट होते हैं और गलतफहमी के लिए कोई जगह नहीं छोड़ते। इसलिए, आपको हमेशा संदेश को सही ढंग से समझा जाना सुनिश्चित करने के लिए **स्पष्ट और विशिष्ट विवरण देकर** निर्देश देने चाहिए।)"
+  }
+];
+
+
+    let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = []; // true if answered, false if skipped/unanswered
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        initializeQuizOptions();
+    });
+
+    function initializeQuizOptions() {
+        const totalQuestions = fullQuizData.length;
+        if (totalQuestions > 25) {
+            document.getElementById('allQuestionsLabel').style.display = 'inline-block';
+            if (totalQuestions >= 50) {
+                document.getElementById('set26_50_label').style.display = 'inline-block';
+            } else {
+                document.getElementById('set26_X_label').style.display = 'inline-block';
+                // Update the text for '26-X' to reflect the actual number of questions
+                document.getElementById('set26_X_radio').value = `26-${totalQuestions}`;
+                document.getElementById('set26_X_label').querySelector('input').nextSibling.nodeValue = ` Questions 26-${totalQuestions} (Remaining)`;
+            }
+        }
+    }
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz(); // End quiz if time runs out
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet.startsWith("26-")) { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false); // false means not answered yet or skipped
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            document.getElementById('explanationBox').style.display = 'none'; // Hide explanation
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix (if it existed)
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        const explanationBox = document.getElementById('explanationBox');
+        explanationBox.style.display = 'none'; // Hide explanation when loading a new question
+        document.getElementById('result').innerText = ""; // Clear results when loading a question
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else { // If not yet answered, show selected state if any
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        // Show explanation if already answered
+        if (isCurrentQuestionAnswered && q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block"; // Hide skip if answered
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1 && questionAnsweredStatus.every(status => status !== false)) ? "inline-block" : "none"; // Show submit only on last question and if all questions attempted. Adjusted logic for showing submit button
+        // Simplification for submit button display for current setup:
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1) ? "inline-block" : "none";
+
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Prevent selection if time's up or already answered
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true; // Mark as answered
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true; // Disable all buttons after selection
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct"); // Highlight correct answer
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect"); // Highlight user's incorrect choice
+            }
+            btn.classList.remove("selected"); // Remove selected class from all
+        });
+
+        // Display explanation after selection
+        const explanationBox = document.getElementById('explanationBox');
+        if (q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        updateQuestionTracker();
+        // Automatically move to next question if all questions are answered or if it's not the last question and timer is running
+        // Removed auto-next for better user control after seeing explanation
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Cannot skip if time's up or already answered
+
+        selectedAnswers[currentQuestion] = null; // Explicitly mark as null for skipped
+        questionAnsweredStatus[currentQuestion] = false; // Keep as false for skipped/unanswered
+        updateQuestionTracker();
+        nextQuestion(); // Move to the next question
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) { // If answered (true)
+                indicator.classList.add("answered");
+                indicator.classList.remove("skipped"); // Ensure skipped is removed if answered later
+            } else if (selectedAnswers[index] === null) { // If explicitly skipped or not yet attempted
+                indicator.classList.add("skipped");
+                indicator.classList.remove("answered");
+            } else { // If an option was selected but not submitted (shouldn't happen with current selectOption logic)
+                indicator.classList.remove("answered");
+                indicator.classList.remove("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            } else {
+                indicator.classList.remove("active");
+            }
+
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : (selectedAnswers[index] === null ? 'skipped' : 'not answered')}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").style.display = 'none'; // Hide skip button
+        document.getElementById("submitBtn").disabled = true; // Disable submit after clicking
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+        let skippedCount = 0;
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else if (selectedAnswers[i] === null) {
+                skippedCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        const totalQuestions = quizData.length;
+        const score = (correctCount / totalQuestions) * 100;
+
+        let resultText = `Quiz Ended! You scored ${correctCount} out of ${totalQuestions} (${score.toFixed(2)}%).`;
+        if (skippedCount > 0) {
+            resultText += ` You skipped ${skippedCount} question(s).`;
+        }
+        document.getElementById("result").innerText = resultText;
+        document.getElementById("result").style.color = score >= 50 ? "#2f9e44" : "#f03e3e"; // Green for pass, red for fail
+
+        // Optionally, display incorrect answers details
+        if (incorrectQuestions.length > 0) {
+            let incorrectDetails = "<br><br><strong>Incorrect Answers (गलत उत्तर):</strong><br>";
+            incorrectQuestions.forEach((item, index) => {
+                incorrectDetails += `${index + 1}. Q: ${item.question}<br> Your Answer: ${item.yourAnswer}<br> Correct Answer: ${item.correctAnswer}<br><br>`;
+            });
+            // You might want to display this in a separate modal or expanded section
+            // For now, let's just log it to console or append to result if space allows
+            console.log(incorrectDetails);
+            // document.getElementById("result").innerHTML += incorrectDetails; // Uncomment to show on page
+        }
+    }
+</script>
+</body>
+</html>

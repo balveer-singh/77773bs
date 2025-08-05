@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>PLANNING FOR INSTRUCTION AND SKILLS PRACTICE</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+What is a Lesson Plan? (Lesson Plan क्या है?)
+A Lesson Plan is a roadmap or a guide for an instructor to teach a subject in a sequential and methodical manner. यह एक plan for action है जिसमें कक्षा में पढ़ाए जाने वाले महत्वपूर्ण points और activities शामिल होते हैं. Careful planning (सावधानीपूर्वक योजना बनाना) अच्छे teaching and learning activities की foundation है.
+________________________________________
+Why is a Lesson Plan Necessary? (Lesson Plan क्यों ज़रूरी है?)
+Lesson plan के बिना, instructor समय पर पूरा syllabus कवर नहीं कर पाएंगे और सही परिणाम (desired results) भी नहीं मिलेंगे.
+Necessity of planning:
+•	To cover the course on time: समय पर पूरा course पढ़ाना.
+•	To achieve definite results: निश्चित परिणाम प्राप्त करना.
+•	To ensure confidence: instructor में confidence बनाए रखना.
+•	To solve problems: पढ़ाए जाने वाले lesson से संबंधित समस्याओं को हल करने में मदद करना.
+•	To avoid improper teaching: ग़लत तरीक़े से पढ़ाने से बचना.
+________________________________________
+Advantages of a Lesson Plan (Lesson Plan के फ़ायदे)
+•	Organization of the subject: विषय को संगठित करना.
+•	Much time saved: बहुत सारा समय बचाना, क्योंकि unnecessary teaching से बचा जा सकता है.
+•	Work is done in a planned manner: काम योजनाबद्ध तरीक़े से होता है.
+•	Selection and utilization of suitable teaching aids: सही teaching aids का चुनाव और उपयोग करना.
+•	Suitable atmosphere is created: सीखने के लिए एक अच्छा माहौल बनाना.
+•	Forms a record: यह teaching-learning activity का एक permanent record बन जाता है.
+________________________________________
+Four-Step Method for Vocational Training (Vocational Training के लिए Four-Step Method)
+Vocational training में Herbert's ideas पर आधारित Four-Step Method का इस्तेमाल होता है. यह skill training के लिए एक effective method माना जाता है.
+1.	Preparation (तैयारी):
+o	Instructor's Preparation: इसमें instructor को खुद lesson plan और teaching aids (charts, models, etc.) तैयार करने होते हैं. Classroom या workshop की lighting, ventilation, seating, और safety equipment की भी तैयारी करनी होती है.
+o	Trainee's Preparation: Instructor, learners के मन को new information के लिए तैयार करता है. उन्हें previous lesson का review कराकर और new lesson के importance को बताकर motivate किया जाता है. यहाँ Law of readiness और Law of purpose का इस्तेमाल होता है.
+2.	Presentation (प्रस्तुति):
+o	Trainees के तैयार होने के बाद, lesson को logical, systematic और effective तरीक़े से पढ़ाया जाता है.
+o	Instructor को simple language का इस्तेमाल करना चाहिए और lesson को छोटे objectives में बांटकर पढ़ाना चाहिए.
+o	Teaching aids का प्रभावी ढंग से इस्तेमाल करना चाहिए.
+o	Questions पूछकर learners की समझ को check करना चाहिए.
+3.	Application (अनुप्रयोग):
+o	Learners को मिली हुई theoretical knowledge को practice में लाने का मौक़ा दिया जाता है.
+o	Instructor questions पूछता है और सही जवाब देने में उनकी मदद करता है.
+o	यहाँ Law of exercise का इस्तेमाल होता है, जिससे knowledge और skill permanent हो जाते हैं.
+o	इस step के अंत में instructor lesson को summarize करता है.
+4.	Test/Evaluation (परीक्षण/मूल्यांकन):
+o	यह step यह measure करता है कि teaching कितनी effective रही.
+o	Learners की knowledge और skill का आकलन करने के लिए questions या assignments दिए जाते हैं.
+o	Law of satisfaction को apply करके learners में आगे सीखने की रुचि पैदा की जाती है.
+________________________________________
+Instructional Objectives (शैक्षणिक उद्देश्य)
+Instructional Objectives बताते हैं कि training के बाद एक learner में किस तरह का व्यवहार (behavior) दिखाई देना चाहिए. ये objectives SMART (Specific, Measurable, Achievable, Realistic, Time-bound) होने चाहिए.
+•	Ambiguous terms (अस्पष्ट शब्द): जैसे "knows," "understands," "appreciates," आदि से बचना चाहिए, क्योंकि इन्हें मापना (measure) मुश्किल होता है.
+•	Action words (क्रिया शब्द): जैसे "writes," "identifies," "solves," "constructs," "measures," आदि का उपयोग करना चाहिए, क्योंकि इन्हें observe और measure किया जा सकता है.
+________________________________________
+Key Points for Lesson Plan Preparation (Lesson Plan बनाने के लिए मुख्य बातें)
+•	Refer to materials: WIM, subject books, आदि से जानकारी इकट्ठा करें.
+•	Decide title and objectives: Lesson का title और specific objectives तय करें.
+•	Plan teaching steps: Teaching method और steps की योजना बनाएं.
+•	Select teaching aids: Teaching aids का चुनाव करें.
+•	Arrange classroom: Classroom की तैयारी पहले से कर लें.
+•	Prepare review and motivation: पिछले lesson का review और learners को motivate करने की योजना बनाएं.
+•	Present topics logically: Topics को logical order में प्रस्तुत करें.
+•	Plan for application: Questions, discussions, problem-solving के लिए योजना बनाएं.
+•	Summarize and test: Lesson को summarize करें और learners की understanding को check करने के लिए test लें.
+•	State next lesson: अगले lesson के बारे में बताएं.
+Questions (प्रश्न)
+Questions teaching के लिए एक essential tool हैं. उनका सही इस्तेमाल instructor के job का एक हिस्सा है. अच्छी questioning एक art है जो learning, teaching, और testing में महत्वपूर्ण भूमिका निभाती है. Questions का सही उपयोग करने से trainees और instructor के बीच communication और understanding बढ़ती है.
+________________________________________
+Purpose of Questions (प्रश्नों का उद्देश्य)
+Questions कई उद्देश्यों के लिए पूछे जाते हैं:
+•	Stimulates interest: lesson में रुचि जगाना.
+•	Maintains attention: trainees का ध्यान बनाए रखना.
+•	Stimulates thought: trainees को सोचने के लिए प्रेरित करना.
+•	Recalls previous knowledge: trainees को उनकी पिछली knowledge याद दिलाना और उसका परीक्षण करना.
+•	Clears doubt: संदेह और गलतफहमी को दूर करना.
+•	Evaluates teaching: यह पता लगाना कि teaching कितनी effective रही.
+•	Builds confidence: trainees में ज्ञान प्राप्त करने का confidence पैदा करना.
+•	Identifies individual differences: trainees की individual differences और difficulties को पहचानना.
+________________________________________
+Classification of Questions (प्रश्नों का वर्गीकरण)
+Questions को उनके उद्देश्य के आधार पर classify किया जाता है:
+•	Introductory/Preliminary Questions: lesson शुरू करने से पहले पूछे जाते हैं. इनका उद्देश्य trainees की पिछली knowledge का पता लगाना और उन्हें नए topic के लिए तैयार करना है.
+•	Developing Questions: ये lesson के presentation step के दौरान पूछे जाते हैं. इनका मकसद किसी topic को step-by-step विकसित करना और trainees को alert रखना होता है.
+•	Disciplinary Questions: इन प्रश्नों का उपयोग inattentive learners (असावधान learners) का ध्यान class में वापस लाने के लिए किया जाता है.
+•	Recapitulative Questions: ये lesson के अंत में पूछे जाते हैं ताकि यह जांचा जा सके कि trainees ने क्या सीखा. ये lesson का एक तरह से revision भी होते हैं.
+•	Comprehension Questions: इनका उपयोग lesson पूरा होने के बाद learners की समझ (understanding) का मूल्यांकन करने के लिए किया जाता है.
+________________________________________
+Characteristics of Good Questions (अच्छे प्रश्नों की विशेषताएं)
+एक अच्छे question में कुछ ख़ास गुण होने चाहिए:
+•	Clarity (स्पष्टता): Question इतना clear होना चाहिए कि trainee आसानी से समझ सके कि क्या पूछा गया है. (e.g., "Which brand of scooter you are using?" is better than "What is the make of the Scooter using?").
+•	Simplicity (सरलता): Question में मुश्किल terms (unusual terms) नहीं होने चाहिए.
+•	Challenging (चुनौतीपूर्ण): Question को सोचने के लिए प्रेरित करना चाहिए, न कि सिर्फ़ याद रखने के लिए. (e.g., "How does the cost of a Diesel Engine car is higher than a Petrol Engine car?").
+•	Specificity (विशिष्टता): Question का जवाब specific होना चाहिए, general नहीं. Trainee को bluff करने का मौक़ा नहीं मिलना चाहिए.
+•	Definiteness (निश्चितता): एक question का सिर्फ़ एक ही सही answer होना चाहिए. (e.g., "Who was your first Chief Minister?" is a definite question).
+________________________________________
+Questioning Technique (प्रश्न पूछने की तकनीक)
+Questioning एक art है. सही तकनीक का इस्तेमाल ज़रूरी है:
+•	Throw the question to the entire class: पहले सवाल पूरी class से पूछें.
+•	Allow sufficient time to think: Trainees को सोचने के लिए पर्याप्त समय दें.
+•	Call a trainee by name: फिर किसी एक trainee का नाम लेकर उसे answer देने के लिए कहें.
+•	Listen carefully: answer को ध्यान से सुनें और तुरंत accept न करें.
+•	Repeat the correct answer: सही answer को ज़ोर से और clear voice में repeat करें ताकि पूरी class उसे सुन सके.
+•	Clear up misunderstanding: अगर कोई misunderstanding हो तो उसे discuss करके दूर करें.
+•	Appreciate correct answers: सही answer देने पर trainee की सराहना (appreciate) करें.
+________________________________________
+Improper Techniques (गलत तकनीकें)
+इन गलत तरीक़ों से बचना चाहिए:
+•	Double and triple questions: एक ही समय में दो या तीन सवाल पूछना.
+•	Asking to bright trainees only: सिर्फ़ होशियार trainees से सवाल पूछना.
+•	Asking "yes or no" questions: ऐसे सवाल पूछना जिनका जवाब सिर्फ़ "हाँ" या "नहीं" हो.
+•	Allowing group answering: एक ही साथ कई trainees को answer देने देना.
+________________________________________
+Questions in the Four-Step Method (Four-Step Method में प्रश्न)
+Teaching के हर step में अलग तरह के questions पूछे जाते हैं:
+•	Preparation Step: Introductory or Review questions.
+•	Presentation Step: Developmental questions.
+•	Application Step: Recapitulative questions.
+•	Test Step: Test questions, Assignment questions, Drill questions, etc.
+Skill क्या है? (What is a Skill?)
+Skill किसी काम को सबसे कुशल तरीक़े से और प्रभावी ढंग से करने की स्थापित आदत (established habit of doing a thing in the most economical and competent manner) है. यह सिर्फ़ जानकारी (knowledge) होने के बारे में नहीं है, बल्कि उस ज्ञान को व्यावहारिक रूप से (practically) लागू करने के बारे में है.
+Skills के चार मुख्य रूप हैं:
+•	Intellectual Skill (बौद्धिक कौशल): सोचने और तर्क करने की क्षमता.
+•	Physical Skill (शारीरिक कौशल): शारीरिक क्रियाएं करने की क्षमता.
+•	Reacting (प्रतिक्रिया करना): स्थितियों, लोगों और चीज़ों पर भावनाओं और मूल्यों के आधार पर प्रतिक्रिया देना.
+•	Interaction (पारस्परिक क्रिया): लोगों के साथ काम करके लक्ष्य प्राप्त करने की क्षमता (जैसे communication).
+________________________________________
+Skill के Basic Elements (मूल तत्व)
+एक skill को विकसित करने के लिए तीन बुनियादी तत्व ज़रूरी होते हैं:
+1.	Accuracy (सटीकता): यह काम को सही आयामों (dimensions) और मानकों (standards) के साथ करने की क्षमता है. Accuracy लगातार practice से आती है और इसे "tolerance" भी कहते हैं.
+2.	Speed (गति): यह किसी काम को पूरा करने में लगने वाला न्यूनतम समय (minimum time) है. लगातार practice से ही एक व्यक्ति अपनी गति को सुधार पाता है.
+3.	Workmanship (कार्यकुशलता): यह systematic और economical तरीके से tools, materials, और equipment का उपयोग करके काम की quality है. Workmanship एक या दो attempts में नहीं, बल्कि लगातार अभ्यास से प्राप्त होती है.
+________________________________________
+Skill की Characteristics (विशेषताएँ)
+Skill की तीन मुख्य विशेषताएं हैं जो इसके पीछे की प्रक्रियाओं को बताती हैं:
+1.	Chain or Motor Response (श्रृंखला या मोटर प्रतिक्रिया): यह मांसपेशीय गतिविधियों (muscular movements) की एक श्रृंखला है जो किसी stimulus के जवाब में होती है. एक skill इन जुड़े हुए movements की श्रृंखला का परिणाम है.
+2.	Movement Co-ordination (आंदोलन समन्वय): यह skill को सही तरीक़े से करने के लिए हाथ, आँख और मांसपेशियों जैसे शरीर के विभिन्न अंगों के बीच का तालमेल (coordination) है.
+3.	Response Pattern (प्रतिक्रिया पैटर्न): यह अलग-अलग stimulus-response chains को एक बड़े, smooth-flowing behavior pattern में व्यवस्थित करना है. Skill विकास का मतलब complex responses को एक seamless response pattern में ढालना है.
+Phases of Skill Learning (कौशल सीखने के चरण)
+Skill सीखने की प्रक्रिया तीन मुख्य चरणों में होती है:
+1.	Acquisition Phase (अधिग्रहण चरण):
+o	इस चरण में, learner का ध्यान और धारणा (attention and perception) सबसे महत्वपूर्ण होती है.
+o	Perception का मतलब सिर्फ देखना नहीं, बल्कि देखकर समझना है.
+o	Learner की प्रेरणा (motivation) सीखने में बहुत मदद करती है. यह internal (जैसे किसी विषय में रुचि) या external (जैसे पुरस्कार या इनाम) हो सकती है.
+o	इस चरण में learner की mental readiness (मानसिक तत्परता) बहुत ज़रूरी है.
+2.	Retention Phase (अवधारण चरण):
+o	इस चरण का उद्देश्य सीखी हुई चीज़ों को याद रखना है, ताकि उन्हें भूला न जाए.
+o	Overlearning (अति-अधिगम) इसमें सहायक होता है, जिसका अर्थ है किसी भी चीज़ को बार-बार दोहराना और अभ्यास करना.
+o	यदि सामग्री (material) अर्थपूर्ण और व्यवस्थित (meaningful and organized) हो, तो उसे लंबे समय तक याद रखा जा सकता है.
+3.	Application / Recall Phase (अनुप्रयोग / स्मरण चरण):
+o	सीखना तब पूरा माना जाता है जब learner ज़रूरत पड़ने पर जानकारी को याद कर सके और उसका उपयोग कर सके.
+o	इस चरण में, याद की गई जानकारी को पिछली सीखी हुई चीज़ों से जोड़कर (associate करके) recall किया जाता है.
+________________________________________
+Three Phases of Skill Development (कौशल विकास के तीन चरण)
+1.	Cognitive Phase (संज्ञानात्मक चरण):
+o	यह पहला चरण है, जहाँ learner को यह बताया जाता है कि क्या करना है, कैसे करना है, और क्यों करना है.
+o	Instructor skill का demonstration करता है और learner को sequence और safety rules के बारे में बताता है.
+o	Learner इस phase में theory और conceptual knowledge को develop करता है.
+2.	Fixation Phase (स्थिरीकरण चरण):
+o	इस चरण में learner गलतियाँ किए बिना (without making mistakes) अभ्यास करता है.
+o	Correct behavior (सही व्यवहार) को repetitions (दोहराने) के माध्यम से पक्का किया जाता है, जिससे 'zero error' की स्थिति आ जाती है.
+o	इस phase में learner को पता होता है कि क्या करना है और कैसे करना है, लेकिन वह अभी भी conscious attention के साथ काम करता है.
+3.	Autonomous Phase (स्वायत्त चरण):
+o	यह अंतिम चरण है, जहाँ learner skill को बिना सोचे-समझे और बिना किसी गलती के (independently, without conscious attention) कर सकता है.
+o	Skill एक automatic reaction (स्वचालित प्रतिक्रिया) बन जाती है, जिससे काम तेज़ी और कुशलता से होता है.
+o	Learner में self-confidence (आत्मविश्वास) आ जाता है और वह काम में expert बन जाता है.
+________________________________________
+Process of Acquiring Skill (कौशल प्राप्त करने की प्रक्रिया)
+Skill सीखने के लिए, एक learner को चार stages से गुज़रना होता है:
+1.	Observation (अवलोकन):
+o	यह पहला stage है, जहाँ learner सिर्फ Instructor को ध्यान से देखता है.
+o	Trainee यह observe करता है कि instructor skill को कैसे perform कर रहा है, कौन सी techniques और tools का इस्तेमाल कर रहा है, और कौन सी safety precautions (सुरक्षा सावधानियाँ) अपना रहा है.
+2.	Participation (सहभागिता):
+o	इस stage में, learners को tools और materials को handle करने का मौका दिया जाता है.
+o	Instructor सिर्फ ज़रूरत पड़ने पर guidance देता है. यह group work और confidence बढ़ाने में मदद करता है.
+3.	**Imitation (अनुकरण):)
+o	इस stage में, learners instructor की नकल (imitate) करके काम करने की कोशिश करते हैं.
+o	यह उनका पहला experience होता है, इसलिए mistakes होने की संभावना होती है. Instructor को यहीं पर उन्हें सही तरीक़ा सिखाना चाहिए ताकि वे ग़लत आदतें न अपना लें.
+4.	Repetition (पुनरावृत्ति):
+o	Imitation के बाद, learners को perfection, speed, और accuracy (पूर्णता, गति और सटीकता) के लिए बार-बार अभ्यास करना होता है.
+o	Repetition skill को acquire और master करने में सबसे महत्वपूर्ण भूमिका निभाती है.
+What is Demonstration? (Demonstration क्या है?)
+Demonstration एक teacher द्वारा skill elements को एक व्यवस्थित और क्रमिक तरीके से (in a systematic, sequential order) दिखाने की एक planned performance है. यह एक instructor द्वारा learners को skill सिखाने के लिए उपयोग की जाने वाली विधि है.
+Purpose of Demonstration (Demonstration का उद्देश्य)
+•	Develops observation power: यह learners को ध्यान केंद्रित करने और उनकी अवलोकन शक्ति (observation power) को विकसित करने में मदद करता है.
+•	Teaches skills systematically: यह skill को step-by-step और सुरक्षा सावधानियों (safety precautions) के साथ सिखाता है.
+•	Connects theory to practice: यह learners को theories को practical application से जोड़ने में मदद करता है, खासकर जब concepts बहुत जटिल (complex) होते हैं.
+•	Transfers skill: यह एक expert (instructor) से novice (trainee) को skill transfer करने का सबसे अच्छा तरीका है.
+________________________________________
+What is a Demonstration Plan? (Demonstration Plan क्या है?)
+A Demonstration Plan instructor के लिए एक guidance plan है. यह skill सिखाने के लिए एक व्यवस्थित तरीक़ा (systematic manner) प्रदान करता है. इसका format lesson plan के समान होता है और इसमें चार steps शामिल होते हैं:
+1.	Preparation (तैयारी): Skill, objectives, tools, और introduction.
+2.	Demonstration (प्रस्तुति): Skill को step-by-step करके दिखाना.
+3.	Imitation (अनुकरण): learners को स्वयं skill करने देना.
+4.	Practice/Evaluation (अभ्यास/मूल्यांकन): learners को अभ्यास करने देना और उनका मूल्यांकन करना.
+________________________________________
+Elements in the Demonstration Plan Format (Demonstration Plan के Format में तत्व)
+•	Skill Title (कौशल शीर्षक): जिस skill को सिखाया जाना है उसका नाम.
+•	Objectives (उद्देश्य): यह बताता है कि demonstration के अंत में trainee क्या कर पाएगा.
+•	Tools & Equipment: demonstration के लिए आवश्यक सामग्री, tools और equipment की list.
+•	Introduction: learners को नए skill के लिए तैयार करने के लिए एक short talk (review and motivation).
+•	Procedure (प्रक्रिया): उन steps का क्रम जो skill को perform करने के लिए ज़रूरी हैं.
+•	Information points/Safety precautions: हर step के लिए ज़रूरी जानकारी और safety precautions.
+•	Questions: learners की समझ (understanding) को check करने के लिए प्रश्न.
+•	Imitation/Summary: learners को खुद करने का मौक़ा देना और मुख्य बिंदुओं को दोहराना.
+•	Practice/Evaluation: learners को अभ्यास करने देना और उनके प्रदर्शन को मापना.
+________________________________________
+Key Points for Demonstration (Demonstration के लिए मुख्य बातें)
+Before Demonstration (Demonstration से पहले):
+•	Demonstration plan को अच्छी तरह से तैयार करें.
+•	Demonstration को पहले से कई बार rehearse करें.
+•	सभी learners को देखने के लिए एक उचित जगह (proper space) में बैठाएं या खड़ा करें.
+•	Tools, materials, और equipment को एक क्रम में रखें.
+•	जगह को शांत और distracting items से मुक्त (quiet and free from distractions) रखें.
+During Demonstration (Demonstration के दौरान):
+•	केवल वही tools और equipment उपयोग करें जो trainees बाद में इस्तेमाल करेंगे.
+•	सभी सुरक्षा सावधानियों पर जोर दें.
+•	Demonstration को step-by-step और sequential order में perform करें.
+•	learners को तुरंत भाग लेने का मौक़ा दें.
+•	learners के संदेह (doubts) दूर करें.
+After Demonstration (Demonstration के बाद):
+•	Trainees को तुरंत अभ्यास (immediate practice) के लिए सामग्री प्रदान करें.
+•	Supervision के दौरान गलतियों को सुधारें.
+•	कमजोर trainees के लिए re-demonstration करें.
+•	हर trainee की प्रगति की जाँच करें.
+•	उन्हें उनकी गलतियों के बारे में बताएं और समझाएं.
+________________________________________
+Shop Talk and its Stages (Shop Talk और उसके चरण)
+Shop Talk skill development से संबंधित सटीक जानकारी (precise information) देने का एक तरीका है, जो workshop floor पर दिया जाता है. यह verbal और visual support के साथ demonstration को प्रभावी बनाता है. इसके तीन प्रकार हैं:
+•	Introductory shop talk: नए skill को शुरू करने के लिए, जिसमें skill के steps, safety rules, और tools के बारे में बताया जाता है.
+•	Related shop talk: अभ्यास के दौरान learners की difficulties को दूर करने और उन्हें सही guidance देने के लिए (praise, remedy, counseling).
+•	Final shop talk: काम पूरा होने के बाद, job को check करने और भविष्य में सुधार के लिए feedback देने के लिए.
+Shop Talk, 'What', 'How', और 'Why' को जोड़ने में मदद करता है, जिससे learners की समझ बेहतर होती है.
+Presentation Skills (प्रस्तुति कौशल)
+Presentation skills are crucial for effective communication in various settings like interviews, group discussions, and lectures. Being a good speaker isn't an innate talent; it's an art that requires practice. To deliver an effective presentation, you must:
+•	Plan and Organize (योजना और आयोजन): अपने विचारों को क्रमबद्ध और तार्किक ढंग से व्यवस्थित करें.
+•	Prepare Well (अच्छी तैयारी): अपनी presentation के लिए supporting evidence और visual aids इकट्ठा करें.
+•	Deliver Confidently (आत्मविश्वास से प्रस्तुत करें): अपनी आवाज़ को नियंत्रित करें, तेज़ी या बहुत धीरे-धीरे बोलने से बचें.
+Elements of Effective Oral Presentation (प्रभावी मौखिक प्रस्तुति के तत्व)
+•	Voice Modulation (आवाज में उतार-चढ़ाव): एकरस (monotonous) आवाज़ से बचें. अपनी pitch, volume, और speed को बदलें ताकि audience का ध्यान बना रहे.
+•	Handling Questions (प्रश्नों को संभालना):
+o	Audience को सवाल पूछने के लिए प्रोत्साहित करें.
+o	सवाल को ध्यान से सुनें और बीच में न टोकें.
+o	सवाल को दोहराएं या rephrase करें ताकि सभी को समझ आए.
+o	प्रत्येक सवाल का जवाब उत्साह के साथ दें.
+Key Teaching Skills (प्रमुख शिक्षण कौशल)
+•	Skill of Stimulus Variation (उद्दीपन भिन्नता का कौशल): छात्र का ध्यान बनाए रखने के लिए शिक्षक का जानबूझकर अपने व्यवहार में बदलाव करना. इसमें शामिल हैं:
+o	कक्षा में घूमना और gestures (हावभाव) का प्रयोग.
+o	आवाज़ की टोन, volume और speed में बदलाव.
+o	कुछ क्षण के लिए रुकना (pausing).
+o	छात्रों को physically शामिल करना (जैसे blackboard पर लिखने के लिए कहना).
+•	Skill of Illustrating with Examples (उदाहरणों से समझाने का कौशल): अवधारणाओं को स्पष्ट करने के लिए सरल, प्रासंगिक और रोचक उदाहरणों का उपयोग करना.
+•	Skill of Using a Blackboard (श्यामपट्ट के उपयोग का कौशल): साफ़, सुपाठ्य (legible) और व्यवस्थित तरीके से blackboard का उपयोग करना ताकि जानकारी को आसानी से पढ़ा जा सके.
+•	Skill of Reinforcement (पुनर्बलन का कौशल): छात्र के सही उत्तरों और अच्छे व्यवहार को प्रोत्साहित करने के लिए positive feedback (सकारात्मक प्रतिक्रिया) का उपयोग करना.
+________________________________________
+Dale’s Cone of Experience (डेल का अनुभव शंकु)
+Edgar Dale’s Cone of Experience एक visual model है जो यह दिखाता है कि सीखने वाले अलग-अलग अनुभवों से कितना ज्ञान retain करते हैं. उनका सिद्धांत था कि हम "सुनने, पढ़ने या देखने" की तुलना में "करके सीखने" (learning by doing) से अधिक जानकारी याद रखते हैं.
+यह Cone अनुभवों को सबसे ठोस (most concrete) से सबसे अमूर्त (most abstract) तक व्यवस्थित करता है. सिद्धांत यह है कि learning में जितने अधिक इंद्रिय (senses) शामिल होते हैं, learning उतनी ही बेहतर और स्थायी होती है.
+Cone के स्तर (सबसे ठोस से सबसे अमूर्त तक):
+1.	Direct Purposeful Experiences (प्रत्यक्ष उद्देश्यपूर्ण अनुभव): यह सबसे ठोस स्तर है, जहाँ learner वास्तव में खुद करके सीखता है (जैसे knot बांधना).
+2.	Contrived Experiences (कृत्रिम अनुभव): इसमें वास्तविकता के models और mock-ups का उपयोग करके सीखना शामिल है.
+3.	Dramatized Experiences (नाटकीय अनुभव): Learner किसी घटना को play-acting (अभिनय) करके सीखता है.
+4.	Demonstrations (प्रदर्शन): चित्रों, फिल्मों आदि का उपयोग करके किसी प्रक्रिया को visual रूप से समझाना.
+5.	Study Trips (अध्ययन यात्राएं): Learning को classroom से बाहर, वास्तविक स्थानों पर ले जाना.
+6.	Exhibits (प्रदर्शनियां): अलग-अलग models और pictures को देखकर सीखना.
+7.	Television and Motion Pictures (टेलीविजन और चलचित्र): दृश्य और श्रव्य माध्यमों से सीखना.
+8.	Still Pictures, Radio, and Recordings (स्थिर चित्र, रेडियो और रिकॉर्डिंग): केवल एक इंद्रिय (कान या आंख) का उपयोग करके सीखना.
+9.	Visual Symbolic (दृश्य प्रतीकात्मक): Charts, maps और graphs जैसे abstract representations का उपयोग करना.
+10.	Verbal Symbolic (मौखिक प्रतीकात्मक): शब्दों, विचारों, सूत्रों, और सिद्धांतों के माध्यम से सीखना. यह सबसे अमूर्त स्तर है.
+Dale के अनुसार, सीखना तब सबसे प्रभावी होता है जब हम learning के लिए विभिन्न media और तरीकों को मिलाते हैं, न कि सिर्फ एक पर निर्भर रहते हैं.
+Modes of Learning Experience (सीखने के अनुभव के तरीके)
+यह पाठ विभिन्न सीखने के अनुभवों को बताता है, जो Dale's Cone of Experience और अन्य मॉडल्स पर आधारित हैं.
+________________________________________
+1. Direct Purposeful Experience (प्रत्यक्ष उद्देश्यपूर्ण अनुभव)
+•	यह सीखने का आधार (base of learning) है.
+•	इसमें learners सीधे तौर पर करके सीखते हैं (learning by doing), जिससे वे चीज़ों को देख, छू, सूंघ और महसूस कर पाते हैं.
+•	यह सबसे vivid और यादगार अनुभव होता है.
+2. Direct Real Experience (प्रत्यक्ष वास्तविक अनुभव)
+•	यह Direct Purposeful Experience का एक विकल्प (alternative) है.
+•	जब शिक्षक first-hand experience नहीं दे पाते, तब वे learners को सीधे तौर पर निरीक्षण (observe) करने और अध्ययन करने का मौक़ा देते हैं.
+•	इसका भी सीखने पर बड़ा प्रभाव पड़ता है.
+3. Contrived Experiences (कृत्रिम अनुभव)
+•	यह वास्तविकता को संपादित करके (editing of reality) सीखने का अनुभव है.
+•	इसमें working models, mock-ups, और cut-away models का उपयोग होता है.
+•	यह वास्तविकता को समझना आसान बनाता है.
+4. Virtual Learning Experience (आभासी सीखने का अनुभव)
+•	यह भी एक प्रकार का contrived experience है, लेकिन इसमें computer और internet जैसी तकनीकों का उपयोग होता है.
+•	Smart boards और simulated experiments इसके अच्छे उदाहरण हैं.
+•	Learner देख और सुन सकता है, लेकिन छू या सूंघ नहीं सकता. यह contrived experience से बेहतर और वास्तविक अनुभव के करीब होता है.
+5. Motion Pictures, Television, and Computers (चलचित्र, टेलीविजन और कंप्यूटर)
+•	ये अनावश्यक सामग्री को हटाकर केवल ज़रूरी बिंदुओं पर ध्यान केंद्रित करते हैं.
+•	धीमी गति (slow motion) और पुनरावृत्ति (repetition) जैसी तकनीकों से महत्वपूर्ण प्रक्रियाओं को बार-बार दिखाया जा सकता है.
+•	यहाँ learners केवल दर्शक (mere spectators) होते हैं, और छूने, चखने या सूंघने जैसे अनुभव से वंचित रहते हैं.
+6. Exhibits (प्रदर्शनियां)
+•	इसमें working models, photographs और charts को एक अर्थपूर्ण तरीके से प्रदर्शित (exhibited) किया जाता है.
+•	जब learners सामग्री को खुद handle करते हैं, तो यह learning by doing के सिद्धांत को बढ़ावा देता है.
+7. Dramatization (नाटकीकरण)
+•	उन चीज़ों को समझने में मदद करता है जिनका हम सीधे तौर पर अनुभव नहीं कर सकते.
+•	learners "जैसे-अगर" (as-if) स्थिति में भाग लेकर किसी अवधारणा को बेहतर ढंग से समझते हैं.
+8. Four-Dimensional Experiences (चार-आयामी अनुभव)
+•	यह एक presentation system है जो 3D फिल्म को भौतिक प्रभावों (physical effects) के साथ मिलाता है (जैसे गंध, स्पर्श या कंपन).
+9. Ubiquitous Learning Experience (सर्वव्यापी सीखने का अनुभव)
+•	इसमें सीखना हर जगह (everywhere) होता है, और learner शायद सीखने की प्रक्रिया के बारे में जागरूक (conscious) भी नहीं होता है.
+•	इसमें ubiquitous computing technology का उपयोग होता है, जो user के संदर्भ (context) के आधार पर जानकारी प्रदान करती है.
+________________________________________
+Critical Appraisal of Learning Pyramid (लर्निंग पिरामिड का आलोचनात्मक मूल्यांकन)
+पाठ में बताया गया है कि Dale's Cone एक visual metaphor (दृश्य रूपक) है, जिसे पूर्ण रूप से सटीक या कठोर नियम (rigid, inflexible divisions) नहीं माना जाना चाहिए. कई विशेषज्ञों का मानना है कि learning pyramid के दावे (जैसे 90% जानकारी याद रखना) अतिसरलीकरण (oversimplification) हैं. सीखने का अनुभव केवल शिक्षण विधि पर निर्भर नहीं करता, बल्कि कई अन्य variables पर भी निर्भर करता है. हालांकि, Cone of Experience का मुख्य विचार यह है कि learning activities को इस आधार पर वर्गीकृत किया जा सकता है कि वे वास्तविक जीवन के अनुभवों के कितने करीब हैं.
+Guidelines for Teaching Practice (शिक्षण अभ्यास के लिए दिशानिर्देश)
+शिक्षक trainees को प्रभावी शिक्षण के लिए कुछ बातों का पालन करना चाहिए:
+•	Lesson Plan या Demonstration Plan का सही format उपयोग करें.
+•	कक्षा में अच्छा तालमेल (rapport) बनाएँ.
+•	Lesson का उद्देश्य स्पष्ट रूप से बताएं.
+•	जानकारी को क्रमबद्ध तरीके से प्रस्तुत करें.
+•	आवाज़ को स्पष्ट और audible रखें, और trainees से eye contact बनाए रखें.
+•	Blackboard पर साफ-सुथरा लिखें और सहायक सामग्री (visual aids) का सही समय पर उपयोग करें.
+•	प्रदर्शन के दौरान सुरक्षा पर जोर दें.
+•	सही प्रकार के प्रश्न पूछें और trainees के उत्तरों को स्वीकार (reward) करें.
+•	Lesson को समय पर समाप्त करें और अगली कक्षा के बारे में बताएं.
+Micro-Teaching क्या है? (What is Micro-Teaching?)
+Micro-teaching एक teacher training और professional development की तकनीक है. इसमें एक शिक्षक एक छोटे समूह के छात्रों को थोड़े समय (आमतौर पर 20 मिनट से कम) के लिए एक ही अवधारणा (single concept) सिखाता है. इस session को record किया जा सकता है. फिर शिक्षक और छात्रों की प्रतिक्रिया (constructive feedback) के आधार पर teaching technique में सुधार किया जाता है.
+यह तकनीक 1960 के दशक में Dr. Dwight W. Allen द्वारा Stanford University में विकसित की गई थी.
+________________________________________
+Components of Micro-Teaching (Micro-Teaching के घटक)
+Micro-teaching programme के मुख्य घटक (components) इस प्रकार हैं:
+1.	Presentation of Theory (सिद्धांत की प्रस्तुति):
+o	इस चरण में, trainee teachers को micro-teaching के सिद्धांत, उद्देश्य और उपयोग के बारे में बताया जाता है.
+o	यह आमतौर पर lecture और discussion के माध्यम से किया जाता है.
+2.	Modeling (नमूना प्रस्तुत करना):
+o	इस घटक में, एक expert instructor या एक prerecorded video के माध्यम से एक आदर्श पाठ (model lesson) दिखाया जाता है.
+o	Trainees को यह देखने का मौका मिलता है कि एक विशेष teaching skill का उपयोग कैसे किया जाता है.
+3.	Planning (योजना बनाना):
+o	Trainee teacher एक छोटे पाठ (micro lesson) की योजना खुद बनाता है.
+o	वह एक ही skill और एक ही concept पर ध्यान केंद्रित करता है.
+o	Feedback के बाद, trainees को अपनी योजना को फिर से बनाने (re-planning) का समय दिया जाता है.
+4.	Performance (प्रदर्शन):
+o	Trainee teacher द्वारा छोटे समूह के छात्रों के साथ micro lesson का प्रदर्शन (performance) किया जाता है.
+o	यह प्रदर्शन आमतौर पर लगभग 5 मिनट का होता है और इसे अक्सर video पर record किया जाता है.
+o	यह वास्तविक या simulated स्थितियों में किया जा सकता है.
+5.	Perception and Feedback (अनुभूति और प्रतिक्रिया):
+o	प्रदर्शन के तुरंत बाद, trainees को उनके प्रदर्शन पर feedback दिया जाता है.
+o	यह feedback supervisor, सहपाठियों (peers), या छात्रों द्वारा दिया जा सकता है.
+o	Video recording देखने से trainees को अपने प्रदर्शन का आत्म-विश्लेषण (self-analysis) करने में मदद मिलती है.
+o	feedback का उद्देश्य trainees को उनकी teaching skill में सुधार करने के लिए constructive सुझाव देना है.
+6.	Integration of Teaching Skills (शिक्षण कौशल का एकीकरण):
+o	यह micro-teaching का अंतिम चरण है.
+o	इस चरण में, trainees कई skills को एक साथ मिलाकर (integrated fashion) एक लंबा पाठ (longer lesson) पढ़ाते हैं.
+o	इसका उद्देश्य trainees को यह सिखाना है कि वास्तविक classroom में विभिन्न skills का एक साथ उपयोग कैसे किया जाए.
+सूक्ष्म-शिक्षण अभ्यास और उसका मूल्यांकन (Micro-Teaching Practice and its Evaluation)
+सूक्ष्म-शिक्षण (Micro-Teaching) एक ऐसी तकनीक है जो शिक्षकों को उनके शिक्षण कौशल (teaching skills) को बेहतर बनाने में मदद करती है। इसमें, एक प्रशिक्षु शिक्षक (trainee teacher) एक छोटे समूह (3-4 छात्र) को एक सीमित विषय पर एक छोटा पाठ (5-10 मिनट) पढ़ाता है। इस सत्र को अक्सर रिकॉर्ड किया जाता है, और प्रशिक्षु को पर्यवेक्षकों (supervisors) और साथियों (peers) से तत्काल प्रतिक्रिया (immediate feedback) मिलती है। यह प्रतिक्रिया शिक्षक को उसकी खूबियों और कमियों को पहचानने में मदद करती है, जिससे कौशल में तेज़ी से सुधार होता है।
+________________________________________
+सूक्ष्म-शिक्षण के सिद्धांत (Principles of Micro-Teaching)
+सूक्ष्म-शिक्षण कुछ मुख्य सिद्धांतों पर आधारित है:
+•	एक समय में एक कौशल (One Skill at a Time): इसमें एक समय में केवल एक विशिष्ट शिक्षण कौशल (जैसे, प्रश्न पूछना, समझाना, ब्लैकबोर्ड का उपयोग करना) में महारत हासिल करने पर ध्यान केंद्रित किया जाता है।
+•	छोटे पैमाने की सामग्री (Small-Scale Content): पाठ छोटे होते हैं और एक बहुत ही सीमित विषय को कवर करते हैं, जिससे प्रशिक्षु के लिए उन्हें प्रबंधित करना आसान हो जाता है।
+•	अभ्यास से पूर्णता (Practice Makes Perfect): यह कार्यक्रम अभ्यास के लिए लगातार अवसर प्रदान करता है, जिससे आत्मविश्वास और कौशल में वृद्धि होती है।
+•	तत्काल प्रतिक्रिया (Instantaneous Feedback): पाठ के तुरंत बाद प्रतिक्रिया दी जाती है, जिससे प्रशिक्षु को अपनी गलतियों को जल्दी से समझने और सुधारने का मौका मिलता है।
+•	आत्म-मूल्यांकन (Self-Evaluation): प्रशिक्षु अपने प्रदर्शन का आत्म-विश्लेषण करने और सुधार के क्षेत्रों की पहचान करने के लिए वीडियो रिकॉर्डिंग देख सकते हैं।
+•	निरंतर प्रयास (Continuous Efforts): कौशल में महारत हासिल करना एक निरंतर प्रक्रिया है जिसके लिए बार-बार अभ्यास और सुधार की आवश्यकता होती है।
+________________________________________
+सूक्ष्म-शिक्षण की प्रक्रिया (Procedure of Micro-Teaching)
+सूक्ष्म-शिक्षण चक्र को अक्सर 4 R's: Recording, Re-teaching, Re-discussing, and Redoing (रिकॉर्डिंग, पुनः पढ़ाना, पुनः चर्चा करना, और पुनः करना) के रूप में जाना जाता है। पूरी प्रक्रिया में ये चरण शामिल होते हैं:
+1.	कौशल की परिभाषा (Skill Definition): एक पर्यवेक्षक एक विशिष्ट शिक्षण कौशल के बारे में बताता है।
+2.	प्रदर्शन (Demonstration): एक विशेषज्ञ उस कौशल का उपयोग करके दिखाता है।
+3.	पाठ योजना (Lesson Planning): प्रशिक्षु उस कौशल का अभ्यास करने के लिए एक छोटा पाठ तैयार करता है।
+4.	पाठ पढ़ाना (Conducting Lesson): प्रशिक्षु पाठ पढ़ाता है, जिसे रिकॉर्ड किया जाता है।
+5.	चर्चा और प्रतिक्रिया (Discussion and Feedback): प्रशिक्षु को पर्यवेक्षक और साथियों से प्रतिक्रिया मिलती है।
+6.	पुनः योजना बनाना (Re-planning): प्रतिक्रिया के आधार पर, प्रशिक्षु पाठ योजना को संशोधित करता है।
+7.	पुनः पढ़ाना (Re-teaching): संशोधित पाठ को छात्रों के एक नए समूह को पढ़ाया जाता है।
+8.	पुनः चर्चा करना (Re-discussion): प्रशिक्षु को पुनः पढ़ाए गए पाठ पर प्रतिक्रिया का एक और दौर मिलता है।
+9.	पुनः करना (Redoing): यह चक्र तब तक दोहराया जाता है जब तक कि प्रशिक्षु कौशल में महारत हासिल नहीं कर लेता।
+________________________________________
+फायदे और नुकसान (Advantages and Disadvantages)
+फायदे (Advantages)
+•	आत्मविश्वास बढ़ाता है (Confidence Booster): बार-बार अभ्यास शिक्षकों को अधिक आत्मविश्वासी बनने में मदद करता है।
+•	बजट-अनुकूल (Budget-Oriented): यह एक लागत प्रभावी प्रशिक्षण विधि है।
+•	अधिक सीखना, कम नुकसान (More Learning, Less Damage): चूंकि इसमें केवल कुछ छात्र शामिल होते हैं, इसलिए एक नए शिक्षक की शुरुआती गलतियों का छात्रों के सीखने पर न्यूनतम प्रभाव पड़ता है।
+•	व्यवस्थित योजना (Systematic Planning): यह प्रशिक्षुओं को अच्छी तरह से संरचित पाठ योजना बनाने में मदद करता है।
+•	तत्काल प्रतिक्रिया (Instant Feedback): त्वरित प्रतिक्रिया से गलतियों को तुरंत ठीक किया जा सकता है।
+नुकसान (Disadvantages)
+•	रचनात्मकता में बाधा (Hampers Creativity): प्रशिक्षण की संरचित और समय-सीमित प्रकृति एक शिक्षक की रचनात्मकता को सीमित कर सकती है।
+•	यथार्थवादी नहीं (Not Realistic): छात्रों की कम संख्या और नियंत्रित वातावरण शिक्षकों को एक वास्तविक कक्षा की जटिलताओं के लिए पूरी तरह से तैयार नहीं करते हैं।
+•	समय लेने वाला (Time Consuming): योजना बनाने, पढ़ाने और प्रतिक्रिया देने के दोहराए गए चक्रों में काफी समय लगता है।
+•	प्रशिक्षित कर्मचारियों की आवश्यकता (Requires Trained Staff): कार्यक्रम को प्रभावी होने के लिए कुशल पर्यवेक्षकों की आवश्यकता होती है।
+________________________________________
+सूक्ष्म-शिक्षण का मूल्यांकन (Micro-Teaching Evaluation)
+प्रशिक्षु के प्रदर्शन का मूल्यांकन एक रेटिंग फॉर्म का उपयोग करके किया जाता है, जिसमें एक पर्यवेक्षक विभिन्न मानदंडों पर 1 से 5 (1=खराब, 5=उत्कृष्ट) के पैमाने पर आकलन करता है। मूल्यांकन के मानदंडों में अक्सर शामिल होते हैं:
+•	विषय ज्ञान (Subject knowledge)
+•	उद्देश्यों को स्पष्ट रूप से बताना (Stating objectives clearly)
+•	आवाज़ की श्रव्यता (Audibility of voice)
+•	आँखों का संपर्क (Eye contact)
+•	ब्लैकबोर्ड/व्हाइटबोर्ड का उपयोग (Use of blackboard/whiteboard)
+•	प्रस्तुति कौशल (Presentation skill)
+यह संरचित मूल्यांकन प्रशिक्षु को सुधार के लिए स्पष्ट और कार्रवाई योग्य प्रतिक्रिया प्रदान करता है।
+
+
+
+    </pre>
+<a href="pot4_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

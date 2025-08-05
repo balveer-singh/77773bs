@@ -1,0 +1,2805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        display: inline-block; /* To allow spacing */
+        margin-bottom: 10px; /* Space out rows if they wrap */
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+ {
+    question: "Excel में किसी worksheet को पासवर्ड से सुरक्षित करने का उद्देश्य क्या है? (What is the purpose of protecting a worksheet with a password in Excel?)",
+    options: [
+      "File को compress करना",
+      "फॉर्मेटिंग हटाना",
+      "Unauthorized changes से सुरक्षा करना",
+      "Formulas को delete करना"
+    ],
+    answer: "Unauthorized changes से सुरक्षा करना"
+  },
+  {
+    question: "Excel में किसी worksheet को protect करने का विकल्प कहाँ होता है? (Where is the 'Protect Sheet' option located in Excel?)",
+    options: [
+      "Home tab",
+      "Insert tab",
+      "Review tab",
+      "Data tab"
+    ],
+    answer: "Review tab"
+  },
+  {
+    question: "किसी protected sheet में कौन-सी action केवल तभी संभव है जब user को अनुमति दी गई हो? (Which of the following actions is only possible in a protected sheet if explicitly allowed?)",
+    options: [
+      "Sheet खोलना",
+      "Locked cells को select करना",
+      "File save करना",
+      "Copy करना"
+    ],
+    answer: "Locked cells को select करना"
+  },
+  {
+    question: "अगर आप worksheet के structure को सुरक्षित करना चाहते हैं तो आपको कौन-सा विकल्प चुनना होगा? (If you want to protect the structure of a worksheet, which option should you choose?)",
+    options: [
+      "Protect Sheet",
+      "Protect File",
+      "Protect Workbook",
+      "Lock Cells"
+    ],
+    answer: "Protect Workbook"
+  },
+  {
+    question: "यदि आप पासवर्ड भूल जाएँ जो worksheet को protect करता है, तो आप क्या नहीं कर पाएंगे? (If you forget the password used to protect a worksheet, what can you NOT do?)",
+    options: [
+      "Worksheet को देखना",
+      "Worksheet को print करना",
+      "Worksheet को edit करना",
+      "Workbook को save करना"
+    ],
+    answer: "Worksheet को edit करना"
+  },
+  {
+    question: "\"Protect Workbook\" dialog box में 'Structure' विकल्प क्या करता है? (What does the 'Structure' option in the 'Protect Workbook' dialog do?)",
+    options: [
+      "Prevents font changes",
+      "Hides formulas",
+      "Stops resizing cells",
+      "Prevents adding, deleting, or renaming sheets"
+    ],
+    answer: "Prevents adding, deleting, or renaming sheets"
+  },
+  {
+    question: "Excel में Power Query का उपयोग किस लिए किया जाता है? (What is Power Query used for in Excel?)",
+    options: [
+      "Charts बनाना",
+      "Printing sheets",
+      "Data को extract, transform, और load करने के लिए",
+      "Password reset करने के लिए"
+    ],
+    answer: "Data को extract, transform, और load करने के लिए"
+  },
+  {
+    question: "Power BI का मुख्य कार्य क्या है? (What is the main function of Power BI?)",
+    options: [
+      "Email भेजना",
+      "Website बनाना",
+      "Data Visualization और Reporting",
+      "Formulas चलाना"
+    ],
+    answer: "Data Visualization और Reporting"
+  },
+   {
+    question: "Excel में Advanced Charts का उपयोग कब किया जाता है? (When are Advanced Charts used in Excel?)",
+    options: [
+      "Simple text entry के लिए",
+      "Complex data को visually समझने के लिए",
+      "File को encrypt करने के लिए",
+      "Page layout बदलने के लिए"
+    ],
+    answer: "Complex data को visually समझने के लिए"
+  },
+  {
+    question: "Excel में Flash Fill फीचर का उपयोग किसलिए किया जाता है? (What is the use of Flash Fill feature in Excel?)",
+    options: [
+      "डेटा का विश्लेषण करने के लिए",
+      "डेटा की गणना के लिए",
+      "पैटर्न पहचानकर स्वतः डेटा भरने के लिए",
+      "ग्राफ बनाने के लिए"
+    ],
+    answer: "पैटर्न पहचानकर स्वतः डेटा भरने के लिए"
+  },
+  {
+    question: "Flash Fill Excel में किस संस्करण से उपलब्ध है? (Since which Excel version is Flash Fill available?)",
+    options: [
+      "Excel 2007",
+      "Excel 2010",
+      "Excel 2013",
+      "Excel 2003"
+    ],
+    answer: "Excel 2013"
+  },
+  {
+    question: "Flash Fill को मैनुअली सक्रिय करने के लिए कौन-सी शॉर्टकट कुंजी प्रयोग की जाती है? (Which shortcut key is used to manually trigger Flash Fill?)",
+    options: [
+      "Ctrl + F",
+      "Ctrl + E",
+      "Ctrl + D",
+      "Ctrl + Shift + L"
+    ],
+    answer: "Ctrl + E"
+  },
+  {
+    question: "Flash Fill बटन Excel के किस टैब में स्थित होता है? (In which tab of Excel is the Flash Fill button located?)",
+    options: [
+      "Insert",
+      "Formulas",
+      "Data",
+      "Review"
+    ],
+    answer: "Data"
+  },
+  {
+    question: "निम्न में से कौन-सा कार्य Flash Fill से किया जा सकता है? (Which of the following can be done using Flash Fill?)",
+    options: [
+      "चार्ट बनाना",
+      "स्पेलिंग जांचना",
+      "नामों को Proper Case में बदलना",
+      "फार्मूला लिखना"
+    ],
+    answer: "नामों को Proper Case में बदलना"
+  },
+  {
+    question: "यदि Flash Fill स्वतः कार्य नहीं कर रहा है, तो आप क्या कर सकते हैं? (What can you do if Flash Fill is not working automatically?)",
+    options: [
+      "कंप्यूटर रीस्टार्ट करें",
+      "Ctrl + E दबाएं",
+      "सॉफ्टवेयर अपडेट करें",
+      "कोई फार्मूला लगाएं"
+    ],
+    answer: "Ctrl + E दबाएं"
+  },
+  {
+    question: "Flash Fill के परिणाम में सबसे बड़ी सीमा क्या है? (What is the biggest limitation of Flash Fill's output?)",
+    options: [
+      "यह बहुत धीमा होता है",
+      "यह ऑटोसेव नहीं करता",
+      "यह डायनामिक नहीं होता",
+      "यह केवल ग्राफ बनाता है"
+    ],
+    answer: "यह डायनामिक नहीं होता"
+  },
+  {
+    question: "Flash Fill को सक्षम या अक्षम कहाँ से किया जा सकता है? (Where can Flash Fill be enabled or disabled?)",
+    options: [
+      "View Tab",
+      "Page Layout Tab",
+      "File > Options > Advanced",
+      "Review > Flash Fill Settings"
+    ],
+    answer: "File > Options > Advanced"
+  },
+   {
+    question: "Flash Fill किन अक्षरों या कैरेक्टर्स को नजरअंदाज़ कर सकता है? (Flash Fill ignores which type of characters?)",
+    options: [
+      "अंकों को",
+      "प्रिंटेबल कैरेक्टर्स को",
+      "नॉन-प्रिंटेबल कैरेक्टर्स को",
+      "स्पेस को"
+    ],
+    answer: "नॉन-प्रिंटेबल कैरेक्टर्स को"
+  },
+  {
+    question: "Flash Fill का सबसे उपयुक्त उपयोग किसमें होता है? (What is the most appropriate use of Flash Fill?)",
+    options: [
+      "डेटा टेबल बनाने में",
+      "Pivot Table बनाने में",
+      "टेक्स्ट को फॉर्मेट करने में",
+      "सेल्स ग्राफ ड्रॉ करने में"
+    ],
+    answer: "टेक्स्ट को फॉर्मेट करने में"
+  },
+  {
+    question: "MS Excel का प्रमुख उपयोग क्या है? (What is the primary use of MS Excel?)",
+    options: [
+      "ग्राफिक्स डिजाइन के लिए",
+      "स्प्रेडशीट बनाने और डेटा विश्लेषण के लिए",
+      "वेबसाइट बनाने के लिए",
+      "डेटाबेस प्रबंधन के लिए"
+    ],
+    answer: "स्प्रेडशीट बनाने और डेटा विश्लेषण के लिए"
+  },
+  {
+    question: "MS Access किस प्रकार का सॉफ़्टवेयर है? (What type of software is MS Access?)",
+    options: [
+      "टेक्स्ट एडिटर",
+      "डेटाबेस मैनेजमेंट सिस्टम",
+      "ऑपरेटिंग सिस्टम",
+      "ग्राफिक्स टूल"
+    ],
+    answer: "डेटाबेस मैनेजमेंट सिस्टम"
+  },
+  {
+    question: "निम्न में से कौन-सा कार्य Excel में आसानी से किया जा सकता है? (Which task can be easily done in Excel?)",
+    options: [
+      "रिलेशनल डेटा का प्रबंधन",
+      "ग्राफ और चार्ट बनाना",
+      "SQL स्क्रिप्ट चलाना",
+      "HTML वेबपेज बनाना"
+    ],
+    answer: "ग्राफ और चार्ट बनाना"
+  },
+  {
+    question: "Access की एक विशेषता क्या है जो Excel में नहीं होती? (Which feature of Access is not present in Excel?)",
+    options: [
+      "Pivot Table बनाना",
+      "डेटा के लिए VBA स्क्रिप्ट लिखना",
+      "रिलेशनल टेबल्स को लिंक करना",
+      "चार्ट बनाना"
+    ],
+    answer: "रिलेशनल टेबल्स को लिंक करना"
+  },
+  {
+    question: "Excel में मैक्रोज़ का उपयोग किसके लिए किया जाता है? (What is the use of macros in Excel?)",
+    options: [
+      "चित्र संपादन",
+      "रिपोर्टिंग कार्यों को ऑटोमेट करने के लिए",
+      "पासवर्ड प्रोटेक्शन के लिए",
+      "SQL कमांड्स चलाने के लिए"
+    ],
+    answer: "रिपोर्टिंग कार्यों को ऑटोमेट करने के लिए"
+  },
+  {
+    question: "Access में डेटा सिक्योरिटी कैसे की जाती है? (How is data security managed in Access?)",
+    options: [
+      "कोई सिक्योरिटी नहीं होती",
+      "केवल पासवर्ड से",
+      "यूज़र-आधारित एक्सेस परमिशन से",
+      "सिर्फ एंटीवायरस से"
+    ],
+    answer: "यूज़र-आधारित एक्सेस परमिशन से"
+  },
+  {
+    question: "Excel का उपयोग निम्न में से किस उद्देश्य के लिए उपयुक्त है? (For which purpose is Excel suitable?)",
+    options: [
+      "बड़े पैमाने पर डेटाबेस प्रबंधन",
+      "टेबल्स और ग्राफ्स के साथ त्वरित रिपोर्टिंग",
+      "क्लाउड कंप्यूटिंग",
+      "नेटवर्क सेटअप"
+    ],
+    answer: "टेबल्स और ग्राफ्स के साथ त्वरित रिपोर्टिंग"
+  },
+   {
+    question: "निम्न में से कौन-सा कार्य Excel और Access दोनों में किया जा सकता है? (Which of the following tasks can be done in both Excel and Access?)",
+    options: [
+      "वेब डेवेलपमेंट",
+      "गेम प्रोग्रामिंग",
+      "डेटा विश्लेषण",
+      "ऑपरेटिंग सिस्टम इंस्टालेशन"
+    ],
+    answer: "डेटा विश्लेषण"
+  },
+  {
+    question: "Access किस प्रकार के यूज़र्स के लिए अधिक उपयुक्त है? (Access is more suitable for which type of users?)",
+    options: [
+      "शुरुआती यूज़र",
+      "ग्राफिक्स डिज़ाइनर",
+      "डेटाबेस विशेषज्ञ",
+      "केवल छात्र"
+    ],
+    answer: "डेटाबेस विशेषज्ञ"
+  },
+  {
+    question: "निम्न में से कौन-सा Excel का उदाहरण है जहाँ वह एक डेटाबेस की तरह कार्य कर सकता है? (Which of the following is an example where Excel can act like a database?)",
+    options: [
+      "फोटो एडिटिंग",
+      "फोन बुक का प्रबंधन",
+      "वेबसाइट डिजाइन",
+      "सॉफ्टवेयर इंस्टॉलेशन"
+    ],
+    answer: "फोन बुक का प्रबंधन"
+  },
+  {
+    question: "Excel में What-If Analysis किस लिए उपयोग किया जाता है? (What is What-If Analysis used for in Excel?)",
+    options: [
+      "केवल डाटा एंट्री के लिए",
+      "विभिन्न संभावित परिणामों की भविष्यवाणी के लिए",
+      "ग्राफ बनाने के लिए",
+      "Text formatting के लिए"
+    ],
+    answer: "विभिन्न संभावित परिणामों की भविष्यवाणी के लिए"
+  },
+  {
+    question: "Goal Seek में “Set Cell” का अर्थ क्या है? (What does 'Set Cell' mean in Goal Seek?)",
+    options: [
+      "वह सेल जिसमें हम इनपुट डालते हैं",
+      "वह सेल जिसमें केवल text होता है",
+      "वह सेल जिसमें फार्मूला होता है",
+      "वह सेल जिसमें chart बना होता है"
+    ],
+    answer: "वह सेल जिसमें फार्मूला होता है"
+  },
+  {
+    question: "Goal Seek में 'To value' क्या दर्शाता है? (What does 'To value' represent in Goal Seek?)",
+    options: [
+      "जिस इनपुट को बदलना है",
+      "वह वैल्यू जो हम फार्मूले से चाहते हैं",
+      "चार्ट का टाइटल",
+      "कोई भी सेल एड्रेस"
+    ],
+    answer: "वह वैल्यू जो हम फार्मूले से चाहते हैं"
+  },
+  {
+    question: "Goal Seek टूल Excel में कहाँ पाया जाता है? (Where is the Goal Seek tool found in Excel?)",
+    options: [
+      "Insert Tab > Charts",
+      "Home Tab > Editing",
+      "Data Tab > Forecast Group",
+      "Review Tab > Proofing"
+    ],
+    answer: "Data Tab > Forecast Group"
+  },
+  {
+    question: "यदि Goal Seek को कोई समाधान नहीं मिलता तो वह क्या करता है? (What does Goal Seek do if no exact solution is found?)",
+    options: [
+      "Error दिखाता है और बंद हो जाता है",
+      "कंप्यूटर बंद कर देता है",
+      "सबसे नज़दीकी संभव वैल्यू दिखाता है",
+      "कुछ नहीं करता"
+    ],
+    answer: "सबसे नज़दीकी संभव वैल्यू दिखाता है"
+  },
+  {
+    question: "Goal Seek एक बार में कितनी इनपुट वैल्यू को बदल सकता है? (How many input values can Goal Seek change at a time?)",
+    options: [
+      "एक",
+      "दो",
+      "तीन",
+      "अनगिनत"
+    ],
+    answer: "एक"
+  },
+    {
+    question: "Goal Seek का उपयोग किस स्थिति में नहीं किया जा सकता? (When can Goal Seek NOT be used?)",
+    options: [
+      "जब फार्मूला किसी इनपुट पर निर्भर न हो",
+      "जब एक ही इनपुट हो",
+      "जब Desired Value ज्ञात हो",
+      "जब सेल में प्रतिशत हो"
+    ],
+    answer: "जब फार्मूला किसी इनपुट पर निर्भर न हो"
+  },
+  {
+    question: "Goal Seek को किस प्रकार के विश्लेषण के लिए उपयोग किया जा सकता है? (Goal Seek can be used for which type of analysis?)",
+    options: [
+      "फोटो एडिटिंग",
+      "What-If Analysis",
+      "Programming",
+      "Conditional Formatting"
+    ],
+    answer: "What-If Analysis"
+  },
+  {
+    question: "नीचे दिए गए में से कौन सा Goal Seek के 3 आवश्यक इनपुट्स में शामिल नहीं है? (Which of the following is NOT one of the 3 required inputs for Goal Seek?)",
+    options: [
+      "Set Cell",
+      "By Changing Cell",
+      "Formula Name",
+      "To Value"
+    ],
+    answer: "Formula Name"
+  },
+  {
+    question: "यदि आप जानना चाहें कि कितनी Quantity बेचने पर ₹1000 की कमाई होगी, तो कौन सा टूल उपयोग करेंगे? (Which tool will you use to find how many quantities to sell to earn ₹1000?)",
+    options: [
+      "Filter",
+      "Pivot Table",
+      "Goal Seek",
+      "Flash Fill"
+    ],
+    answer: "Goal Seek"
+  },
+  {
+    question: "What is a macro in Excel?",
+    options: [
+      "A chart type",
+      "A set of formatting styles",
+      "A set of commands written in VBA",
+      "A type of formula"
+    ],
+    answer: "A set of commands written in VBA"
+  },
+  {
+    question: "Which programming language is used to write macros in Excel?",
+    options: [
+      "Java",
+      "Python",
+      "VBA (Visual Basic for Applications)",
+      "SQL"
+    ],
+    answer: "VBA (Visual Basic for Applications)"
+  },
+  {
+    question: "What is the primary benefit of using macros in Excel?",
+    options: [
+      "Printing graphs",
+      "Automating repetitive tasks",
+      "Changing fonts",
+      "Data encryption"
+    ],
+    answer: "Automating repetitive tasks"
+  },
+  {
+    question: "Which Excel tab is used to access macro features?",
+    options: [
+      "Home",
+      "Insert",
+      "Developer",
+      "Data"
+    ],
+    answer: "Developer"
+  },
+  {
+    question: "What is the shortcut to open the Visual Basic Editor in Excel?",
+    options: [
+      "Ctrl + V",
+      "Alt + F11",
+      "Shift + F12",
+      "Ctrl + Alt + M"
+    ],
+    answer: "Alt + F11"
+  },
+   {
+    question: "What does the Macro Recorder do?",
+    options: [
+      "Records audio",
+      "Records your keystrokes and mouse actions as VBA code",
+      "Plays music",
+      "Converts text to numbers"
+    ],
+    answer: "Records your keystrokes and mouse actions as VBA code"
+  },
+  {
+    question: "How can a macro be started from the worksheet?",
+    options: [
+      "Press Alt + F4",
+      "Click Insert > Macro",
+      "Click Macros on the Developer tab or press Alt + F8",
+      "Press Ctrl + M"
+    ],
+    answer: "Click Macros on the Developer tab or press Alt + F8"
+  },
+  {
+    question: "How are macros saved in Excel?",
+    options: [
+      "As .xlsx files",
+      "As .txt files",
+      "As .xlsm files",
+      "As .pdf files"
+    ],
+    answer: "As .xlsm files"
+  },
+  {
+    question: "Which of these is NOT a macro security setting in Excel?",
+    options: [
+      "Disable all macros without notification",
+      "Disable all macros with notification",
+      "Enable all macros automatically",
+      "Enable macros with password"
+    ],
+    answer: "Enable macros with password"
+  },
+  {
+    question: "How can you run a macro step-by-step for debugging?",
+    options: [
+      "Press F5",
+      "Press F1",
+      "Press F8",
+      "Press Ctrl + E"
+    ],
+    answer: "Press F8"
+  },
+  {
+    question: "What is the extension of a module exported from VBA Editor?",
+    options: [
+      ".mod",
+      ".vbm",
+      ".bas",
+      ".vba"
+    ],
+    answer: ".bas"
+  },
+  {
+    question: "Which property makes a sheet very hidden in VBA?",
+    options: [
+      "xISheetVisible",
+      "xISheetHidden",
+      "xISheetNone",
+      "xISheetVeryHidden"
+    ],
+    answer: "xISheetVeryHidden"
+  },
+  {
+    question: "Which object is used to refer to selected cells in VBA?",
+    options: [
+      "Sheet1",
+      "Range",
+      "Workbook",
+      "Selection"
+    ],
+    answer: "Selection"
+  },
+  {
+    question: "Which command shows a message box in VBA?",
+    options: [
+      "MsgText",
+      "TextBox",
+      "MsgBox",
+      "AlertBox"
+    ],
+    answer: "MsgBox"
+  },
+  {
+    question: "What will the code Selection.Cells.UnMerge do?",
+    options: [
+      "Merge cells",
+      "Format cells",
+      "Unmerge all selected merged cells",
+      "Delete cells"
+    ],
+    answer: "Unmerge all selected merged cells"
+  },
+  {
+    question: "How can you copy a macro from one workbook to another?",
+    options: [
+      "Export/Import the module",
+      "Save as CSV",
+      "Email the workbook",
+      "Copy-paste cells"
+    ],
+    answer: "Export/Import the module"
+  },
+  {
+    question: "To delete a macro, you can use:",
+    options: [
+      "The Format tab",
+      "VBA Editor or Macro dialog box",
+      "View tab",
+      "Insert tab"
+    ],
+    answer: "VBA Editor or Macro dialog box"
+  },
+  {
+    question: "What dialog box appears when changing macro security?",
+    options: [
+      "Save As",
+      "Trust Center",
+      "Macro Recorder",
+      "Print Setup"
+    ],
+    answer: "Trust Center"
+  },
+  {
+    question: "What happens when you click “Enable Content” in the security warning bar?",
+    options: [
+      "Macros are disabled",
+      "VBA editor opens",
+      "Macros are enabled",
+      "Excel closes"
+    ],
+    answer: "Macros are enabled"
+  },
+  {
+    question: "What does the line Selection.NumberFormat = \"d-mmm-yy\" do in VBA?",
+    options: [
+      "Sets font to bold",
+      "Formats the selection as text",
+      "Changes number format to date",
+      "Adds a border"
+    ],
+    answer: "Changes number format to date"
+  },
+  {
+    question: "जब आप फॉर्मूला \"=A1+B1\" को नीचे एक सेल में कॉपी करते हैं, तो नया फॉर्मूला क्या होगा?",
+    options: [
+      "=A1+B1",
+      "=A2+B2",
+      "=$A$1+$B$1",
+      "=A1+$B$1"
+    ],
+    answer: "=A2+B2"
+  },
+    {
+    question: "Absolute Cell Reference में किस चिन्ह का प्रयोग होता है?",
+    options: [
+      "@",
+      "#",
+      "$",
+      "&"
+    ],
+    answer: "$"
+  },
+  {
+    question: "फॉर्मूला =$A$1 का मतलब क्या है?",
+    options: [
+      "रो और कॉलम दोनों बदलेंगे",
+      "केवल रो बदलेगा",
+      "केवल कॉलम बदलेगा",
+      "रो और कॉलम दोनों फिक्स रहेंगे"
+    ],
+    answer: "रो और कॉलम दोनों फिक्स रहेंगे"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा Mixed Cell Reference है?",
+    options: [
+      "A1",
+      "$A$1",
+      "$A1",
+      "Sheet1!A1"
+    ],
+    answer: "$A1"
+  },
+  {
+    question: "यदि हम A$1 को नीचे कॉपी करते हैं, तो फॉर्मूला कैसे बदलेगा?",
+    options: [
+      "A$2",
+      "B$1",
+      "A$1",
+      "$A$2"
+    ],
+    answer: "A$1"
+  },
+  {
+    question: "फॉर्मूला को Absolute Reference में बदलने के लिए कौन-सी कुंजी दबाई जाती है?",
+    options: [
+      "F1",
+      "F4",
+      "Ctrl",
+      "Shift"
+    ],
+    answer: "F4"
+  },
+  {
+    question: "यदि फॉर्मूला Sheet2!A1 है, तो इसका मतलब क्या है?",
+    options: [
+      "Sheet2 में सभी कॉलम",
+      "Sheet2 का पूरा डेटा",
+      "Sheet2 का सेल A1",
+      "Sheet2 की कॉलम A"
+    ],
+    answer: "Sheet2 का सेल A1"
+  },
+  {
+    question: "निम्न में से कौन सा उदाहरण एक Cell Range को दर्शाता है?",
+    options: [
+      "A1 to B2",
+      "A1-B2",
+      "A1:B2",
+      "A1;B2"
+    ],
+    answer: "A1:B2"
+  },
+  {
+    question: "A1 को जब एक नई शीट से रेफर किया जाता है, तो सही सिंटैक्स क्या है?",
+    options: [
+      "A1!Sheet2",
+      "Sheet2.A1",
+      "Sheet2!A1",
+      "A1/Sheet2"
+    ],
+    answer: "Sheet2!A1"
+  },
+  {
+    question: "जब आप =B1$A$1 फॉर्मूला को नीचे कॉपी करते हैं, तो...?",
+    options: [
+      "दोनों बदलेंगे",
+      "B1 बदलेगा, लेकिन $A$1 वही रहेगा",
+      "कोई नहीं बदलेगा",
+      "$A$1 बदलेगा, लेकिन B1 वही रहेगा"
+    ],
+    answer: "B1 बदलेगा, लेकिन $A$1 वही रहेगा"
+  },
+  {
+    question: "Excel में सामान्यतः कौन-सी Cell Referencing Style प्रयोग की जाती है?",
+    options: [
+      "B1",
+      "R1C1",
+      "A1",
+      "R1B1"
+    ],
+    answer: "A1"
+  },
+   {
+    question: "Absolute Cell Reference में कौन-सा चिन्ह प्रयोग किया जाता है?",
+    options: [
+      "&",
+      "@",
+      "$",
+      "#"
+    ],
+    answer: "$"
+  },
+  {
+    question: "R1C1 में R5C1 का मतलब है:",
+    options: [
+      "Row 1, Column 5",
+      "Column 1, Row 5",
+      "Cell A5",
+      "Cell E1"
+    ],
+    answer: "Cell A5"
+  },
+  {
+    question: "R[4]C[1] का मतलब क्या है?",
+    options: [
+      "Absolute reference of row 4 column 1",
+      "Current cell से 4 rows नीचे और 1 column दाईं ओर",
+      "4 rows ऊपर और 1 column बाईं ओर",
+      "Row 4 और Column 1"
+    ],
+    answer: "Current cell से 4 rows नीचे और 1 column दाईं ओर"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा फॉर्मूला Absolute referencing दर्शाता है?",
+    options: [
+      "=SUM(A1:A10)",
+      "=SUM($A$1:$A$10)",
+      "=SUM(R[1]C[1]:RC[1])",
+      "=SUM(A$1:A$10)"
+    ],
+    answer: "=SUM($A$1:$A$10)"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा R1C1 Format में लिखा गया फॉर्मूला है?",
+    options: [
+      "=SUM(A1:A5)",
+      "=SUM(R4C3:R7C3)",
+      "=SUM($A$4:$A$7)",
+      "=SUM(B4:B7)"
+    ],
+    answer: "=SUM(R4C3:R7C3)"
+  },
+  {
+    question: "INDIRECT फ़ंक्शन में R1C1 referencing को काम में लेने के लिए कौन-सा अतिरिक्त argument जरूरी होता है?",
+    options: [
+      "TRUE",
+      "\"R1C1\"",
+      "FALSE या 0",
+      "\"A1\""
+    ],
+    answer: "FALSE या 0"
+  },
+  {
+    question: "यदि सेल F1 में “R[0]C3:RC5” है, तो =SUM(INDIRECT(F1, 0)) का क्या अर्थ होगा?",
+    options: [
+      "वर्तमान row के column 3 से 5 तक के सेल्स का योग",
+      "पूरे Sheet का योग",
+      "Row 0 का योग",
+      "तीसरे Column का योग"
+    ],
+    answer: "वर्तमान row के column 3 से 5 तक के सेल्स का योग"
+  },
+  {
+    question: "Excel में R1C1 notation को चालू या बंद कहाँ से किया जाता है?",
+    options: [
+      "View tab",
+      "Page Layout",
+      "Formulas > Excel Options",
+      "Data > Tools"
+    ],
+    answer: "Formulas > Excel Options"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा फॉर्मूला 5 पंक्तियाँ ऊपर की सेल रेंज का योग करता है (R1C1 with INDIRECT)?",
+    options: [
+      "=SUM(R[-5]C:RC)",
+      "=INDIRECT(\"A1:A5\")",
+      "=SUM(INDIRECT(\"R[-5]C[0]:RC[0]\",0))",
+      "=OFFSET(A1,-5,0)"
+    ],
+    answer: "=SUM(INDIRECT(\"R[-5]C[0]:RC[0]\",0))"
+  },
+  {
+    question: "What is the main purpose of using named ranges in Excel?",
+    options: [
+      "To increase the number of rows",
+      "To shorten the file size",
+      "To make formulas easier to read and manage",
+      "To add passwords to ranges"
+    ],
+    answer: "To make formulas easier to read and manage"
+  },
+  {
+    question: "What is the correct way to define a named range using the Name Box?",
+    options: [
+      "Click anywhere and type the name in the cell",
+      "Type the name in the formula bar",
+      "Select range → Type name in Name Box (left of formula bar)",
+      "Use a hyperlink"
+    ],
+    answer: "Select range → Type name in Name Box (left of formula bar)"
+  },
+  {
+    question: "Which of the following is not allowed in a named range?",
+    options: [
+      "Underscore (_)",
+      "Period (.)",
+      "Numbers (not in the first character)",
+      "Space ( )"
+    ],
+    answer: "Space ( )"
+  },
+    {
+    question: "How can you create multiple named ranges at once using headers?",
+    options: [
+      "Use Name Box for each column",
+      "Use 'Create from Selection' option",
+      "Use the Hyperlink feature",
+      "It’s not possible"
+    ],
+    answer: "Use 'Create from Selection' option"
+  },
+  {
+    question: "What happens if you create a named range 'Sales' and then try to create another one named 'sales'?",
+    options: [
+      "Excel will allow it",
+      "Excel will overwrite the first one",
+      "Excel will throw an error",
+      "Both will be created as separate ranges"
+    ],
+    answer: "Excel will throw an error"
+  },
+  {
+    question: "What is the maximum length allowed for a named range?",
+    options: [
+      "128 characters",
+      "1024 characters",
+      "255 characters",
+      "No limit"
+    ],
+    answer: "255 characters"
+  },
+  {
+    question: "Which of the following formulas correctly uses a named range called “Sales”?",
+    options: [
+      "=COUNT(SalesRep)",
+      "=SUM(Sales)",
+      "=SALES.SUM()",
+      "=Sales()"
+    ],
+    answer: "=SUM(Sales)"
+  },
+  {
+    question: "Which method cannot restrict the scope of a named range to a worksheet?",
+    options: [
+      "Using Define Name",
+      "Using the Name Box",
+      "Using Create from Selection",
+      "None of the above"
+    ],
+    answer: "Using the Name Box"
+  },
+  {
+    question: "What does the #NAME? error indicate in Excel?",
+    options: [
+      "Missing cell reference",
+      "Wrong data type",
+      "Non-existent function or misspelled function name",
+      "Incorrect operator"
+    ],
+    answer: "Non-existent function or misspelled function name"
+  },
+  {
+    question: "Which error occurs when a number is divided by zero?",
+    options: [
+      "#NAME?",
+      "#DIV/0!",
+      "#VALUE!",
+      "#NULL!"
+    ],
+    answer: "#DIV/0!"
+  },
+  {
+    question: "What causes the #REF! error?",
+    options: [
+      "Wrong function name",
+      "Wrong operator",
+      "Deleted or missing cell reference",
+      "Invalid range separator"
+    ],
+    answer: "Deleted or missing cell reference"
+  },
+  {
+    question: "What is the main reason behind #NULL! error in Excel?",
+    options: [
+      "Cell format issue",
+      "Incorrect use of space instead of comma in formulas",
+      "Text used in calculations",
+      "Lookup value not found"
+    ],
+    answer: "Incorrect use of space instead of comma in formulas"
+  },
+  {
+    question: "The #VALUE! error typically occurs when:",
+    options: [
+      "You try to use text instead of a number",
+      "Cell is too narrow",
+      "Cell reference is deleted",
+      "Function is misspelled"
+    ],
+    answer: "You try to use text instead of a number"
+  },
+  {
+    question: "What kind of error is represented by ###### in Excel?",
+    options: [
+      "Formatting issue (column width too small)",
+      "Missing cell reference",
+      "Invalid data type",
+      "Circular reference"
+    ],
+    answer: "Formatting issue (column width too small)"
+  },
+  {
+    question: "The #N/A error appears when:",
+    options: [
+      "Function is misspelled",
+      "Range operator is wrong",
+      "Lookup value is not found",
+      "Cell is blank"
+    ],
+    answer: "Lookup value is not found"
+  },
+  {
+    question: "What does the #NUM! error represent in Excel?",
+    options: [
+      "Wrong data type",
+      "Invalid numeric operation (e.g., square root of negative number)",
+      "Missing cell reference",
+      "Cell is too small"
+    ],
+    answer: "Invalid numeric operation (e.g., square root of negative number)"
+  },
+  {
+    question: "Which formula will result in a #DIV/0! error?",
+    options: [
+      "=SUM(1,2)",
+      "=10/0",
+      "=IF(1=1,0,1)"
+    ],
+    answer: "=10/0"
+  },
+   {
+    question: "What is the fix for a #NAME? error?",
+    options: [
+      "Correct the function spelling",
+      "Delete the formula",
+      "Change column width",
+      "Replace value with 0"
+    ],
+    answer: "Correct the function spelling"
+  },
+  {
+    question: "Which of the following is not a true formula error in Excel?",
+    options: [
+      "#REF!",
+      "#DIV/0!",
+      "######",
+      "#VALUE!"
+    ],
+    answer: "######"
+  },
+  {
+    question: "What function can be used to handle errors gracefully in Excel?",
+    options: [
+      "ISERROR",
+      "IFERROR",
+      "SUMIF",
+      "ERRORCHECK"
+    ],
+    answer: "IFERROR"
+  },
+  {
+    question: "How do you resolve the #N/A error in a VLOOKUP function?",
+    options: [
+      "Use space instead of comma",
+      "Use a colon instead of comma",
+      "Make the table array an absolute reference using F4",
+      "Change font color"
+    ],
+    answer: "Make the table array an absolute reference using F4"
+  },
+  {
+    question: "Which error occurs when using =SQRT(-8) in Excel?",
+    options: [
+      "#DIV/0!",
+      "#VALUE!",
+      "#NUM!",
+      "#N/A"
+    ],
+    answer: "#NUM!"
+  },
+  {
+    question: "What is the best fix for ###### error in a date column?",
+    options: [
+      "Increase column width",
+      "Change formula",
+      "Remove spaces",
+      "Use VLOOKUP"
+    ],
+    answer: "Increase column width"
+  },
+  {
+    question: "Which symbol should be used to separate multiple values in a formula?",
+    options: [
+      "Colon (:)",
+      "Comma (,)",
+      "Dash (-)",
+      "Space"
+    ],
+    answer: "Comma (,)"
+  },
+  {
+    question: "What is the reason for #VALUE! in =C6*B6 when C6 contains 'Not Decided'?",
+    options: [
+      "Wrong formula",
+      "Text cannot be multiplied by a number",
+      "Missing operator",
+      "#NAME? error"
+    ],
+    answer: "Text cannot be multiplied by a number"
+  },
+  {
+    question: "How to make a table range absolute in Excel?",
+    options: [
+      'Type "ABS()"',
+      "Press F4",
+      "Use comma instead of colon",
+      "Press Shift + Enter"
+    ],
+    answer: "Press F4"
+  },
+  {
+    question: "What does =POWER(1000,300) return?",
+    options: [
+      "0",
+      "#NUM!",
+      "#VALUE!",
+      "#N/A"
+    ],
+    answer: "#NUM!"
+  },
+  {
+    question: "When might you use iterative calculations in Excel?",
+    options: [
+      "For formatting errors",
+      "For resolving #NUM! errors involving calculations that require multiple steps",
+      "To fix #REF!",
+      "To increase font size"
+    ],
+    answer: "For resolving #NUM! errors involving calculations that require multiple steps"
+  },
+  {
+    question: "What is the default maximum number of iterations for Excel’s iterative calculation?",
+    options: [
+      "1000",
+      "100",
+      "10",
+      "1"
+    ],
+    answer: "100"
+  },
+  {
+    question: "Which error appears if you accidentally delete a column used in a formula?",
+    options: [
+      "#NAME?",
+      "#REF!",
+      "#VALUE!",
+      "#DIV/0!"
+    ],
+    answer: "#REF!"
+  },
+  {
+    question: "Which function helps avoid #DIV/0! by providing a default value?",
+    options: [
+      "IFNA",
+      "IFERROR",
+      "SUMIF",
+      "INDEX"
+    ],
+    answer: "IFERROR"
+  },
+  {
+    question: "The error #NULL! often occurs due to:",
+    options: [
+      "Using space instead of a comma in a formula",
+      "Zero divided by a number",
+      "Deleted column",
+      "Too small column width"
+    ],
+    answer: "Using space instead of a comma in a formula"
+  },
+  {
+    question: "What causes a #N/A error in VLOOKUP?",
+    options: [
+      "Misspelled function name",
+      "Lookup value not found in the specified range",
+      "Too many arguments",
+      "Wrong operator"
+    ],
+    answer: "Lookup value not found in the specified range"
+  },
+  {
+    question: "Which Excel auditing tool shows arrows pointing to cells that provide data to a formula?",
+    options: [
+      "Trace Dependents",
+      "Trace Precedents",
+      "Show Formulas",
+      "Error Checking"
+    ],
+    answer: "Trace Precedents"
+  },
+  {
+    question: "What does the Trace Dependents tool do?",
+    options: [
+      "Displays all formulas in the worksheet",
+      "Shows cells that depend on the selected cell",
+      "Checks for formula errors automatically",
+      "Highlights cells with incorrect data types"
+    ],
+    answer: "Shows cells that depend on the selected cell"
+  },
+  {
+    question: "Which feature allows you to view formulas instead of their results in cells?",
+    options: [
+      "Trace Precedents",
+      "Error Checking",
+      "Show Formulas",
+      "Trace Dependents"
+    ],
+    answer: "Show Formulas"
+  },
+  {
+    question: "What type of errors does the Error Checking tool help identify?",
+    options: [
+      "Typographical errors in text",
+      "Division by zero and incorrect references",
+      "Formatting errors only",
+      "Data entry errors unrelated to formulas"
+    ],
+    answer: "Division by zero and incorrect references"
+  },
+  {
+    question: "Why is using Excel auditing tools beneficial?",
+    options: [
+      "They automatically correct all errors",
+      "They help visualize formula relationships and detect errors quickly",
+      "They replace the need for data validation",
+      "They increase the file size of the workbook"
+    ],
+    answer: "They help visualize formula relationships and detect errors quickly"
+  },
+  {
+    question: "What does the Trace Precedents tool in Excel do?",
+    options: [
+      "Shows which cells depend on the selected cell",
+      "Highlights cells that the selected cell refers to in its formula",
+      "Displays all formulas in the worksheet",
+      "Automatically fixes formula errors"
+    ],
+    answer: "Highlights cells that the selected cell refers to in its formula"
+  },
+  {
+    question: "If you select a cell that contains a formula and use Trace Precedents, what will Excel display?",
+    options: [
+      "Arrows pointing to cells that feed data into the formula",
+      "Arrows pointing from cells that depend on the selected cell",
+      "The result of the formula",
+      "A list of all errors in the worksheet"
+    ],
+    answer: "Arrows pointing to cells that feed data into the formula"
+  },
+  {
+    question: "To access Trace Precedents, you need to go to which tab in Excel?",
+    options: [
+      "Data",
+      "Review",
+      "Formulas",
+      "View"
+    ],
+    answer: "Formulas"
+  },
+  {
+    question: "In the example where interest amount is calculated as principal × interest rate, which cells would Trace Precedents show for the interest amount cell?",
+    options: [
+      "Only the principal amount cell",
+      "Only the interest rate cell",
+      "Both the principal amount and interest rate cells",
+      "No cells, because it’s a simple formula"
+    ],
+    answer: "Both the principal amount and interest rate cells"
+  },
+  {
+    question: "What is the main purpose of the Trace Precedents tool?",
+    options: [
+      "To edit formulas directly",
+      "To understand which cells influence the value of the selected cell",
+      "To hide all formulas in a worksheet",
+      "To find duplicates in data"
+    ],
+    answer: "To understand which cells influence the value of the selected cell"
+  },
+  {
+    question: "What does the Trace Dependents tool in Excel do?",
+    options: [
+      "Shows which cells a selected cell depends on",
+      "Highlights cells that depend on the value of a selected cell",
+      "Displays all formulas in the worksheet",
+      "Finds errors in formulas"
+    ],
+    answer: "Highlights cells that depend on the value of a selected cell"
+  },
+  {
+    question: "When you select a cell and use Trace Dependents, what will Excel show?",
+    options: [
+      "Arrows pointing to cells that feed data into the selected cell",
+      "Arrows pointing from the selected cell to cells that depend on it",
+      "The content of the cell",
+      "A list of errors"
+    ],
+    answer: "Arrows pointing from the selected cell to cells that depend on it"
+  },
+  {
+    question: "Where do you find the Trace Dependents option in Excel?",
+    options: [
+      "Home tab",
+      "Insert tab",
+      "Formulas tab",
+      "Review tab"
+    ],
+    answer: "Formulas tab"
+  },
+  {
+    question: "How can you remove the arrows created by Trace Precedents or Trace Dependents?",
+    options: [
+      "By closing the workbook",
+      "Using the Remove Arrows option in the Formulas tab",
+      "Restarting Excel",
+      "Using the Clear All option in the Home tab"
+    ],
+    answer: "Using the Remove Arrows option in the Formulas tab"
+  },
+  {
+    question: "If cell G11 has arrows pointing to other cells after using Trace Dependents, what does it mean?",
+    options: [
+      "G11 depends on those cells",
+      "Those cells depend on G11",
+      "G11 contains errors",
+      "G11 has no formula"
+    ],
+    answer: "Those cells depend on G11"
+  },
+  {
+    question: "What does the Show Formulas tool in Excel do?",
+    options: [
+      "Displays the result of formulas in cells",
+      "Shows the actual formulas entered in the cells",
+      "Hides all formulas in the worksheet",
+      "Converts formulas to values"
+    ],
+    answer: "Shows the actual formulas entered in the cells"
+  },
+  {
+    question: "Where can you find the Show Formulas option in Excel?",
+    options: [
+      "Home tab",
+      "Insert tab",
+      "Formulas tab",
+      "Data tab"
+    ],
+    answer: "Formulas tab"
+  },
+  {
+    question: "What happens when you enable Show Formulas in a worksheet?",
+    options: [
+      "Only formulas are displayed in the formula bar",
+      "All formulas in the worksheet are displayed in the cells instead of their results",
+      "All results are replaced with zero",
+      "Excel hides the cells with formulas"
+    ],
+    answer: "All formulas in the worksheet are displayed in the cells instead of their results"
+  },
+  {
+    question: "Which Excel feature helps identify and explain common formula errors like #DIV/0! or #NAME?",
+    options: [
+      "Trace Precedents",
+      "Show Formulas",
+      "Error Checking",
+      "Data Validation"
+    ],
+    answer: "Error Checking"
+  },
+  {
+    question: "If you want to find the origin of an error in a formula, which feature should you use?",
+    options: [
+      "Trace Dependents",
+      "Trace Error",
+      "Remove Arrows",
+      "Show Formulas"
+    ],
+    answer: "Trace Error"
+  },
+  {
+    question: "What does the #DIV/0! error indicate in Excel?",
+    options: [
+      "Invalid cell reference",
+      "Division by zero or empty cell in division",
+      "Incorrect formula spelling",
+      "Text instead of numbers"
+    ],
+    answer: "Division by zero or empty cell in division"
+  },
+  {
+    question: "When you click the Error Checking option and then Help on this Error, what happens?",
+    options: [
+      "Excel automatically fixes the error",
+      "A window opens in your browser with detailed info about the error and how to fix it",
+      "The cell value is cleared",
+      "The worksheet closes"
+    ],
+    answer: "A window opens in your browser with detailed info about the error and how to fix it"
+  },
+  {
+    question: "What visual aid does Excel provide when you use Trace Error on a cell with an error?",
+    options: [
+      "Highlights the cell in red",
+      "Inserts a comment in the cell",
+      "Draws an arrow pointing to the cell causing the error",
+      "Deletes the formula"
+    ],
+    answer: "Draws an arrow pointing to the cell causing the error"
+  },
+  {
+    question: "What is the main purpose of the Evaluate Formula tool in Excel?",
+    options: [
+      "To hide all formulas in the worksheet",
+      "To step through a formula calculation to better understand it",
+      "To automatically correct errors in formulas",
+      "To show the result of all formulas in the worksheet"
+    ],
+    answer: "To step through a formula calculation to better understand it"
+  },
+  {
+    question: "How do you start the Evaluate Formula process on a selected cell?",
+    options: [
+      'Select the cell and click "Evaluate Formula" in the Formulas tab',
+      'Right-click and choose "Show Formula"',
+      "Double-click the cell",
+      "Use the Trace Precedents option"
+    ],
+    answer: 'Select the cell and click "Evaluate Formula" in the Formulas tab'
+  },
+  {
+    question: "During formula evaluation, what happens when you click the Evaluate button in the Evaluate Formula window?",
+    options: [
+      "Excel fixes the formula error automatically",
+      "Excel shows the result of the underlined part of the formula step-by-step",
+      "Excel deletes the formula",
+      "The formula is converted to a value"
+    ],
+    answer: "Excel shows the result of the underlined part of the formula step-by-step"
+  },
+   {
+    question: "What is the purpose of the Watch Window in Excel?",
+    options: [
+      "To lock certain cells from editing",
+      "To view the value and formula of specific cells continuously while working in different areas or sheets",
+      "To show all cell references in the workbook",
+      "To remove arrows used in auditing tools"
+    ],
+    answer: "To view the value and formula of specific cells continuously while working in different areas or sheets"
+  },
+  {
+    question: "How can you add a cell to the Watch Window?",
+    options: [
+      "Select the cell and click 'Add Watch' from the Formulas tab",
+      "Double-click the cell",
+      "Use the Data Validation tool",
+      "Press Ctrl + W"
+    ],
+    answer: "Select the cell and click 'Add Watch' from the Formulas tab"
+  },
+  {
+    question: "Which of the following is TRUE about the Watch Window?",
+    options: [
+      "It disappears when you scroll to another sheet",
+      "It allows you to monitor important cells even when working in other sheets",
+      "It replaces the formula bar",
+      "It only works for numeric data"
+    ],
+    answer: "It allows you to monitor important cells even when working in other sheets"
+  },
+  {
+    question: "If you want to see a summary of totals and formulas without scrolling back and forth in a large worksheet, which tool is most helpful?",
+    options: [
+      "Trace Dependents",
+      "Show Formulas",
+      "Watch Window",
+      "Remove Arrows"
+    ],
+    answer: "Watch Window"
+  },
+  {
+    question: "What key combination is used to enter an array formula in Excel?",
+    options: [
+      "Ctrl + Enter",
+      "Shift + Enter",
+      "Ctrl + Shift + Enter",
+      "Alt + Enter"
+    ],
+    answer: "Ctrl + Shift + Enter"
+  },
+  {
+    question: "Which of the following represents a vertical array constant in Excel?",
+    options: [
+      "={1,2,3,4,5}",
+      '={"Apple"; "Banana"; "Grapes"}',
+      "={1; 2, 3; 4}",
+      '={"Apple", "Banana", "Grapes"}'
+    ],
+    answer: '{"Apple"; "Banana"; "Grapes"}'
+  },
+  {
+    question: "What will the array formula =B2:B7 + C2:C7 return when entered with Ctrl + Shift + Enter?",
+    options: [
+      "A single sum value of all cells in B2:B7 and C2:C7",
+      "A range of sums corresponding to each row between B2 and C7",
+      "An error",
+      "Sum of B2 and C7 only"
+    ],
+    answer: "A range of sums corresponding to each row between B2 and C7"
+  },
+  {
+    question: "What happens if you manually type curly braces {} around a formula without pressing Ctrl + Shift + Enter?",
+    options: [
+      "The formula works as an array formula",
+      "The formula works as a normal formula",
+      "Excel automatically converts it to an array formula",
+      "The formula shows an error"
+    ],
+    answer: "The formula works as a normal formula"
+  },
+  {
+    question: "Which operator is used in Excel array formulas to represent the logical AND?",
+    options: [
+      "+ (plus)",
+      "* (asterisk)",
+      "& (ampersand)",
+      "- (minus)"
+    ],
+    answer: "* (asterisk)"
+  },
+  {
+    question: "What kind of result does a multi-cell array formula return?",
+    options: [
+      "A single value",
+      "Multiple values across cells",
+      "An error if more than one cell is selected",
+      "A text string"
+    ],
+    answer: "Multiple values across cells"
+  },
+  {
+    question: "Which of the following cannot be included in an array constant?",
+    options: [
+      "Numbers",
+      "Text enclosed in quotes",
+      "Cell references",
+      "Boolean values (TRUE/FALSE)"
+    ],
+    answer: "Cell references"
+  },
+  {
+    question: "What is the correct way to create a 2-D array constant?",
+    options: [
+      "={1,2,3;4,5,6}",
+      '={"A";"B";"C"}',
+      "={1;2;3;4}",
+      '={"X", "Y", "Z"}'
+    ],
+    answer: "={1,2,3;4,5,6}"
+  },
+  {
+    question: "Which function is NOT typically used as a multi-cell array formula?",
+    options: [
+      "TRANSPOSE",
+      "TREND",
+      "SUM",
+      "FREQUENCY"
+    ],
+    answer: "SUM"
+  },
+  {
+    question: "When naming an array constant, which Excel tab do you use?",
+    options: [
+      "Data",
+      "Review",
+      "Formulas",
+      "Insert"
+    ],
+    answer: "Formulas"
+  },
+  {
+    question: "What is the main limitation of the basic LOOKUP function in Excel?",
+    options: [
+      "It only works with exact matches",
+      "It requires the lookup column/row to be sorted in ascending order",
+      "It can only search horizontally",
+      "It can handle multiple lookup values"
+    ],
+    answer: "It requires the lookup column/row to be sorted in ascending order"
+  },
+  {
+    question: "Which function is designed specifically for vertical lookup in Excel?",
+    options: [
+      "HLOOKUP",
+      "LOOKUP",
+      "VLOOKUP",
+      "INDEX"
+    ],
+    answer: "VLOOKUP"
+  },
+  {
+    question: "What is a major drawback of VLOOKUP?",
+    options: [
+      "It cannot look to the left of the lookup column",
+      "It only works for sorted data",
+      "It requires complex syntax",
+      "It is slower than LOOKUP"
+    ],
+    answer: "It cannot look to the left of the lookup column"
+  },
+  {
+    question: "Which Excel lookup function searches horizontally in the first row and returns a value from another row?",
+    options: [
+      "VLOOKUP",
+      "LOOKUP",
+      "HLOOKUP",
+      "INDEX"
+    ],
+    answer: "HLOOKUP"
+  },
+  {
+    question: "How does using MATCH with VLOOKUP improve the formula?",
+    options: [
+      "It allows dynamic reference to the return column or row",
+      "It makes the formula easier to write",
+      "It eliminates the need for a lookup value",
+      "It sorts the data automatically"
+    ],
+    answer: "It allows dynamic reference to the return column or row"
+  },
+  {
+    question: "Which formula is known as the most versatile lookup method in Excel?",
+    options: [
+      "VLOOKUP",
+      "LOOKUP",
+      "OFFSET MATCH",
+      "INDEX MATCH"
+    ],
+    answer: "INDEX MATCH"
+  },
+  {
+    question: "What is a key advantage of the INDEX MATCH formula over VLOOKUP?",
+    options: [
+      "It can only search in the first column",
+      "It allows lookup to the left and above the lookup column or row",
+      "It only works with sorted data",
+      "It is slower on large datasets"
+    ],
+    answer: "It allows lookup to the left and above the lookup column or row"
+  },
+  {
+    question: "What is the purpose of the OFFSET function combined with MATCH in lookup formulas?",
+    options: [
+      "To perform dynamic lookups unaffected by row or column insertion/deletion",
+      "To sort the lookup table automatically",
+      "To create simple one-dimensional lookups only",
+      "To replace the need for INDEX and MATCH formulas"
+    ],
+    answer: "To perform dynamic lookups unaffected by row or column insertion/deletion"
+  },
+  {
+    question: "Which of the following lookup formulas is affected by the insertion or deletion of columns or rows?",
+    options: [
+      "INDEX MATCH",
+      "VLOOKUP and HLOOKUP without MATCH",
+      "OFFSET MATCH",
+      "LOOKUP"
+    ],
+    answer: "VLOOKUP and HLOOKUP without MATCH"
+  },
+  {
+    question: "In the INDEX MATCH formula for two-dimensional lookup, what do the two MATCH functions specify?",
+    options: [
+      "The start and end of the lookup table",
+      "The row and column numbers where the value is found",
+      "The lookup values for horizontal and vertical lookups respectively",
+      "The exact and approximate match options"
+    ],
+    answer: "The row and column numbers where the value is found"
+  },
+  {
+    question: "What is the primary purpose of the Windows Registry?",
+    options: [
+      "To store user files and documents",
+      "To act as a hierarchical database for system and application settings",
+      "To replace the hard disk",
+      "To manage internet connections"
+    ],
+    answer: "To act as a hierarchical database for system and application settings"
+  },
+  {
+    question: "Which program is used to browse and edit the Windows Registry?",
+    options: [
+      "regedit.exe",
+      "cmd.exe",
+      "excel.exe",
+      "msconfig.exe"
+    ],
+    answer: "regedit.exe"
+  },
+  {
+    question: "Where are Excel 2007 settings stored in the Registry?",
+    options: [
+      "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Excel",
+      "HKEY_CURRENT_USER\\Software\\Microsoft\\Office.O\\Excel",
+      "HKEY_USERS\\Software\\Microsoft\\Excel",
+      "HKEY_CLASSES_ROOT\\Excel"
+    ],
+    answer: "HKEY_CURRENT_USER\\Software\\Microsoft\\Office.O\\Excel"
+  },
+  {
+    question: "When does Excel update its settings in the Registry?",
+    options: [
+      "Immediately when a setting changes",
+      "When Excel starts",
+      "When Excel closes normally",
+      "Every hour automatically"
+    ],
+    answer: "When Excel closes normally"
+  },
+   {
+    question: "What happens if Excel crashes while running?",
+    options: [
+      "The Registry settings are updated normally",
+      "The Registry settings are not updated",
+      "Excel automatically fixes the Registry",
+      "The Registry settings are deleted"
+    ],
+    answer: "The Registry settings are not updated"
+  },
+  {
+    question: "What is the purpose of exporting the Registry before editing it?",
+    options: [
+      "To delete the Registry safely",
+      "To create a backup so you can restore if something goes wrong",
+      "To speed up the Registry",
+      "To export settings to Excel"
+    ],
+    answer: "To create a backup so you can restore if something goes wrong"
+  },
+  {
+    question: "How can you make Excel show selected cells with a black background instead of gray?",
+    options: [
+      "Change the setting in Excel Options",
+      "Edit the Registry and add a DWORD value named Options6 with decimal value 16",
+      "Use the VLOOKUP function",
+      "Reinstall Excel"
+    ],
+    answer: "Edit the Registry and add a DWORD value named Options6 with decimal value 16"
+  },
+  {
+    question: "Which Registry section holds information about Excel's most recently used files?",
+    options: [
+      "Options",
+      "File MRU",
+      "Add-in Manager",
+      "Security"
+    ],
+    answer: "File MRU"
+  },
+  {
+    question: "What should you do if Excel fails to start due to corrupt Registry keys?",
+    options: [
+      "Delete the entire Excel Registry section so it rebuilds on next start",
+      "Reinstall Windows",
+      "Delete all files from the Documents folder",
+      "Disable macros in Excel"
+    ],
+    answer: "Delete the entire Excel Registry section so it rebuilds on next start"
+  },
+  {
+    question: "What is the risk of editing the Windows Registry?",
+    options: [
+      "It can cause Excel to slow down",
+      "It can cause Windows or applications to stop working properly",
+      "It voids your Windows license",
+      "It will delete your files automatically"
+    ],
+    answer: "It can cause Windows or applications to stop working properly"
+  },
+  {
+    question: "Which shortcut key combination is used to paste copied data in Excel?",
+    options: [
+      "Ctrl+P",
+      "Ctrl+V",
+      "Ctrl+C",
+      "Ctrl+X"
+    ],
+    answer: "Ctrl+V"
+  },
+  {
+    question: "What is the purpose of Conditional Formatting in Excel?",
+    options: [
+      "To validate data entries",
+      "To automate macros",
+      "To visually highlight cells based on criteria",
+      "To create PivotTables"
+    ],
+    answer: "To visually highlight cells based on criteria"
+  },
+  {
+    question: "Which feature in Excel helps to restrict data entry to specific values, like using drop-down lists?",
+    options: [
+      "Data Validation",
+      "Power Query",
+      "Named Ranges",
+      "Array Formulas"
+    ],
+    answer: "Data Validation"
+  },
+  {
+    question: "What is the main use of PivotTables in Excel?",
+    options: [
+      "To automate tasks with macros",
+      "To summarize and analyze large datasets dynamically",
+      "To format cells conditionally",
+      "To create lookup formulas"
+    ],
+    answer: "To summarize and analyze large datasets dynamically"
+  },
+  {
+    question: "When should you prefer using INDEX-MATCH over VLOOKUP?",
+    options: [
+      "When the lookup value is in the leftmost column",
+      "When you need horizontal lookups only",
+      "When the lookup value is NOT in the leftmost column",
+      "When working with small datasets only"
+    ],
+    answer: "When the lookup value is NOT in the leftmost column"
+  },
+  {
+    question: "What benefit do Excel Tables provide over regular data ranges?",
+    options: [
+      "Tables automatically expand when new data is added",
+      "Tables disable sorting and filtering",
+      "Tables cannot be referenced in formulas",
+      "Tables slow down Excel performance"
+    ],
+    answer: "Tables automatically expand when new data is added"
+  },
+  {
+    question: "How do Named Ranges improve formula management?",
+    options: [
+      "They simplify formula readability and reduce errors",
+      "They create macros automatically",
+      "They validate data entry",
+      "They remove duplicates from data"
+    ],
+    answer: "They simplify formula readability and reduce errors"
+  },
+  {
+    question: "What is Power Query primarily used for?",
+    options: [
+      "Creating macros",
+      "Importing, cleaning, and transforming data from multiple sources",
+      "Adding conditional formatting",
+      "Creating array formulas"
+    ],
+    answer: "Importing, cleaning, and transforming data from multiple sources"
+  },
+  {
+    question: "How do macros help in Excel?",
+    options: [
+      "By automating repetitive tasks through recorded actions",
+      "By highlighting important cells",
+      "By validating data entry",
+      "By creating PivotTables"
+    ],
+    answer: "By automating repetitive tasks through recorded actions"
+  },
+  {
+    question: "How do you enter an array formula in Excel?",
+    options: [
+      "Press Enter",
+      "Press Ctrl+Enter",
+      "Press Ctrl+Shift+Enter",
+      "Press Alt+Enter"
+    ],
+    answer: "Press Ctrl+Shift+Enter"
+  },
+  {
+    question: "Which feature allows applying horizontal bars proportional to cell values in conditional formatting?",
+    options: [
+      "Icon Sets",
+      "Data Bars",
+      "Color Scales",
+      "Custom formulas"
+    ],
+    answer: "Data Bars"
+  },
+  {
+    question: "Which of the following is NOT a benefit of using Excel Tables?",
+    options: [
+      "Structured referencing in formulas",
+      "Automatic range expansion",
+      "Static data range size",
+      "Easy sorting and filtering"
+    ],
+    answer: "Static data range size"
+  },
+  {
+    question: "What is the primary purpose of a Pivot Table in Excel?",
+    options: [
+      "To create static charts",
+      "To quickly summarize and analyze large datasets",
+      "To write complex formulas",
+      "To import external data"
+    ],
+    answer: "To quickly summarize and analyze large datasets"
+  },
+  {
+    question: "Which tab in Excel do you use to insert a Pivot Table?",
+    options: [
+      "Home",
+      "Data",
+      "Insert",
+      "Review"
+    ],
+    answer: "Insert"
+  },
+  {
+    question: "When creating a Pivot Table, what does the 'Values' area represent?",
+    options: [
+      "The fields used for filtering data",
+      "The row headers",
+      "The columns to group data by",
+      "The aggregated numerical data like sum or count"
+    ],
+    answer: "The aggregated numerical data like sum or count"
+  },
+  {
+    question: "Which of the following is NOT an area where you can drag fields in a Pivot Table?",
+    options: [
+      "Filters",
+      "Columns",
+      "Rows",
+      "Formulas"
+    ],
+    answer: "Formulas"
+  },
+  {
+    question: "What happens when you insert a Pivot Chart in Excel?",
+    options: [
+      "A new worksheet is always created",
+      "A Pivot Table is automatically created alongside the chart",
+      "The data source is deleted",
+      "The chart becomes static and cannot be changed"
+    ],
+    answer: "A Pivot Table is automatically created alongside the chart"
+  },
+  {
+    question: "Which shortcut key creates a chart from a Pivot Table on a new Chart sheet?",
+    options: [
+      "Alt + F1",
+      "Ctrl + C",
+      "F11",
+      "Ctrl + V"
+    ],
+    answer: "F11"
+  },
+  {
+    question: "In a Pivot Chart, which field area corresponds to the horizontal axis?",
+    options: [
+      "Legend (Series)",
+      "Filters",
+      "Axis (Categories)",
+      "Values"
+    ],
+    answer: "Axis (Categories)"
+  },
+  {
+    question: "How can you change the chart type of an existing Pivot Chart?",
+    options: [
+      "Right-click the chart and select 'Delete'",
+      "Use the Design tab → Change Chart Type",
+      "Use the Home tab → Format Painter",
+      "It is not possible to change chart type once created"
+    ],
+    answer: "Use the Design tab → Change Chart Type"
+  },
+  {
+    question: "What is the benefit of using Filters in a Pivot Table?",
+    options: [
+      "To create calculations",
+      "To sort data alphabetically",
+      "To display or hide certain data dynamically",
+      "To create a new worksheet"
+    ],
+    answer: "To display or hide certain data dynamically"
+  },
+  {
+    question: "To insert a Pivot Table, the data should:",
+    options: [
+      "Contain no blank rows or columns",
+      "Be formatted as a chart",
+      "Have formulas only",
+      "Always be in a separate workbook"
+    ],
+    answer: "Contain no blank rows or columns"
+  },
+  {
+    question: "What is the primary purpose of Conditional Formatting in Excel?",
+    options: [
+      "To sort data",
+      "To automatically highlight cells based on their content",
+      "To create formulas",
+      "To insert charts"
+    ],
+    answer: "To automatically highlight cells based on their content"
+  },
+  {
+    question: "Which Excel tab contains the Conditional Formatting option?",
+    options: [
+      "Insert",
+      "Home",
+      "Data",
+      "Review"
+    ],
+    answer: "Home"
+  },
+  {
+    question: "To highlight cells greater than 80 in the range A1:A10, which option should you choose?",
+    options: [
+      "Highlight Cells Rules → Greater Than",
+      "Top/Bottom Rules → Above Average",
+      "Clear Rules",
+      "New Rule"
+    ],
+    answer: "Highlight Cells Rules → Greater Than"
+  },
+  {
+    question: "What happens when you change the value of a cell that already meets a Conditional Formatting rule?",
+    options: [
+      "The formatting stays the same",
+      "The formatting changes automatically based on the new value",
+      "Excel deletes the value",
+      "The cell moves to the end of the sheet"
+    ],
+    answer: "The formatting changes automatically based on the new value"
+  },
+  {
+    question: "How can you clear conditional formatting from a selected range?",
+    options: [
+      "Delete the worksheet",
+      "Use Home → Conditional Formatting → Clear Rules → Clear Rules from Selected Cells",
+      "Use Insert → Chart",
+      "Use Data → Sort"
+    ],
+    answer: "Use Home → Conditional Formatting → Clear Rules → Clear Rules from Selected Cells"
+  },
+  {
+    question: "Which type of Conditional Formatting rule would you use to highlight cells that are above the average value of a range?",
+    options: [
+      "Highlight Cells Rules → Less Than",
+      "Top/Bottom Rules → Above Average",
+      "Data Bars",
+      "Icon Sets"
+    ],
+    answer: "Top/Bottom Rules → Above Average"
+  },
+  {
+    question: "Which of the following is NOT a Conditional Formatting option in Excel?",
+    options: [
+      "Color Scales",
+      "Data Bars",
+      "Pivot Table",
+      "Icon Sets"
+    ],
+    answer: "Pivot Table"
+  },
+  {
+    question: "If you want to highlight cells that contain specific text, which Conditional Formatting category would you use?",
+    options: [
+      "Highlight Cells Rules",
+      "Top/Bottom Rules",
+      "Data Bars",
+      "Clear Rules"
+    ],
+    answer: "Highlight Cells Rules"
+  },
+  {
+    question: "To highlight duplicate values in a dataset using Conditional Formatting, you would choose:",
+    options: [
+      "Highlight Cells Rules → Duplicate Values",
+      "Top/Bottom Rules → Top 10 Items",
+      "New Rule → Use a formula",
+      "Clear Rules"
+    ],
+    answer: "Highlight Cells Rules → Duplicate Values"
+  },
+  {
+    question: "Which of these statements is TRUE about Conditional Formatting?",
+    options: [
+      "It requires manual formatting of each cell",
+      "It can only highlight numbers, not text",
+      "It updates formatting automatically when cell values change",
+      "It removes data from cells"
+    ],
+    answer: "It updates formatting automatically when cell values change"
+  },
+  {
+    question: "What is an advanced chart in Excel?",
+    options: [
+      "A chart that can only display one data set",
+      "A chart that helps compare more than one data set in the same chart",
+      "A chart with no formatting options",
+      "A chart created only with pie charts"
+    ],
+    answer: "A chart that helps compare more than one data set in the same chart"
+  },
+  {
+    question: "Which Excel feature introduced in Excel 2013 helps to format various chart elements?",
+    options: [
+      "Data Validation",
+      "Format Pane",
+      "Quick Analysis",
+      "Conditional Formatting"
+    ],
+    answer: "Format Pane"
+  },
+  {
+    question: "How do you access the Format Axis pane in Excel?",
+    options: [
+      "Select axis → Right-click → Format Axis",
+      "Select axis → Home tab → Insert",
+      "Select chart → Delete",
+      "Select axis → Data tab → Format"
+    ],
+    answer: "Select axis → Right-click → Format Axis"
+  },
+  {
+    question: "When formatting the chart area in Excel, which fill option can you use to add a color gradient?",
+    options: [
+      "Pattern fill",
+      "Solid fill",
+      "Gradient fill",
+      "Picture or texture fill"
+    ],
+    answer: "Gradient fill"
+  },
+  {
+    question: "What is the purpose of formatting a chart in Excel?",
+    options: [
+      "To delete data",
+      "To make the chart easier to read and explain data in detail",
+      "To remove chart titles",
+      "To convert the chart to a table"
+    ],
+    answer: "To make the chart easier to read and explain data in detail"
+  },
+  {
+    question: "Which of the following is NOT an example of an advanced chart mentioned in the text?",
+    options: [
+      "Sankey Diagram",
+      "Likert Scale Chart",
+      "Pie Chart",
+      "Sunburst Chart"
+    ],
+    answer: "Pie Chart"
+  },
+  {
+    question: "How can you add a 3-D effect to a chart's data series?",
+    options: [
+      "Format Data Series → 3-D Format",
+      "Format Chart Area → Fill",
+      "Format Axis → Tick Marks",
+      "Insert → Table"
+    ],
+    answer: "Format Data Series → 3-D Format"
+  },
+  {
+    question: "To change the chart title in Excel, you should:",
+    options: [
+      "Right-click on the chart area",
+      "Right-click on the chart title and select Format Chart Title",
+      "Double-click on the axis",
+      "Insert a new chart"
+    ],
+    answer: "Right-click on the chart title and select Format Chart Title"
+  },
+  {
+    question: "Which step is NOT part of creating an advanced chart as per the instructions?",
+    options: [
+      "Insert a basic chart first",
+      "Format the chart elements like axis, title, and data series",
+      "Enter data into a table after creating the chart",
+      "Add multiple data sets to the chart"
+    ],
+    answer: "Enter data into a table after creating the chart"
+  },
+  {
+    question: "What does adding gradient fill to chart elements do?",
+    options: [
+      "Makes the chart data invisible",
+      "Enhances the visual appeal by adding color transitions",
+      "Deletes the chart data",
+      "Converts the chart to text"
+    ],
+    answer: "Enhances the visual appeal by adding color transitions"
+  },
+  {
+    question: "What is Power Query?",
+    options: [
+      "A programming language",
+      "A business intelligence tool in Excel to import, clean, and transform data",
+      "A type of database",
+      "A charting tool in Excel"
+    ],
+    answer: "A business intelligence tool in Excel to import, clean, and transform data"
+  },
+  {
+    question: "Which Excel versions require you to install Power Query as an add-in?",
+    options: [
+      "Excel 2016 and later",
+      "Excel 2010 and 2013",
+      "Excel 2007",
+      "Excel 2019 only"
+    ],
+    answer: "Excel 2010 and 2013"
+  },
+  {
+    question: "What is the default name for the Power Query tab in Excel 2016 and later?",
+    options: [
+      "Power Tools",
+      "Data Transform",
+      "Get & Transform",
+      "Query Editor"
+    ],
+    answer: "Get & Transform"
+  },
+  {
+    question: "Which language does Power Query use behind the scenes to record transformations?",
+    options: [
+      "VBA",
+      "SQL",
+      "M code",
+      "Python"
+    ],
+    answer: "M code"
+  },
+  {
+    question: "Which of the following tasks can Power Query automate?",
+    options: [
+      "Manual copying and pasting of data",
+      "Splitting text into columns, merging data, and summarizing",
+      "Creating pivot tables manually",
+      "Writing VBA code"
+    ],
+    answer: "Splitting text into columns, merging data, and summarizing"
+  },
+  {
+    question: "How does Power Query allow you to refresh data?",
+    options: [
+      "By rerunning the query manually each time",
+      "By clicking the refresh button to update with new source data automatically",
+      "By running macros",
+      "By exporting to CSV"
+    ],
+    answer: "By clicking the refresh button to update with new source data automatically"
+  },
+  {
+    question: "Power Query can import data from which of the following sources?",
+    options: [
+      "Excel files only",
+      "SQL Server, Text/CSV files, online services like SharePoint, and more",
+      "Only from the current workbook",
+      "Only databases"
+    ],
+    answer: "SQL Server, Text/CSV files, online services like SharePoint, and more"
+  },
+  {
+    question: "What does the Query Editor’s “Applied Steps” section show?",
+    options: [
+      "The original source of data",
+      "All transformation steps applied to the data, in order",
+      "The final summary of the data",
+      "The list of all queries in the workbook"
+    ],
+    answer: "All transformation steps applied to the data, in order"
+  },
+  {
+    question: "What is the function of the 'Merge Queries' feature in Power Query?",
+    options: [
+      "To split columns based on delimiters",
+      "To join two queries similar to SQL JOIN",
+      "To combine multiple worksheets into one",
+      "To append two queries vertically"
+    ],
+    answer: "To join two queries similar to SQL JOIN"
+  },
+  {
+    question: "Which of the following is NOT a data type you can assign in Power Query?",
+    options: [
+      "Currency",
+      "Boolean",
+      "Image",
+      "Date/Time"
+    ],
+    answer: "Image"
+  }
+];
+
+let quizData = []; // This will hold the selected subset of questions
+let currentQuestion = 0;
+let selectedAnswers = [];
+let skippedQuestions = [];
+let totalTime = 50 * 60; // 50 minutes in seconds
+let timerInterval;
+let quizStarted = false;
+
+// --- Confirmation Pop-up on Refresh/Close ---
+window.addEventListener('beforeunload', function (event) {
+    if (quizStarted && totalTime > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+// --- End Confirmation Pop-up ---
+
+
+function startTimer() {
+    updateTimer();
+    timerInterval = setInterval(() => {
+        totalTime--;
+        updateTimer();
+        if (totalTime <= 0) {
+            clearInterval(timerInterval);
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startQuiz() {
+    const selectedRadio = document.querySelector('input[name="questionSet"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a question set to start the quiz.");
+        return;
+    }
+    const selectedValue = selectedRadio.value;
+
+    if (selectedValue.startsWith('set_')) {
+        const setIndex = parseInt(selectedValue.split('_')[1]);
+        const startIndex = setIndex * 25;
+        const endIndex = startIndex + 25;
+        quizData = fullQuizData.slice(startIndex, endIndex);
+    } else if (selectedValue === 'full') {
+        quizData = shuffleArray([...fullQuizData]); // Shuffle all questions for full test
+    } else {
+        // Default to a 25 question set if something unexpected happens
+        quizData = shuffleArray([...fullQuizData]).slice(0, 25);
+    }
+
+    selectedAnswers = new Array(quizData.length).fill(null);
+    skippedQuestions = new Array(quizData.length).fill(false);
+    currentQuestion = 0;
+    quizStarted = true;
+
+    document.getElementById('quantitySelection').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+
+    loadQuestion();
+    startTimer();
+}
+
+
+function loadQuestion() {
+    if(quizData.length === 0) {
+        document.getElementById('question').innerText = "No questions available.";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('prevBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        updateQuestionTracker();
+        return;
+    }
+    const q = quizData[currentQuestion];
+    document.getElementById('question').innerText = `${currentQuestion + 1}. ${q.question}`;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = "";
+
+    const isCurrentQuestionAnswered = (selectedAnswers[currentQuestion] !== null) || skippedQuestions[currentQuestion];
+
+    q.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.classList.add("option-btn");
+        btn.innerText = option;
+        btn.setAttribute("role", "listitem");
+        btn.onclick = () => selectOption(option, btn);
+
+        if(isCurrentQuestionAnswered) {
+            btn.disabled = true;
+            if (option === q.answer) {
+                btn.classList.add("correct");
+            } else if (option === selectedAnswers[currentQuestion]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            if(selectedAnswers[currentQuestion] === option) {
+                btn.classList.add("selected");
+            }
+        }
+        optionsDiv.appendChild(btn);
+    });
+
+    document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+    document.getElementById('nextBtn').disabled = currentQuestion === quizData.length -1 || totalTime <= 0;
+    document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+    document.getElementById('skipBtn').disabled = totalTime <= 0;
+    document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+    updateQuestionTracker();
+}
+
+function selectOption(option, clickedButton) {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    selectedAnswers[currentQuestion] = option;
+    skippedQuestions[currentQuestion] = false;
+
+    const q = quizData[currentQuestion];
+    const isCorrect = (option === q.answer);
+
+    const optionButtons = document.querySelectorAll('#options .option-btn');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === q.answer) {
+            btn.classList.add("correct");
+        } else if (btn === clickedButton && !isCorrect) {
+            btn.classList.add("incorrect");
+        }
+        btn.classList.remove("selected");
+    });
+
+    updateQuestionTracker();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function skipQuestion() {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    skippedQuestions[currentQuestion] = true;
+    selectedAnswers[currentQuestion] = null;
+    updateQuestionTracker();
+    nextQuestion();
+}
+
+function updateQuestionTracker() {
+    const tracker = document.getElementById("questionTracker");
+    tracker.innerHTML = "";
+    quizData.forEach((_, index) => {
+        const indicator = document.createElement("div");
+        indicator.classList.add("question-indicator");
+
+        if(selectedAnswers[index] !== null) {
+            indicator.classList.add("answered");
+            indicator.classList.remove("skipped");
+        } else if(skippedQuestions[index]) {
+            indicator.classList.add("skipped");
+            indicator.classList.remove("answered");
+        } else {
+            indicator.classList.remove("answered", "skipped");
+        }
+
+        if(index === currentQuestion) {
+            indicator.classList.add("active");
+        }
+        indicator.innerText = index + 1;
+        indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${selectedAnswers[index] !== null ? 'answered' : skippedQuestions[index] ? 'skipped' : 'not attempted'}`);
+        indicator.onclick = () => {
+            if(totalTime <= 0) return;
+            currentQuestion = index;
+            loadQuestion();
+        };
+        tracker.appendChild(indicator);
+    });
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizStarted = false;
+    document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+    document.getElementById("prevBtn").disabled = true;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("submitBtn").disabled = true;
+
+    let correctCount = 0;
+    let incorrectQuestions = [];
+
+    quizData.forEach((q, i) => {
+        if (selectedAnswers[i] !== null) {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        } else if (skippedQuestions[i]) {
+             incorrectQuestions.push({
+                question: q.question,
+                yourAnswer: "(Skipped)",
+                correctAnswer: q.answer
+            });
+        }
+    });
+
+    sessionStorage.setItem('quizScore', correctCount);
+    sessionStorage.setItem('quizTotal', quizData.length);
+    sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+    // Redirect to results page, ensure you have a results.html file
+    window.location.href = "results.html";
+}
+
+
+// Event Listener for Skip Button
+document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+// Function to generate quantity selection radio buttons
+function generateQuantityOptions() {
+    const radioOptionsDiv = document.getElementById('radioOptions');
+    radioOptionsDiv.innerHTML = ''; // Clear existing options
+
+    const totalQuestions = fullQuizData.length;
+    const questionsPerSet = 25;
+    const num25QuestionSets = Math.floor(totalQuestions / questionsPerSet);
+    const remainingQuestions = totalQuestions % questionsPerSet;
+
+    // Add 25-question sets
+    for (let i = 0; i < num25QuestionSets; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${i}" ${i === 0 ? 'checked' : ''}> Set ${i + 1} (${questionsPerSet} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add a set for remaining questions if any
+    if (remainingQuestions > 0) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${num25QuestionSets}"> Set ${num25QuestionSets + 1} (${remainingQuestions} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add Full Test option
+    const fullTestLabel = document.createElement('label');
+    fullTestLabel.innerHTML = `
+        <input type="radio" name="questionSet" value="full" ${num25QuestionSets === 0 && remainingQuestions === 0 ? 'checked' : ''}> Full Test (${totalQuestions} Questions)
+    `;
+    radioOptionsDiv.appendChild(fullTestLabel);
+}
+
+// Initialize quiz setup on page load
+window.onload = function() {
+    document.getElementById('quiz').style.display = 'none'; // Hide quiz initially
+    document.getElementById('timer').style.display = 'none'; // Hide timer initially
+    generateQuantityOptions(); // Populate radio buttons
+};
+</script>
+</body>
+</html>

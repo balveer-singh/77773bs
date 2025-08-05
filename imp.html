@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #1A1C20; /* Deep charcoal/almost black */
+            --card-bg: #2C2F33; /* Slightly lighter charcoal */
+            --primary-accent: #00BFFF; /* Deep Sky Blue - a vibrant cool accent */
+            --text-light: #E0E0E0; /* Off-white for general text */
+            --text-muted: #A0A0A0; /* Lighter grey for subtle text */
+            --border-color: #40444B; /* Dark grey for borders/separators */
+            --shadow-subtle: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --shadow-strong: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; /* A new modern, clean font */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--dark-bg); /* Solid dark background */
+            color: var(--text-light);
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow-strong);
+            width: 90%;
+            max-width: 500px; /* Slightly narrower container */
+            box-sizing: border-box;
+            border: 1px solid var(--border-color); /* Subtle border */
+            animation: slideInUp 0.8s ease-out forwards;
+            opacity: 0; /* Start invisible for animation */
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: var(--primary-accent);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+        }
+
+        p {
+            font-size: 1.05em;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* Slightly less gap for compactness */
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: var(--primary-accent); /* Accent color for buttons */
+            border: none;
+            border-radius: 8px; /* Slightly less rounded */
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 191, 255, 0.4); /* Shadow matching accent color */
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background-color: #009ACD; /* Darker blue on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 191, 255, 0.6);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 35px 25px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .btn {
+                font-size: 1em;
+                padding: 14px 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 18px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            p {
+                font-size: 0.9em;
+                margin-bottom: 25px;
+            }
+            .btn-container {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>IMP Question Portal</h1>
+        <p>Your gateway to comprehensive practice sessions.</p>
+
+        <div class="btn-container">
+            <a href="imp_theory.html" class="btn">Theory Mock Test</a>
+            <a href="imp_pot.html" class="btn">POT Mock Test</a>
+            <a href="imp_softskill.html" class="btn">Soft-skill Mock Test</a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+     {
+    "question": "What does the term ʺTaxonomyʺ refer to in education? | शिक्षा में ʺवर्गीकरणʺ िब्द का क्या अर्थ है?",
+    "options": [
+      "Classification of animals | पशुओं का वर्गीकरण",
+      "Classification of plants | पौधों का वर्गीकरण",
+      "Classification of educational objectives | िैक्षणणक उद्देश्यों का वर्गीकरण",
+      "Classification of tools | उपकरणों का वर्गीकरण"
+    ],
+    "answer": "Classification of educational objectives | िैक्षणणक उद्देश्यों का वर्गीकरण"
+  },
+  {
+    "question": "What is the main objective of NSQF? | NSQF का मुख्य उद्देश्य क्या है?",
+    "options": [
+      "To create a skill development infrastructure | कौशल ववकास अवसंरचना तैयार करना",
+      "To standardize qualifications across sectors | ववशिन्न क्षेत्रों में योग्यताओं का मानकीकरण करना",
+      "To fund vocational training programs | व्यावसाययक प्रशशक्षण काययक्रमों को यनधध देना",
+      "To promote higher education | उच्च शशक्षा को बढावा देना"
+    ],
+    "answer": "To standardize qualifications across sectors | ववशिन्न क्षेत्रों में योग्यताओं का मानकीकरण करना"
+  },
+  {
+    "question": "Which method is used in the ʺApplicationʺ level to demonstrate understanding of a concept? | ककसी अवधारणा की समझ को प्रदशिथत करने के शिए ʺअनुप्रयोर्गʺ स्तर में ककस पद्धतत का उपयोर्ग ककया जाता है?",
+    "options": [
+      "Summarizing | सारांश बनाना",
+      "Implementing | कायाथन्न्वत करना",
+      "Describing | वणयन करना",
+      "Evaluating | मूलयाकं न करना"
+    ],
+    "answer": "Implementing | कायाथन्न्वत करना"
+  },
+  {
+    "question": "What is the main objective of the ʺSynthesisʺ level? | संश्िेषण स्तर का मुख्य उद्देश्य क्या है?",
+    "options": [
+      "Breaking down information | जानकारी को तोड़ना",
+      "Putting parts together | िार्गों को एक सार् रखना",
+      "Making judgments | यनणयय लेना",
+      "Recalling information | जानकारी को याद रखना"
+    ],
+    "answer": "Putting parts together | िार्गों को एक सार् रखना"
+  },
+  {
+    "question": "What is one purpose of conducting tests in education? | शिक्षा में परीक्षण आयोन्जत करने का एक उद्देश्य क्या है?",
+    "options": [
+      "To entertain students | छात्रों का मनोरंजन करना",
+      "To provide a basis for selection | चयन के शिए आधार प्रदान करना",
+      "To replace teaching | शशक्षण को प्रयतस्थावपत करना",
+      "To confuse learners | शशक्षाधथययों को भ्रशमत करना"
+    ],
+    "answer": "To provide a basis for selection | चयन के शिए आधार प्रदान करना"
+  },
+  {
+    "question": "What is one characteristic of a ʹʹGood testʹʹ? | ʹअच्छे परीक्षणʹ की एक वविेषता क्या है?",
+    "options": [
+      "Unreliable | अववश्वसनीय",
+      "Confusing | भ्रामक",
+      "Measures achievement | उपिन्ब्ध के उपाय",
+      "Difficult | कठिन"
+    ],
+    "answer": "Measures achievement | उपिन्ब्ध के उपाय"
+  },
+  {
+    "question": "Which of the following is necessary for effective evaluation in education? | शिक्षा मेंप्रिावी मूलयांकन के शिए तनम्नशिणखत में से कौन सा आवश्यक है?",
+    "options": [
+      "Personal opinions | व्यक्ततर्गत राय",
+      "Clear criteria | स्पष्ट मानदंड",
+      "Random guessing | यादृक्च्छक अनुमान",
+      "Ambiguous standards | अस्पष्ट मानक"
+    ],
+    "answer": "Clear criteria | स्पष्ट मानदंड"
+  },
+  {
+    "question": "Which of the following best describes the ʺSetʺ level in the psychomotor domain? | तनम्नशिणखत में से कौन सा साइकोमोटर डोमेन में ʺसेटʺ स्तर का सबसे अच्छा वणथन करता है?",
+    "options": [
+      "Readiness to act | कारथवाई करने की तत्परता",
+      "Adjustment of skills | कौशल का समायोजन",
+      "Creating new movements | नई हरकतें बनाना",
+      "Evaluating actions | कारयवाई का मूलयांकन करना"
+    ],
+    "answer": "Readiness to act | कारथवाई करने की तत्परता"
+  },
+  {
+    "question": "What skill is involved in the ʺGuided Responseʺ level of the psychomotor domain? | साइकोमोटर डोमेन के ʺतनदेशित प्रततकियाʺ स्तर में कौन सा कौिि िाशमि है?",
+    "options": [
+      "Recognizing clues | संके तों को पहचानना",
+      "Following instructions | तनदेिों का पािन करना",
+      "Modifying movements | मूवमेंट्स को संशोधधत करना",
+      "Creating new patterns | नए पैटनय बनाना"
+    ],
+    "answer": "Following instructions | तनदेिों का पािन करना"
+  },
+  {
+    "question": "What is the revised term for the ʺKnowledgeʺ level in the revised taxonomy of educational objectives? | िैक्षणणक उद्देश्यों के संिोधधत वर्गीकरण में ʺज्ञानʺ स्तर के शिए संिोधधत िब्द क्या है?",
+    "options": [
+      "Understanding | समझना",
+      "Remembering | याद रखना",
+      "Creating | क्रक्रएठटंर्ग",
+      "Evaluating | मूलयाकं न करना"
+    ],
+    "answer": "Remembering | याद रखना"
+  },
+  {
+    "question": "What does the term ʺCompetencyʺ refer to in NSQF? | NSQF में ʺयोग्यताʺ िब्द का क्या अर्थ है?",
+    "options": [
+      "Knowledge, Skills and Attitude | ज्ञान, कौिि और दृन्ष्टकोण",
+      "Only skills | क्स्कलस",
+      "Only knowledge | नॉलेज",
+      "Certification processes | सठटयक्रिके शन प्रोसेसेज"
+    ],
+    "answer": "Knowledge, Skills and Attitude | ज्ञान, कौिि और दृन्ष्टकोण"
+  },
+  {
+    "question": "What is the primary goal of bloomʹs taxonomy? | ब्िूम के वर्गीकरण का प्रार्शमक िक्ष्य क्या है?",
+    "options": [
+      "To provide entertainment | मनोरंजन प्रदान करना",
+      "To promote higher forms of thinking | सोच के उच्चतर रूपों को बढावा देना",
+      "To classify animals | जानवरों को वर्गीकृत करना",
+      "To simplify grading | ग्रेड ंर्ग को सरल बनाना"
+    ],
+    "answer": "To promote higher forms of thinking | सोच के उच्चतर रूपों को बढावा देना"
+  },
+  {
+    "question": "What does the ʺApplicationʺ level involve? | अनुप्रयोर्ग स्तर मेंक्या िाशमि है?",
+    "options": [
+      "Applying knowledge | ज्ञान को िार्गूकरना",
+      "Understanding facts | तथ्यों को समझना",
+      "Creating new work | नया काम बनाना",
+      "Evaluating concepts | अवधारणाओं का मलूयांकन करना"
+    ],
+    "answer": "Applying knowledge | ज्ञान को िार्गूकरना"
+  },
+  {
+    "question": "What role do Sector Skill Councils (SSC) play in NSQF? | NSQF में सेक्टर न्स्कि काउं शसि (SSC) की क्या िूशमका है?",
+    "options": [
+      "Designing curriculum | पाठ्यक्रम तैयार करना",
+      "Setting up training institutes | प्रशशक्षण संस्थान स्थावपत करना",
+      "Defining competency standards | योग्यता मानकों को पररिावषत करना",
+      "Conducting research | शोध करना"
+    ],
+    "answer": "Defining competency standards | योग्यता मानकों को पररिावषत करना"
+  },
+  {
+    "question": "What is the purpose of the National Occupational Standards (NOS) under NSQF? | NSQF के तहत राष्रीय व्यावसातयक मानकों (NOS) का उद्देश्य क्या है?",
+    "options": [
+      "To define the minimum standards for a job role | नौकरी की िूशमका के शिए न्यूनतम मानक तनधाथररत करना",
+      "To set higher education criteria | उच्च शशक्षा मानदं यनधायररत करना",
+      "To allocate training funds | प्रशशक्षण यनधध आवंठटत करना",
+      "To assess student performance | छात्र प्रदशयन का आकलन करना"
+    ],
+    "answer": "To define the minimum standards for a job role | नौकरी की िूशमका के शिए न्यूनतम मानक तनधाथररत करना"
+  },
+  {
+    "question": "What does the psychomotor domain describe? | साइकोमोटर डोमेन क्या वणथन करता है?",
+    "options": [
+      "Emotional skills | भावनात्मक कौशल",
+      "Physical skills | िारीररक कौिि",
+      "Cognitive skills | संज्ञानात्मक कौशल",
+      "Social skills | सामाक्जक कौशल"
+    ],
+    "answer": "Physical skills | िारीररक कौिि"
+  },
+  {
+    "question": "What is involved in the ʺAnalysisʺ level of Bloomʹs Taxonomy? | ब्िूम के वर्गीकरण के ʺववश्िेषणʺ स्तर में क्या िाशमि है?",
+    "options": [
+      "Breaking down information | जानकारी को तोड़ना",
+      "Creating new ideas | नए ववचार बनाना",
+      "Making judgments | यनणयय लेना",
+      "Applying knowledge | ज्ञान को लार्गूकरना"
+    ],
+    "answer": "Breaking down information | जानकारी को तोड़ना"
+  },
+  {
+    "question": "How does NSQF help in bridging the skill gap in India? | NSQF िारत में कौिि अंतर को पाटने में कै से मदद करता है?",
+    "options": [
+      "By funding educational institutions | शैक्षणणक संस्थानों को यनधध देकर",
+      "By standardizing skill training and assessment | कौिि प्रशिक्षण और मूलयाकं न को मानकीकृत करके",
+      "By promoting foreign collaborations | ववदेशी सहयोर्ग को बढावा देकर",
+      "By providing scholarships | छात्रववृि प्रदान करके"
+    ],
+    "answer": "By standardizing skill training and assessment | कौिि प्रशिक्षण और मूलयाकं न को मानकीकृत करके"
+  },
+  {
+    "question": "What does the cognitive domain involve according to Bloomʹs Taxonomy? | ब्िूम के वर्गीकरण के अनुसार संज्ञानात्मक डोमेन में क्या िाशमि है?",
+    "options": [
+      "Knowledge | ज्ञान",
+      "Emotional growth | भावनात्मक ववकास",
+      "Physical skills | शारीररक कौशल",
+      "Social skills | सामाक्जक कौशल"
+    ],
+    "answer": "Knowledge | ज्ञान"
+  },
+  {
+    "question": "What does the ʺEvaluatingʺ level involve? | मलूयांकन स्तर मेंक्या िाशमि है?",
+    "options": [
+      "Designing new work | नए काम की रूपरेखा बनाना",
+      "Making judgments | तनणथय िेना",
+      "Understanding concepts | अवधारणाओं को समझना",
+      "Applying knowledge | ज्ञान को लार्गूकरना"
+    ],
+    "answer": "Making judgments | तनणथय िेना"
+  },
+  {
+    "question": "What is the main feature of the ʺKnowledgeʺ level? | ज्ञान स्तर की मुख्य वविेषता क्या है?",
+    "options": [
+      "Applying skills | कौशल लार्गूकरना",
+      "Evaluating work | काम का मूलयांकन करना",
+      "Recalling facts | तथ्यों को याद करना",
+      "Creating new ideas | नए ववचारों का यनमायण करना"
+    ],
+    "answer": "Recalling facts | तथ्यों को याद करना"
+  },
+  {
+    "question": "What does the ʺGuided Responseʺ level emphasize in the psychomotor domain? | साइकोमोटर डोमेन में ʺतनदेशित प्रततकियाʺ स्तर ककस पर जोर देता है?",
+    "options": [
+      "Initial learning | प्रारंशिक शिक्षा",
+      "Habitual actions | आदतन क्रक्रयाएं",
+      "Precision | सटीकता",
+      "Naturalization | प्राकृयतककरण"
+    ],
+    "answer": "Initial learning | प्रारंशिक शिक्षा"
+  },
+  {
+    "question": "Which level involves using information in new situations? | ककस स्तर में नई न्स्र्ततयों में जानकारी का उपयोर्ग करना िाशमि है?",
+    "options": [
+      "Remembering | याद रखना",
+      "Understanding | समझना",
+      "Applying | िार्गूकरना",
+      "Evaluating | मूलयाकं न करना"
+    ],
+    "answer": "Applying | िार्गूकरना"
+  },
+  {
+    "question": "What is the focus of the ʺComprehensionʺ level? | समझ स्तर का ध्यान ककस पर है?",
+    "options": [
+      "Applying techniques | तकनीकों को लार्गूकरना",
+      "Creating patterns | पैटनय बनाना",
+      "Understanding ideas | ववचारों को समझना",
+      "Judging work | काम का आकलन करना"
+    ],
+    "answer": "Understanding ideas | ववचारों को समझना"
+  },
+  {
+    "question": "What does NSQF stand for? | NSQF का क्या अर्थ है?",
+    "options": [
+      "National Skills Qualification Framework",
+      "National Standards Qualification Framework",
+      "National Skills Quality Foundation",
+      "National Standards Quality Foundation"
+    ],
+    "answer": "National Skills Qualification Framework"
+  }
+  ];
+
+let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = [];
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-X") { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false);
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else {
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true;
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct");
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect");
+            }
+            btn.classList.remove("selected");
+        });
+
+        updateQuestionTracker();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = null;
+        questionAnsweredStatus[currentQuestion] = false;
+        updateQuestionTracker();
+        nextQuestion();
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) {
+                indicator.classList.add("answered");
+            } else if (selectedAnswers[index] === null) {
+                indicator.classList.remove("answered");
+                indicator.classList.add("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            }
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : 'not answered'}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").disabled = true;
+        document.getElementById("submitBtn").disabled = true;
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i] || "(No answer selected)",
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        sessionStorage.setItem('quizScore', correctCount);
+        sessionStorage.setItem('quizTotal', quizData.length);
+        sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+        window.location.href = "results.html";
+    }
+
+    document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+    window.onload = function() {
+        const quantitySelectionDiv = document.getElementById('quantitySelection');
+        const quizDiv = document.getElementById('quiz');
+        const radioOptionsDiv = document.getElementById('radioOptions'); // New: Div to hold radio buttons
+        const set26_50_label = document.getElementById('set26_50_label'); // For 26-50
+        const set26_X_label = document.getElementById('set26_X_label');   // For 26-Remaining
+        const allQuestionsLabel = document.getElementById('allQuestionsLabel');
+
+        const totalAvailableQuestions = fullQuizData.length;
+
+        if (totalAvailableQuestions <= 25 && totalAvailableQuestions > 0) {
+            // Scenario 1: Total questions are 25 or less (but more than 0)
+            quantitySelectionDiv.style.display = 'none'; // Hide the selection
+            quizDiv.style.display = 'block'; // Show the quiz directly
+            document.getElementById('timer').style.display = 'block';
+
+            quizData = [...fullQuizData]; // Use all available questions
+            selectedAnswers = new Array(quizData.length).fill(null);
+            questionAnsweredStatus = new Array(quizData.length).fill(false);
+            loadQuestion();
+            startTimer();
+
+        } else if (totalAvailableQuestions > 25) {
+            // Scenario 2: Total questions are more than 25
+            quantitySelectionDiv.style.display = 'block'; // Show the selection
+            quizDiv.style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+
+            // Show and set up "Questions 1-25" (already in HTML, just ensure checked)
+            document.querySelector('input[name="numQuestions"][value="1-25"]').checked = true;
+
+            // Handle "Questions 26-50"
+            if (totalAvailableQuestions >= 50) {
+                set26_50_label.style.display = 'inline-block';
+                document.getElementById('set26_50_radio').disabled = false;
+            } else {
+                set26_50_label.style.display = 'none';
+            }
+
+            // Handle "Questions 26-X (Remaining)" - always available if > 25
+            set26_X_label.style.display = 'inline-block';
+            const set26_X_radio = document.getElementById('set26_X_radio');
+            set26_X_radio.value = `26-${totalAvailableQuestions}`; // Update value
+            set26_X_label.innerHTML = `<input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-${totalAvailableQuestions} (Remaining)`;
+            document.getElementById('set26_X_radio').disabled = false;
+
+
+            // Show "Full Test (All Questions)" option
+            allQuestionsLabel.style.display = 'block';
+            document.getElementById('allQuestionsRadio').disabled = false;
+
+        } else {
+            // Scenario 3: No questions at all
+            quantitySelectionDiv.style.display = 'none';
+            quizDiv.style.display = 'block';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('question').innerText = "No questions available in the quiz data.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    };
+</script>
+</body>
+</html>

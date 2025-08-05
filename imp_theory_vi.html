@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+        {
+    "question": "Which of the following statements is true about instance variables in Java? | निम्िलिखित में से कौि सा कथि Java में उदाहरण वेररएबि के बारे में सही है?",
+    "options": [
+      "They are declared inside a method.",
+      "They are declared with the static keyword.",
+      "They are shared among all instances of the class",
+      "They are declared with the final keyword."
+    ],
+    "answer": "They are shared among all instances of the class"
+  },
+  {
+    "question": "Which of these keywords are used to define an abstract class? | ऐब्स्ट्रैक्ट क्िास को पररभाषित करिे के लिए इिमें से कौि से कीवर्ड का उपयोग ककया जाता है?",
+    "options": [
+      "abst",
+      "abstract",
+      "Abstract",
+      "abstract class"
+    ],
+    "answer": "abstract"
+  },
+  {
+    "question": "Which method is used to read a string input from the console using Scanner class? | कौि सी षवधि (method) ्कै िर वगड (Scanner class) का उपयोग करके कंसोि से एक स्ट्रंग इिपुट रीर् के लिए उपयोग की जाती है?",
+    "options": [
+      "next()",
+      "readLine()",
+      "nextLine()",
+      "getInput()"
+    ],
+    "answer": "nextLine()"
+  },
+  {
+    "question": "How many basic types of inheritance are provided as OOP feature? | OOP सुषविा के रूप में ककतिे प्रकार की मूि इन्हेररटन्स प्रदाि की जाती है?",
+    "options": [
+      "4",
+      "3",
+      "2",
+      "1"
+    ],
+    "answer": "4"
+  },
+  {
+    "question": "Which of the following statements is used to print output to the console in Java? | निम्िलिखित में से कौि सा कथि जावा मेंकंसोि पर आउटपुट षप्रटं करिेके लिए उपयोग ककया जाता है?",
+    "options": [
+      "System.out.println()",
+      "Console.print()",
+      "PrintStream.print()",
+      "System.println()"
+    ],
+    "answer": "System.out.println()"
+  },
+  {
+    "question": "Give the abbreviation of AWT _______ | AWT का संक्षक्षप्त िाम दें|",
+    "options": [
+      "Applet Windowing Toolkit",
+      "Abstract Windowing Toolkit",
+      "Absolute Windowing Toolkit",
+      "None of these | इनमें से िोई नह ं"
+    ],
+    "answer": "Abstract Windowing Toolkit"
+  },
+  {
+    "question": "Which of these is not a correct statement? | इिमें से कौिसा सही कथि िहीं है?",
+    "options": [
+      "Every class containing abstract method must be declared abstract",
+      "Abstract class defines only the structure of the class not its implementation",
+      "Abstract class can be initiated by new operator",
+      "Abstract class can be inherited"
+    ],
+    "answer": "Abstract class can be initiated by new operator"
+  },
+  {
+    "question": "Which of these is the functionality of ‘Encapsulation’? | इिमेंसेकौि सी ‘एिकैप्सुिेशि’ की कायक्षड मता है?",
+    "options": [
+      "Binds together code and data",
+      "Using single interface for general class of actions.",
+      "Reduce Complexity",
+      "All of these | ये सभी"
+    ],
+    "answer": "Binds together code and data"
+  },
+  {
+    "question": "Which loop is guaranteed to execute at least once in Java? | कौि सा िूप जावा मेंकम से कम एक बार निष्पाददत होिे की गारंटी देता है?",
+    "options": [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "for each loop"
+    ],
+    "answer": "do-while loop"
+  },
+  {
+    "question": "Which concept of Java is a way of converting real world objects in terms of class? | जावा की कौि सी अविारणा क्िास के सदं भड मेंवा्तषवक दनुिया की व्तुओं को पररवनततड करिेका एक तरीका है?",
+    "options": [
+      "Polymorphism | पॉल मोरकफज्म",
+      "Encapsulation | एनिै्सूलेशन",
+      "Abstraction | ऐब्स्ट्रैक्शि",
+      "Inheritance | इन्हेररटन्स"
+    ],
+    "answer": "Abstraction | ऐब्स्ट्रैक्शि"
+  },
+  {
+    "question": "What is the output of the Java compiler when compilation is successful? | जब कं पाइि सफि होता है, तो जावा कंपाइिर का आउटपुट क्या होता है?",
+    "options": [
+      "It produces a .class file.",
+      "It produces a .java file.",
+      "It produces a .jar file.",
+      "It produces a .exe file."
+    ],
+    "answer": "It produces a .class file."
+  },
+  {
+    "question": "What is an event in delegation event model used by Java programming language? | जावा प्रोग्रालमंग भािा द्वारा उपयोग ककए जािे वािे र्ेलिगेशि इवेंट मॉर्ि में एक इवेंट क्या है?",
+    "options": [
+      "An event is an object that describes a state change in a source/",
+      "An event is an object that describes a state change in processing",
+      "An event is an object that describes any change by the user and system",
+      "An event is a class used for defining object, to create events"
+    ],
+    "answer": "An event is an object that describes a state change in a source/"
+  },
+  {
+    "question": "What is the file extension of Java source files? | Java सोसड फाइिों का फाइि एक्सटेंशि क्या है?",
+    "options": [
+      ".class",
+      ".java",
+      ".jar",
+      ".bytecode"
+    ],
+    "answer": ".java"
+  },
+  {
+    "question": "Which among the following best describes the Inheritance? | निम्िलिखित में से क्या इन्हेररटन्स का सबसे अच्छा वणडि करता है?",
+    "options": [
+      "Copying the code already written/",
+      "Using the code already written once",
+      "Using already defined functions in programming language",
+      "Using the data and functions into derived segment"
+    ],
+    "answer": "Using the data and functions into derived segment"
+  },
+  {
+    "question": "Which programming language doesn’t support multiple inheritance? | कौि सी प्रोग्रालमंग भािा मल्टीपि इिहेररटेंस का समथडि िहीं करती है?",
+    "options": [
+      "C++ and Java",
+      "C and C++",
+      "Java and SmallTalk",
+      "Java"
+    ],
+    "answer": "Java"
+  },
+  {
+    "question": "What will be the value of x after the following statement in Java: int x = 10 / 3? | जावा में निम्िलिखित कथि के बाद x का माि क्या होगा: int x = 10/3?",
+    "options": [
+      "3.3333",
+      "3",
+      "3.0",
+      "4"
+    ],
+    "answer": "3"
+  },
+  {
+    "question": "Which data type is used to store single-precision floating-point numbers in Java? | कौि सा र्ेटा प्रकार जावा में लसंगि-सटीकता फ्िोदटंग-पॉइंट संख्याओं को संग्रहीत करिे के लिए उपयोग ककया जाता है?",
+    "options": [
+      "float",
+      "double",
+      "real | ररयल",
+      "decimal | डेलसमल"
+    ],
+    "answer": "float"
+  },
+  {
+    "question": "What will be the output of the following C code? #include  void main() { int i = 0; do { printf(ʺHelloʺ); } while (i != 0); } | निम्िलिखित C कोर् का आउटपुट क्या होगा? #include  void main() { int i = 0; do { printf(ʺHelloʺ); } while (i != 0); }",
+    "options": [
+      "Nothing | िुछ नह ं",
+      "H is printed infinite times | H अनंत बार षप्रंट होता है",
+      "Hello",
+      "Run time error | रन टाइम एरर"
+    ],
+    "answer": "Hello"
+  },
+  {
+    "question": "What is the default package in Java? | Java में डर्फॉल्ट पैके ज क्या है?",
+    "options": [
+      "java.util",
+      "java.lang",
+      "java.package",
+      "default"
+    ],
+    "answer": "java.lang"
+  },
+  {
+    "question": "What is the access modifier used when a method can be accessed by any class in the same package and subclasses in other packages? | कौि सा एक्सेस मॉडर्फायर (access modifier) तब उपयोग ककया जाता है जब एक षवधि को उसी पैके ज में ककसी भी वगड और अन्य पैके जों में उपवगों द्वारा एक्सेस ककया जा सकता है?",
+    "options": [
+      "private",
+      "protected",
+      "public",
+      "default"
+    ],
+    "answer": "protected"
+  },
+  {
+    "question": "Which statements is used to create a table? | ककस ्टेटमेंट का प्रयोग टेबि बिािे के लिए होता है ?",
+    "options": [
+      "CREATE TABLE table_name (column_name column_type);",
+      "CREATE table_name (column_type column_name);",
+      "CREATE table_name (column_name column_type);",
+      "CREATE TABLE table_name (column_type column_name);"
+    ],
+    "answer": "CREATE TABLE table_name (column_name column_type);"
+  },
+  {
+    "question": "Which of these is not abstract? | इिमें से कौिसा ऐब्स्ट्रैक्ट िहीं है?",
+    "options": [
+      "Thread | थ्रेर्",
+      "AbstractList | ऐब्स्ट्रैक्टलल्ट",
+      "List | लल्ट",
+      "None of these | इनमें से िोई नह ं"
+    ],
+    "answer": "Thread | थ्रेर्"
+  },
+  {
+    "question": "Which loop statement in Java is suitable when you need to iterate over elements of an array or a collection? | जावा मेंकौि सा िूप कथि तब उपयुक्त हैजब आपको एक ऐरे या किेक्शि के तत्वों पर पुिरावषृि करिे की आवश्यकता होती है?",
+    "options": [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "for each loop | foreach loop"
+    ],
+    "answer": "for each loop | foreach loop"
+  },
+  {
+    "question": "What is the size of the double data type in Java? | Java में double र्ेटा प्रकार का आकार क्या है?",
+    "options": [
+      "4 bytes",
+      "8 bytes",
+      "16 bytes",
+      "It varies depending on the platform | यह ्लटे फॉमड िे अनुसार बदलता रहता है"
+    ],
+    "answer": "8 bytes"
+  },
+  {
+    "question": "Which keyword is used to declare a method in Java? | जावा में षवधि घोषित करिे के लिए ककस कीवर्ड का उपयोग ककया जाता है?",
+    "options": [
+      "func",
+      "method",
+      "def",
+      "void"
+    ],
+    "answer": "void"
+  },
+  {
+    "question": "What will be the output of the following C code? #include  void main() { int i = 2; do { printf(ʺHiʺ); } while (i < 2) } | निम्िलिखित C कोर् का आउटपुट क्या होगा? #include  void main() { int i = 2; do { printf(ʺHiʺ); } while (i < 2) }",
+    "options": [
+      "Compile time error | कम्पाइि टाइम एरर",
+      "Hi Hi",
+      "Hi",
+      "Varies | लभन्न होना"
+    ],
+    "answer": "Hi"
+  },
+  {
+    "question": "Which class is used to write to a file in Java? | कौि सा क्िास (class) जावा में एक फाइि में लिििे के लिए उपयोग ककया जाता है?",
+    "options": [
+      "FileWriter",
+      "FileReade",
+      "FileWrite",
+      "FileReader"
+    ],
+    "answer": "FileWrite"
+  },
+  {
+    "question": "Which of these are types of multitasking? | इिमें से कौि से मल्टीटास्ट्कं ग के प्रकार हैं?",
+    "options": [
+      "Process based | प्रोसेस बे्ड",
+      "Thread based | थ्रेड बे्ड",
+      "Process and Thread based | प्रोसेस और थ्रेर् बे्र्",
+      "None of these | इनमें से िोई नह ं"
+    ],
+    "answer": "Process and Thread based | प्रोसेस और थ्रेर् बे्र्"
+  },
+  {
+    "question": "Which of these can be overloaded? | निम्िलिखित में से क्या ओवरिोर् ककया जा सकता है?",
+    "options": [
+      "Methods | मेथड",
+      "Constructors | िन््रक्टर",
+      "Both Methods and Constructors | मेथर् और कन््रक्टर दोिों",
+      "None of these | इनमें से िोई नह ं"
+    ],
+    "answer": "Both Methods and Constructors | मेथर् और कन््रक्टर दोिों"
+  },
+  {
+    "question": "Which of these packages contains abstract keyword? | इिमें से ककस पैके ज में एब्स्टसरैक्ट कीवर्ड है?",
+    "options": [
+      "java.lang",
+      "java.util",
+      "java.io",
+      "java.system"
+    ],
+    "answer": "java.lang"
+  },
+  {
+    "question": "Which keyword is used to import a package in Java? | Java में एक पैके ज आयात करिे के लिए कौि सा कीवर्ड प्रयुक्त होता है?",
+    "options": [
+      "use",
+      "include",
+      "import",
+      "package"
+    ],
+    "answer": "import"
+  },
+  {
+    "question": "What is the purpose of using packages in Java? | Java में पैके जेस का उपयोग करिे का क्या उद्देश्य होता है?",
+    "options": [
+      "To group related classes and interfaces",
+      "To restrict access to classes",
+      "To optimize memory usage",
+      "To define global variables"
+    ],
+    "answer": "To group related classes and interfaces"
+  },
+  {
+    "question": "Which of the following is not a valid Java keyword for branching? | निम्िलिखित में से कौि सा जावा में ब्ांधचंग के लिए एक मान्य कीवर्ड िहीं है?",
+    "options": [
+      "if",
+      "then",
+      "else",
+      "switch"
+    ],
+    "answer": "then"
+  },
+  {
+    "question": "Which operator is used for division in Java when you want to get the remainder? | जब आप शेिफि प्राप्त करिा चाहते हैं तो जावा में षवभाजि के लिए ककस ऑपरेटर का उपयोग ककया जाता है?",
+    "options": [
+      "/",
+      "%",
+      "//",
+      "÷"
+    ],
+    "answer": "%"
+  },
+  {
+    "question": "Which keyword is used to create an object in Java? | Java में एक ऑब्स्टजेक्ट बिािे के लिए कौि सा कीवर्ड प्रयुक्त होता है?",
+    "options": [
+      "new",
+      "object",
+      "create",
+      "instance"
+    ],
+    "answer": "new"
+  },
+  {
+    "question": "Which among the following best defines single level inheritance? | निम्िलिखित में से कौिसा लसंगि िेवि इन्हेररटन्स को सबसे अच्छा पररभाषित करता है?",
+    "options": [
+      "A class inheriting a derived class",
+      "A class inheriting a base class",
+      "A class inheriting a nested class",
+      "A class which gets inherited by 2 classes"
+    ],
+    "answer": "A class inheriting a base class"
+  },
+  {
+    "question": "Which among the following is correct for multiple inheritance? | निम्िलिखित में से कौि सा मल्टीपि इिहेररटेंस के लिए सही है?",
+    "options": [
+      "class student{public: int marks;}s; class stream{int total;}; class topper:public student, public stream{ };",
+      "class student{int marks;}; class stream{ }; class topper: public student{ };",
+      "class student{int marks;}; class stream:public student{ };",
+      "class student{ }; class stream{ }; class topper{ };"
+    ],
+    "answer": "class student{public: int marks;}s; class stream{int total;}; class topper:public student, public stream{ };"
+  },
+  {
+    "question": "Which of the following mechanisms is/are provided by Object Oriented Language to implement Object Oriented Model?/ | ऑब्स्टजक्े ट ओररएटं ेर् मॉर्ि को िागूकरिे के लिए ऑब्स्टजक्े ट ओररएंटेर् िग्ैंवेज द्वारा निम्िलिखित में से कौि सा तंत्र प्रदाि ककया जाता है?/",
+    "options": [
+      "Encapsulation | एनिै्सूलेशन",
+      "Inheritance | इन्हेररटन्स",
+      "Polymorphism | पॉल मोरकफज्म",
+      "All of these | ये सभी"
+    ],
+    "answer": "All of these | ये सभी"
+  },
+  {
+    "question": "Which method is used to write data to a file using FileWriter class? | कौि सी षवधि (method) FileWriter वगड का उपयोग करके एक फाइि में र्ेटा लिििे के लिए उपयोग की जाती है?",
+    "options": [
+      "write()",
+      "append()",
+      "print()",
+      "writeFile()"
+    ],
+    "answer": "write()"
+  },
+  {
+    "question": "What is the purpose of the package statement in Java? | जावा में पैके ज ्टेटमेंट का उद्देश्य क्या है?",
+    "options": [
+      "To declare a package as final.",
+      "To declare a package as abstract",
+      "To define the name of the package.",
+      "To specify the access modifier of the package."
+    ],
+    "answer": "To define the name of the package."
+  },
+  {
+    "question": "Which of the following is true about the Java compiler? | जावा कं पाइिर के बारे में निम्िलिखित में से कौि सा सत्य है?",
+    "options": [
+      "It translates bytecode into machine code.",
+      "It is responsible for garbage collection.",
+      "It is platform-independent.",
+      "It runs Java applications."
+    ],
+    "answer": "It is platform-independent."
+  },
+  {
+    "question": "______ converts high-level language code to machine (object) code in one session | ______ एक सेशि में उच्च ्तरीय भािा कोर् को मशीि (ऑब्स्टजेक्ट) कोर् में पररवनतडत करता है",
+    "options": [
+      "Compiler | कम्पाइिर",
+      "Interpreter | इंटरप्रेटर",
+      "Assembler | असेम्पबलर",
+      "None of these | \\इनमें से िोई नह ं"
+    ],
+    "answer": "Compiler | कम्पाइिर"
+  },
+  {
+    "question": "Which of these methods are used to register a keyboard event listener? | कीबोर्ड ईवेंट लिसिर को रस्टज्टर करिे के लिए इिमें से कौि सी षवधि का उपयोग ककया जाता है?",
+    "options": [
+      "KeyListener()",
+      "addKistener()",
+      "addKeyListener()",
+      "eventKeyboardListener()"
+    ],
+    "answer": "addKeyListener()"
+  },
+  {
+    "question": "Which of the following statements is true about classes in the same package? | निम्िलिखित में से कौि सा कथि एक ही पैके ज में कक्षाओं के बारे में सत्य है?",
+    "options": [
+      "They cannot access each otherʹs members.",
+      "They must have the same access modifier.",
+      "They must have the same package declaration.",
+      "They are automatically imported."
+    ],
+    "answer": "They must have the same package declaration."
+  },
+  {
+    "question": "Which loop statement in Java is used when you donʹt know how many times the loop needs to execute? | जावा मेंकौि सा िूप कथि तब उपयोग ककया जाता हैजब आपको यह िहीं पता होता कक िूप ककतिी बार निष्पाददत होिे की आवश्यकता है?",
+    "options": [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "for each loop"
+    ],
+    "answer": "while loop"
+  },
+  {
+    "question": "Which of the following is a type of polymorphism in Java? | जावा में निम्िलिखित मेंसे कौि सा बहुरूपता का एक प्रकार है?",
+    "options": [
+      "Compile time polymorphism | कम्पाइि टाइम पॉिीमोरकफज्म",
+      "Execution time polymorphism | एक्सेक्यूशन टाइम पॉल मोरकफज्म",
+      "Multiple polymorphism | मल्ट पल पॉल मोरकफज्म",
+      "Multilevel polymorphism | मल्ट लेवल पॉल मोरकफज्म"
+    ],
+    "answer": "Compile time polymorphism | कम्पाइि टाइम पॉिीमोरकफज्म"
+  },
+  {
+    "question": "What is multithreaded programming? | मल्टीथ्रेर्ेर् प्रोग्रालमंग क्या है?",
+    "options": [
+      "It’s a process in which two different processes run simultaneously/",
+      "It’s a process in which two or more parts of same process run simultaneously",
+      "It’s a process in which many different process are able to access same information",
+      "It’s a process in which a single process can access information from many sources/"
+    ],
+    "answer": "It’s a process in which two or more parts of same process run simultaneously"
+  },
+  {
+    "question": "Which keyword can be used for coming out of recursion? | ररकशडि से बाहर आिे के लिए ककस कीवर्ड का उपयोग ककया जा सकता है?",
+    "options": [
+      "break | ब्रेि",
+      "return | ररटिड",
+      "exit | एजग्जट",
+      "break and return Both | ब्रेि और ररटनड दोनों ह"
+    ],
+    "answer": "return | ररटिड"
+  },
+  {
+    "question": "Thread priority in Java is ____ | जावा में थ्रेर् प्रायोररटी______ है",
+    "options": [
+      "Integer | इस्टन्टजर",
+      "Float | फ्लोट",
+      "double | डबल",
+      "long | लॉन्ग"
+    ],
+    "answer": "Integer | इस्टन्टजर"
+  },
+  {
+    "question": "Which of the following statements is used to close a file in Java? | निम्िलिखित में से कौि सा कथि जावा में एक फाइि बंद करिे के लिए उपयोग ककया जाता है?",
+    "options": [
+      "close()",
+      "fclose()",
+      "closeFile()",
+      "end()"
+    ],
+    "answer": "close()"
+  }
+        // Add more questions here to test scenarios beyond 30
+    ];
+  let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = [];
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-X") { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false);
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else {
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true;
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct");
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect");
+            }
+            btn.classList.remove("selected");
+        });
+
+        updateQuestionTracker();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = null;
+        questionAnsweredStatus[currentQuestion] = false;
+        updateQuestionTracker();
+        nextQuestion();
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) {
+                indicator.classList.add("answered");
+            } else if (selectedAnswers[index] === null) {
+                indicator.classList.remove("answered");
+                indicator.classList.add("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            }
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : 'not answered'}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").disabled = true;
+        document.getElementById("submitBtn").disabled = true;
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i] || "(No answer selected)",
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        sessionStorage.setItem('quizScore', correctCount);
+        sessionStorage.setItem('quizTotal', quizData.length);
+        sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+        window.location.href = "results.html";
+    }
+
+    document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+    window.onload = function() {
+        const quantitySelectionDiv = document.getElementById('quantitySelection');
+        const quizDiv = document.getElementById('quiz');
+        const radioOptionsDiv = document.getElementById('radioOptions'); // New: Div to hold radio buttons
+        const set26_50_label = document.getElementById('set26_50_label'); // For 26-50
+        const set26_X_label = document.getElementById('set26_X_label');   // For 26-Remaining
+        const allQuestionsLabel = document.getElementById('allQuestionsLabel');
+
+        const totalAvailableQuestions = fullQuizData.length;
+
+        if (totalAvailableQuestions <= 25 && totalAvailableQuestions > 0) {
+            // Scenario 1: Total questions are 25 or less (but more than 0)
+            quantitySelectionDiv.style.display = 'none'; // Hide the selection
+            quizDiv.style.display = 'block'; // Show the quiz directly
+            document.getElementById('timer').style.display = 'block';
+
+            quizData = [...fullQuizData]; // Use all available questions
+            selectedAnswers = new Array(quizData.length).fill(null);
+            questionAnsweredStatus = new Array(quizData.length).fill(false);
+            loadQuestion();
+            startTimer();
+
+        } else if (totalAvailableQuestions > 25) {
+            // Scenario 2: Total questions are more than 25
+            quantitySelectionDiv.style.display = 'block'; // Show the selection
+            quizDiv.style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+
+            // Show and set up "Questions 1-25" (already in HTML, just ensure checked)
+            document.querySelector('input[name="numQuestions"][value="1-25"]').checked = true;
+
+            // Handle "Questions 26-50"
+            if (totalAvailableQuestions >= 50) {
+                set26_50_label.style.display = 'inline-block';
+                document.getElementById('set26_50_radio').disabled = false;
+            } else {
+                set26_50_label.style.display = 'none';
+            }
+
+            // Handle "Questions 26-X (Remaining)" - always available if > 25
+            set26_X_label.style.display = 'inline-block';
+            const set26_X_radio = document.getElementById('set26_X_radio');
+            set26_X_radio.value = `26-${totalAvailableQuestions}`; // Update value
+            set26_X_label.innerHTML = `<input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-${totalAvailableQuestions} (Remaining)`;
+            document.getElementById('set26_X_radio').disabled = false;
+
+
+            // Show "Full Test (All Questions)" option
+            allQuestionsLabel.style.display = 'block';
+            document.getElementById('allQuestionsRadio').disabled = false;
+
+        } else {
+            // Scenario 3: No questions at all
+            quantitySelectionDiv.style.display = 'none';
+            quizDiv.style.display = 'block';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('question').innerText = "No questions available in the quiz data.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    };
+</script>
+</body>
+</html>

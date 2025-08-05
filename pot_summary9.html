@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>Counseling & Mentoring</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+परामर्श और मार्गदर्शन (Counseling and Mentoring)
+यह सामग्री परामर्श (counseling) और मार्गदर्शन (mentoring) की परिभाषाओं, उनके बीच के संबंधों और एक अच्छा बायोडाटा (CV) लिखने की तकनीकों पर केंद्रित है।
+________________________________________
+परामर्श (Counseling)
+परामर्श एक पेशेवर सहायता और मार्गदर्शन है जो व्यक्तिगत या मनोवैज्ञानिक समस्याओं को हल करने में मदद करता है। इसके माध्यम से व्यक्ति अपने बारे में बेहतर महसूस कर सकता है, सुरक्षित महसूस कर सकता है, और जीवन में अपने लक्ष्यों की पहचान कर सकता है। परामर्श तनाव को कम करने, दूसरों से जुड़ने और जीवन में खुशियाँ खोजने में भी मदद करता है।
+मार्गदर्शन (Mentoring)
+मार्गदर्शन एक सहयोगी, पारस्परिक रूप से लाभकारी साझेदारी है जो एक मार्गदर्शक (Mentor) और एक शिष्य (Protégé) के बीच होती है।
+•	मार्गदर्शक: वह व्यक्ति जिसके पास अधिक कौशल, ज्ञान और अनुभव हो। वह अपने शिष्य को सीखने की प्रक्रिया में सुविधा प्रदान करता है, मार्गदर्शन देता है, और व्यक्तिगत विकास को प्रोत्साहित करता है।
+•	शिष्य: वह व्यक्ति जो अपने कौशल, ज्ञान और अनुभव को बढ़ाना चाहता है। उसे इस रिश्ते के लिए प्रतिबद्ध, नए तरीकों के प्रति ग्रहणशील और अपनी वृद्धि के लिए जिम्मेदार होना चाहिए।
+मार्गदर्शन एक साझेदारी है, यह एक कर्मचारी और उसके तत्काल पर्यवेक्षक के बीच का संबंध नहीं है। यद्यपि कौशल और अनुभव में असमानता होती है, साझेदारी स्वयं बराबर होती है और दोनों पक्ष इसकी सफलता के लिए जिम्मेदार होते हैं।
+________________________________________
+परामर्श और मार्गदर्शन के बीच संबंध (Relationship Between Counseling and Mentoring)
+परामर्श और मार्गदर्शन दोनों ही व्यक्तिगत विकास और आत्म-समझ को बढ़ावा देने के लिए एक अंतर्वैयक्तिक संबंध का उपयोग करते हैं। ये दोनों ही लोगों को अपने जीवन में बदलाव लाने में सक्षम बनाते हैं।
+________________________________________
+SWOT विश्लेषण (SWOT Analysis)
+SWOT विश्लेषण एक संरचित योजना पद्धति है जिसका उपयोग किसी परियोजना या व्यावसायिक उद्यम में शामिल शक्तियों (Strengths), कमजोरियों (Weaknesses), अवसरों (Opportunities) और खतरों (Threats) का मूल्यांकन करने के लिए किया जाता है। इसका उपयोग एक व्यक्ति, उत्पाद या उद्योग के लिए किया जा सकता है। यह व्यक्ति को अपने लक्ष्यों को निर्धारित करने और उन्हें प्राप्त करने के लिए अनुकूल और प्रतिकूल कारकों की पहचान करने में मदद करता है।
+________________________________________
+एक अच्छा बायोडाटा (CV) लिखने की तकनीक (Techniques of Writing a Good CV)
+एक अच्छा बायोडाटा नौकरी पाने के लिए पहला कदम होता है। एक सफल बायोडाटा तैयार करने के लिए कुछ महत्वपूर्ण तकनीकें हैं:
+1.	सामान्य बिंदु: बायोडाटा में व्यक्तिगत जानकारी, संपर्क विवरण, शिक्षा, योग्यता, कार्य अनुभव, प्रासंगिक कौशल, रुचियां, उपलब्धियां और संदर्भ शामिल होने चाहिए।
+2.	प्रस्तुति महत्वपूर्ण है: बायोडाटा को साफ-सुथरे और सुव्यवस्थित तरीके से प्रस्तुत किया जाना चाहिए, और इसे साफ, सफेद कागज पर मुद्रित किया जाना चाहिए।
+3.	दो पृष्ठों तक सीमित रखें: एक अच्छा बायोडाटा संक्षिप्त और स्पष्ट होता है। नियोक्ता अक्सर बहुत सारे बायोडाटा प्राप्त करते हैं, इसलिए उन्हें शुरू से अंत तक पढ़ने की संभावना कम होती है।
+4.	नौकरी के विवरण को समझें: नौकरी के विज्ञापन को ध्यान से पढ़ें और अपने बायोडाटा को उस नौकरी की आवश्यकताओं के अनुसार तैयार करें। प्रत्येक बायोडाटा को जिस पद के लिए भेजा जा रहा है, उसके अनुसार विशिष्ट होना चाहिए।
+5.	कौशल का अधिकतम उपयोग करें: अपने बायोडाटा के कौशल अनुभाग में संचार कौशल, कंप्यूटर कौशल, टीम वर्क, समस्या-समाधान जैसे प्रमुख कौशलों का उल्लेख करें।
+6.	अनुभव का अधिकतम उपयोग करें: कार्य इतिहास अनुभाग में "विकसित", "आयोजित" या "प्राप्त" जैसे सकारात्मक और सशक्त भाषा का उपयोग करें। अपनी जिम्मेदारियों के बजाय अपनी उपलब्धियों पर ध्यान केंद्रित करें।
+7.	संदर्भ शामिल करें: संदर्भ ऐसे व्यक्ति से होने चाहिए जिन्होंने आपको अतीत में नियोजित किया हो और जो आपके कौशल और अनुभव की गारंटी दे सकें।
+8.	बायोडाटा को अपडेट रखें: नियमित रूप से अपने बायोडाटा की समीक्षा करें और किसी भी नए कौशल या अनुभव को जोड़ें। वर्तनी और व्याकरण की गलतियों के लिए अच्छी तरह से जांच करें।
+
+
+    </pre>
+<a href="pot9_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

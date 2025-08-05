@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>Continuing Professional Development</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+________________________________________
+सतत व्यावसायिक विकास: लक्ष्य और योजना
+सतत सीखना (Continuous Learning) और पेशेवर विकास (Professional Development) आज के बदलते दौर में सफलता के लिए महत्वपूर्ण हैं। यह सुनिश्चित करता है कि आप अपने ज्ञान और कौशल को लगातार बढ़ाते रहें, जिससे आप अपने ग्राहकों, सहकर्मियों और समुदाय को बेहतर सेवा प्रदान कर सकें।
+व्यक्तिगत और व्यावसायिक लक्ष्य
+व्यक्तिगत विकास (Personal Development): यह आत्म-जागरूकता, आत्म-ज्ञान, कौशल में सुधार, और आत्म-सम्मान जैसे गतिविधियों के माध्यम से खुद को बेहतर बनाने की एक प्रक्रिया है। इसमें करियर को बेहतर बनाना, जीवन की गुणवत्ता बढ़ाना, और जीवन की आकांक्षाओं को पूरा करना शामिल है।
+पेशेवर लक्ष्य (Professional Goals): ये छोटे-छोटे कदम होते हैं जो आपको एक पेशेवर के रूप में बेहतर बनने में मदद करते हैं। इन्हें प्राप्त करने के लिए धीरे-धीरे लेकिन प्रभावी ढंग से प्रगति करना महत्वपूर्ण है। कुछ स्मार्ट लक्ष्य (SMART goals) इस प्रकार हैं:
+1.	पेशेवर ज्ञान और प्रशिक्षण का विस्तार: प्रमाणपत्र प्राप्त करके, कार्यशालाओं में भाग लेकर, और नए कौशल सीखकर अपने ज्ञान को लगातार बढ़ाएँ।
+2.	कार्य प्रदर्शन में सुधार: सकारात्मक दृष्टिकोण रखें, कुशलता से काम करें, और खुद पर विश्वास रखें।
+3.	पेशेवर संबंधों को मजबूत करना: सहकर्मियों और कर्मचारियों के साथ पेशेवर तरीके से व्यवहार करें, जिससे एक स्वस्थ कार्य वातावरण बने।
+4.	बेहतर प्रस्तुति कौशल: प्रभावी ढंग से संवाद करने और प्रस्तुति देने के लिए अपने कौशल का अभ्यास करें।
+5.	उच्च नौकरी की भूमिका प्राप्त करना: कड़ी मेहनत, धैर्य, और सही दृष्टिकोण के साथ नेतृत्व की भूमिका के लिए प्रयास करें।
+6.	नए अनुभव प्राप्त करना: अपने आराम क्षेत्र (comfort zone) से बाहर निकलकर नए अनुभव प्राप्त करें, जैसे स्वयंसेवा या नए लोगों से बात करना।
+________________________________________
+लक्ष्यों को प्राप्त करने के लिए स्मार्ट सुझाव
+लक्ष्य निर्धारित करना आपके पेशेवर जीवन को एक दिशा देता है। यहाँ कुछ सुझाव दिए गए हैं जो आपके लक्ष्यों को प्राप्त करने में मदद कर सकते हैं:
+•	एक करियर योजना बनाएँ: अपने अल्पकालिक (short-term) और दीर्घकालिक (long-term) लक्ष्यों को लिखें। उन्हें लिखना आपके लिए प्रेरणा का काम करता है।
+•	एक रोडमैप तैयार करें: अपने लक्ष्य तक पहुँचने के लिए आवश्यक कदमों को सूचीबद्ध करें। यह आपको रास्ते में भ्रमित होने से बचाता है।
+•	समय सीमा निर्धारित करें: अपने लक्ष्यों को पूरा करने के लिए समय सीमा निर्धारित करें। यह आपको काम शुरू करने और टालमटोल से बचने के लिए प्रेरित करता है।
+•	उपलब्धि के बाद खुद को पुरस्कृत करें: प्रत्येक उपलब्धि के बाद खुद को थोड़ा आराम और इनाम दें, जिससे आप प्रेरित और उत्साहित रहें।
+•	एक साथी खोजें: एक ऐसा साथी खोजें जो आपके लक्ष्यों को साझा करता हो और आपका समर्थन करता हो।
+•	विशिष्ट और यथार्थवादी लक्ष्य निर्धारित करें: अपने लक्ष्य को विशिष्ट और यथार्थवादी बनाएँ। उदाहरण के लिए, "मैं एक अच्छा शिक्षक बनना चाहता हूँ" के बजाय, "मैं अपनी संचार कौशल को विकसित करूँगा।"
+•	एक ठोस योजना बनाएँ: एक विस्तृत और यथार्थवादी योजना तैयार करें।
+•	अपनी प्रतिबद्धता पर अडिग रहें: रास्ते में आने वाली बाधाओं के बावजूद अपने लक्ष्य पर अडिग रहें।
+•	अपने लक्ष्यों को लिखें: अपने लक्ष्यों को कागज पर लिखकर उन्हें "वास्तविक" बनाएँ। "मैं उच्च शिक्षा के लिए दाखिला लूँगा" जैसे निश्चित वाक्य का प्रयोग करें।
+पेशेवर लक्ष्यों को निर्धारित करने से आप अपने करियर को एक उद्देश्य के साथ देखते हैं और यह आपको एक सफल और प्रेरित पेशेवर बनने में मदद करता है।
+
+
+
+    </pre>
+<a href="pot14_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

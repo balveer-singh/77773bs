@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>Written Instructional Materials</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+लिखित निर्देशात्मक सामग्री (Written Instructional Materials - WIM)
+लिखित निर्देशात्मक सामग्री (WIM) वह संसाधन हैं जिन्हें एक प्रशिक्षक (instructor) द्वारा तैयार किया जाता है ताकि प्रशिक्षुओं (trainees) को बेहतर शिक्षण और प्रशिक्षण प्रदान किया जा सके। ये सामग्री शिक्षण-अधिगम प्रक्रिया को व्यवस्थित और प्रभावी बनाने के लिए आवश्यक हैं।
+________________________________________
+लिखित निर्देशात्मक सामग्री के चार उपयोग (Four Uses of WIM)
+1.	समान निर्देश देना (To impart uniform instructions): यह सुनिश्चित करता है कि सभी प्रशिक्षुओं को एक ही तरह की जानकारी और निर्देश मिले, जिससे शिक्षण में एकरूपता आती है।
+2.	व्यक्तिगत समस्याओं का समाधान करना (To attend to individual learning problems): ये सामग्री प्रशिक्षुओं को अपनी गति से सीखने में मदद करती है, जिससे उनकी व्यक्तिगत सीखने की समस्याओं का समाधान होता है।
+3.	सीखने का समय बचाना (To save learning time): कक्षा और कार्यस्थल (shop floor) पर समय बचाने में मदद करता है, क्योंकि प्रशिक्षु इन सामग्रियों का उपयोग करके स्वयं सीख सकते हैं।
+4.	सीखने का समय बढ़ाना (To increase the learning time): ये सामग्री कक्षा के बाहर भी सीखने का अवसर प्रदान करती हैं, जिससे सीखने का कुल समय बढ़ जाता है।
+________________________________________
+लिखित निर्देशात्मक सामग्री के प्रकार (Types of WIM)
+प्रशिक्षक द्वारा तैयार की गई विभिन्न प्रकार की लिखित सामग्री इस प्रकार हैं:
+1.	पाठ योजना (Lesson Plan): एक सैद्धांतिक पाठ (theory lesson) का विस्तृत विवरण।
+2.	प्रदर्शन योजना (Demonstration Plan): एक व्यावहारिक पाठ या कौशल का विस्तृत विवरण।
+3.	सूचना पत्र (Information Sheet): इसमें तकनीकी तथ्य, परिभाषाएँ, उपकरण और प्रक्रियाएं जैसी जानकारी होती है, जो "नौकरी क्यों करनी है" (Why of the job) को समझने में मदद करती है।
+4.	कार्यपत्र (Job Sheet)/संचालन पत्र (Operation Sheet): इसमें किसी विशेष कार्य या कौशल को करने के लिए चरण-दर-चरण प्रक्रिया और सुरक्षा सावधानियां होती हैं। जॉब शीट में कई कार्य होते हैं, जबकि ऑपरेशन शीट में एक विशिष्ट कार्य की प्रक्रिया होती है।
+5.	असाइनमेंट पत्र (Assignment Sheet): इसमें प्रश्नों का एक सेट होता है जो प्रशिक्षुओं को किसी विशेष पाठ पर उनके ज्ञान का मूल्यांकन करने में मदद करता है।
+6.	जांच पत्र (Check Sheet): इसका उपयोग डेटा एकत्र करने, विफलताओं को कम करने और यह सुनिश्चित करने के लिए किया जाता है कि महत्वपूर्ण कदम नहीं भूले गए हैं। यह दो प्रकार का होता है: Pre-job और Final-job।
+7.	प्रगति चार्ट (Progress Chart): यह एक फॉर्म है जो प्रशिक्षुओं द्वारा पूरे किए गए या पूरे किए जाने वाले कार्यों की प्रगति को दर्शाता है।
+________________________________________
+लिखित सामग्री तैयार करते समय ध्यान रखने योग्य बातें (Points to Keep in Mind while Preparing WIM)
+•	सरल भाषा का उपयोग करें: जानकारी को सरल, प्रत्यक्ष और आसानी से समझ में आने वाली भाषा में लिखें।
+•	चित्र और स्केच शामिल करें: जहाँ भी संभव हो, जानकारी को स्पष्ट करने के लिए चित्र या स्केच का उपयोग करें।
+•	सीमित सामग्री प्रदान करें: केवल वही जानकारी दें जो पूरी तरह से आवश्यक हो, अनावश्यक जानकारी से बचें।
+•	उद्देश्यों को स्पष्ट रूप से बताएं: सामग्री के अंत में प्रशिक्षुओं से क्या अपेक्षा की जाती है, इसे स्पष्ट रूप से बताएं।
+•	सुरक्षित कार्य आदतों को बढ़ावा दें: सामग्री में सुरक्षित काम करने की आदतों के लिए दिशानिर्देश होने चाहिए।
+•	प्रशिक्षुओं के स्तर के अनुसार बनाएं: सामग्री को प्रशिक्षुओं के मानक को ध्यान में रखकर तैयार किया जाना चाहिए।
+•	व्याकरण की त्रुटियों से बचें: सामग्री व्याकरण, वर्तनी और टाइपोग्राफी की त्रुटियों से मुक्त होनी चाहिए।
+ऑपरेशन शीट और जॉब शीट (Operation Sheet and Job Sheet)
+ऑपरेशन शीट और जॉब शीट दोनों ही लिखित निर्देश होते हैं जिनका उपयोग व्यावसायिक प्रशिक्षण में छात्रों को व्यावहारिक कौशल सिखाने के लिए किया जाता है। हालांकि, इनके उद्देश्यों और संरचना में कुछ महत्वपूर्ण अंतर होते हैं।
+________________________________________
+ऑपरेशन शीट (Operation Sheet)
+ऑपरेशन शीट एक विशिष्ट कौशल (specific skill) या ऑपरेशन को करने के लिए बुनियादी निर्देश प्रदान करती है। इसका मुख्य उद्देश्य छात्रों को किसी एक कार्य या ऑपरेशन को सही ढंग से करना सिखाना है, ताकि वे सही आदतें विकसित कर सकें।
+ऑपरेशन शीट के तत्व (Elements of an Operation Sheet)
+•	कौशल (Skill): ऑपरेशन का नाम, जैसे "ड्रिलिंग" या "मार्किंग"।
+•	उद्देश्य (Objective): एक ही उद्देश्य होता है - किसी विशेष कौशल को विकसित करना।
+•	उपकरण और सामग्री (Tools and Equipment): उस ऑपरेशन के लिए आवश्यक विशिष्ट उपकरण और सामग्री की सटीक जानकारी।
+•	परिचय (Introduction): इस ऑपरेशन की उपयोगिता और महत्व के बारे में संक्षिप्त जानकारी।
+•	प्रक्रिया (Procedure): चरण-दर-चरण निर्देश जो सरल और सीधे वाक्यों में लिखे होते हैं। इसमें "मार्क", "मेज़र", "कट" जैसे क्रिया-शब्दों का उपयोग किया जाता है।
+•	सुरक्षा आदतें (Safety Habits): व्यक्ति और उपकरण को दुर्घटनाओं से बचाने के लिए आवश्यक सुरक्षा सावधानियां।
+________________________________________
+जॉब शीट (Job Sheet)
+जॉब शीट एक विशिष्ट नौकरी (job) या परियोजना (project) को पूरा करने के लिए एक समग्र योजना (overall plan) प्रदान करती है। इसमें किसी एक नौकरी को पूरा करने के लिए आवश्यक सभी ऑपरेशनों और कौशलों को एक क्रम में सूचीबद्ध किया जाता है।
+जॉब शीट के तत्व (Elements of a Job Sheet)
+•	जॉब (Job): नौकरी का नाम।
+•	उद्देश्य (Objective): नौकरी के अंत में क्या परिणाम अपेक्षित है।
+•	उपकरण और सामग्री (Tools and Equipment): नौकरी के लिए आवश्यक सभी उपकरण और सामग्री की सूची।
+•	प्रक्रिया (Procedure): इसमें नौकरी को पूरा करने के लिए सभी आवश्यक ऑपरेशनों को क्रमबद्ध तरीके से सूचीबद्ध किया जाता है। हर ऑपरेशन की प्रक्रिया का विवरण दिया जा सकता है।
+•	सुरक्षा आदतें (Safety Habits): नौकरी के दौरान पालन की जाने वाली सुरक्षा सावधानियां।
+________________________________________
+ऑपरेशन शीट और जॉब शीट के बीच मुख्य अंतर (Key Difference between Operation Sheet and Job Sheet)
+•	ऑपरेशन शीट का ध्यान किसी एक कौशल या ऑपरेशन पर केंद्रित होता है। इसका उपयोग यह सिखाने के लिए किया जाता है कि एक विशेष कार्य कैसे करें।
+•	जॉब शीट का ध्यान एक पूरी नौकरी या परियोजना पर केंद्रित होता है, जिसमें कई अलग-अलग कौशल या ऑपरेशन शामिल होते हैं। इसका उपयोग यह योजना बनाने के लिए किया जाता है कि किसी कार्य को पूरा करने के लिए सभी ऑपरेशनों को कैसे जोड़ा जाए।
+सूचना पत्र (Information Sheet)
+सूचना पत्र (Information Sheet) एक लिखित सामग्री है जिसे प्रशिक्षुओं (learners) की विशिष्ट आवश्यकताओं को पूरा करने के लिए तैयार किया जाता है। इसका मुख्य उद्देश्य किसी विषय से संबंधित जानकारी और प्रक्रिया को बेहतर ढंग से समझने में मदद करना है।
+________________________________________
+सूचना पत्र के तत्व (Elements of an Information Sheet)
+एक अच्छी सूचना पत्र में छह अलग-अलग तत्व होते हैं:
+1.	इकाई संख्या (Unit Number): यह उस इकाई की संख्या को दर्शाता है जिसका यह हिस्सा है।
+2.	इकाई का शीर्षक (Title of the Unit): यह बताता है कि इस इकाई में मुख्य रूप से किस क्षेत्र को शामिल किया गया है।
+3.	पाठ संख्या (Lesson Number): यह पाठ्यक्रम (syllabus) के अनुसार पाठ की क्रम संख्या होती है।
+4.	सामान्य जानकारी (General Information): यह शीट का मुख्य हिस्सा होता है, जहाँ चुने हुए बिंदुओं को उद्देश्यों के अनुरूप संक्षेप में और क्रमबद्ध तरीके से समझाया जाता है।
+5.	बाहरी जानकारी (External Information): यदि कोई अतिरिक्त जानकारी या संदर्भ आवश्यक हो, तो उसे यहाँ दिया जाता है।
+6.	संदर्भ सामग्री (Reference Material): यदि कोई पुस्तक, पत्रिका या पिछले पाठों का संदर्भ देना हो, तो उसे यहाँ सूचीबद्ध किया जाता है।
+________________________________________
+सूचना पत्र के फायदे और नुकसान (Advantages and Disadvantages of an Information Sheet)
+फायदे (Advantages)
+•	सुव्यवस्थित (Well-planned): यह अच्छी तरह से योजनाबद्ध होता है।
+•	उद्देश्यों से संबंधित (Related to Objectives): यह सीधे पाठ के उद्देश्यों से जुड़ा होता है।
+•	प्रासंगिक (Relevant): यह प्रशिक्षुओं की वास्तविक आवश्यकताओं के लिए प्रासंगिक होता है।
+•	भविष्य के संदर्भ के लिए उपयोगी (Useful for Future Reference): इसे भविष्य में संदर्भ के लिए सुरक्षित रखा जा सकता है।
+•	सैद्धांतिक सत्रों के लिए उपयोगी (Useful for Theoretical Sessions): यह विशेष रूप से सैद्धांतिक सत्रों को आयोजित करने के लिए बहुत उपयोगी है।
+•	'क्या जानना चाहिए', 'क्या जानना चाहिए था' और 'क्या जान सकते थे' के सिद्धांत पर आधारित।
+नुकसान (Disadvantages)
+•	गलत तैयारी (Improper Preparation): यदि इसे ठीक से तैयार नहीं किया गया, तो यह नकारात्मक परिणाम दे सकता है।
+•	सैद्धांतिक सत्रों के लिए अधिक उपयुक्त (Mostly Suitable for Theoretical Sessions): यह मुख्य रूप से सैद्धांतिक सत्रों के लिए ही उपयुक्त है, व्यावहारिक कौशल के लिए नहीं।
+•	अत्यधिक सहायता (Spoon-feeding): प्रशिक्षुओं को बहुत अधिक तैयार जानकारी मिलने से उनकी स्वयं सीखने की क्षमता प्रभावित हो सकती है।
+असाइनमेंट शीट (Assignment Sheet)
+असाइनमेंट शीट एक शिक्षण उपकरण है जिसका उपयोग प्रशिक्षक (instructor) छात्रों को प्रभावी सीखने का अनुभव प्रदान करने के लिए करता है। यह एक वर्कशीट की तरह होती है, जो छात्रों को कक्षा में या कार्यस्थल (shop floor) पर सीखे गए ज्ञान और कौशल को मजबूत करने में मदद करती है।
+________________________________________
+असाइनमेंट शीट का महत्व (Importance of an Assignment Sheet)
+•	ज्ञान को मजबूत करना: यह छात्रों को कक्षा में पढ़ाए गए सिद्धांतों और अवधारणाओं को दोहराने और मजबूत करने का अवसर देता है।
+•	समस्या-समाधान: यह छात्रों को समस्याओं को हल करने, प्रश्नों का उत्तर देने और सिद्धांतों को व्यावहारिक रूप से लागू करने के लिए प्रेरित करता है।
+•	वैज्ञानिक दृष्टिकोण: यह विज्ञान, गणना, और ड्राफ्टिंग जैसे विषयों को पढ़ाने में विशेष रूप से सहायक है।
+•	आत्म-मूल्यांकन: छात्र इसका उपयोग करके अपने ज्ञान का स्वयं मूल्यांकन कर सकते हैं और यह जान सकते हैं कि उन्होंने कहाँ तक सीखा है।
+________________________________________
+असाइनमेंट शीट के तत्व (Elements of an Assignment Sheet)
+एक प्रभावी असाइनमेंट शीट में ये मुख्य तत्व शामिल होते हैं:
+1.	असाइनमेंट (Assignment):
+o	इसमें एक उपयुक्त शीर्षक (title) होता है जो स्पष्ट रूप से बताता है कि असाइनमेंट किस बारे में है।
+o	यह सीधे विषय पर केंद्रित होना चाहिए।
+2.	उद्देश्य (Objectives):
+o	उद्देश्यों को स्पष्ट शब्दों में दिया जाना चाहिए ताकि छात्र समझ सकें कि असाइनमेंट से उन्हें क्या सीखना है।
+3.	निर्देश (Instructions):
+o	इसमें छात्रों को असाइनमेंट को पूरा करने के लिए स्पष्ट और संक्षिप्त निर्देश दिए जाते हैं।
+o	यदि निर्देश बहुत लंबे हों, तो उनकी प्रभावशीलता कम हो जाती है।
+4.	प्रक्रिया (Procedure):
+o	यदि असाइनमेंट में कोई प्रक्रिया शामिल है, तो उसे चरण-दर-चरण बताया जाना चाहिए।
+5.	प्रश्न (Questions):
+o	कुछ चुने हुए प्रश्न दिए जाते हैं, जिनके उत्तर देने से छात्रों के मन में विचार स्पष्ट होते हैं।
+6.	संदर्भ सामग्री (Reference to Material):
+o	इसमें उन पुस्तकों या अन्य सामग्रियों का संदर्भ दिया जा सकता है जिनका उपयोग छात्र असाइनमेंट को पूरा करने के लिए कर सकते हैं।
+
+
+    </pre>
+<a href="pot6_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

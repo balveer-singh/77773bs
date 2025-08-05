@@ -1,0 +1,4451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        display: inline-block; /* To allow spacing */
+        margin-bottom: 10px; /* Space out rows if they wrap */
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+   {
+    question: "Which of the following is not an OOP concept in Java?",
+    options: [
+      "Inheritance",
+      "Encapsulation",
+      "Polymorphism",
+      "Compilation"
+    ],
+    answer: "Compilation"
+  },
+  {
+    question: "What does OOP primarily emphasize?",
+    options: [
+      "Algorithms",
+      "Data and security",
+      "Syntax",
+      "Loops and conditions"
+    ],
+    answer: "Data and security"
+  },
+  {
+    question: "What is the correct definition of a class in Java?",
+    options: [
+      "An object with state and behavior",
+      "A physical entity",
+      "A blueprint to create objects",
+      "A variable that stores data"
+    ],
+    answer: "A blueprint to create objects"
+  },
+  {
+    question: "Which of the following best describes inheritance?",
+    options: [
+      "Hiding internal details",
+      "Binding data together",
+      "Acquiring properties of another class",
+      "Ability to exist in many forms"
+    ],
+    answer: "Acquiring properties of another class"
+  },
+  {
+    question: "What is polymorphism in Java?",
+    options: [
+      "Binding code and data",
+      "The ability to take multiple forms",
+      "Protecting object data",
+      "Creating classes from other classes"
+    ],
+    answer: "The ability to take multiple forms"
+  },
+  {
+    question: "What does abstraction allow in Java?",
+    options: [
+      "Show all data to users",
+      "Run programs faster",
+      "Hide irrelevant details from the user",
+      "Bind data and code"
+    ],
+    answer: "Hide irrelevant details from the user"
+  },
+  {
+    question: "Encapsulation can be best described as:",
+    options: [
+      "A mechanism for hiding implementation details",
+      "Writing functions only",
+      "Creating multiple child classes",
+      "Overriding a method"
+    ],
+    answer: "A mechanism for hiding implementation details"
+  },
+  {
+    question: "Which concept helps achieve 'Don't Repeat Yourself' in Java?",
+    options: [
+      "Abstraction",
+      "Inheritance",
+      "Encapsulation",
+      "Compilation"
+    ],
+    answer: "Inheritance"
+  },
+  {
+    question: "What is the relationship between a class and an object?",
+    options: [
+      "Object is a subclass of class",
+      "Class is an instance of object",
+      "Object is an instance of class",
+      "Object and class are the same"
+    ],
+    answer: "Object is an instance of class"
+  },
+    {
+    question: "Which of the following terms is related to object-oriented design but not one of the core OOPs concepts?",
+    options: ["Inheritance", "Coupling", "Abstraction", "Polymorphism"],
+    answer: "Coupling"
+  },
+  {
+    question: "Which feature of Java allows it to run on multiple platforms like Windows, Linux, and Mac OS?",
+    options: ["Robust", "Secure", "Platform Independent", "Simple"],
+    answer: "Platform Independent"
+  },
+  {
+    question: "What makes Java simple and easy to learn?",
+    options: [
+      "Its long syntax",
+      "Its similarity to C++ and cohesive features",
+      "Its low-level memory access",
+      "Lack of documentation"
+    ],
+    answer: "Its similarity to C++ and cohesive features"
+  },
+  {
+    question: "Which Java feature ensures error-free and reliable code by performing run-time checks?",
+    options: ["Portable", "Multithreaded", "Robust", "Familiar"],
+    answer: "Robust"
+  },
+  {
+    question: "Java is considered secure because:",
+    options: [
+      "It uses pointers like C",
+      "It can run native code directly",
+      "It does not allow direct memory access and runs inside JVM",
+      "It allows dynamic memory allocation"
+    ],
+    answer: "It does not allow direct memory access and runs inside JVM"
+  },
+  {
+    question: "Which feature of Java helps in building internet-based distributed applications?",
+    options: ["Platform Independent", "Distributed", "Robust", "Simple"],
+    answer: "Distributed"
+  },
+  {
+    question: "What does the term “multithreaded” in Java refer to?",
+    options: [
+      "Ability to compile multiple programs at once",
+      "Ability to handle multiple tasks simultaneously",
+      "Ability to debug faster",
+      "None of the above"
+    ],
+    answer: "Ability to handle multiple tasks simultaneously"
+  },
+  {
+    question: "Java programs are converted into which format before execution?",
+    options: ["Binary code", "Source code", "Bytecode", "Assembly code"],
+    answer: "Bytecode"
+  },
+  {
+    question: "Which component executes Java bytecode?",
+    options: ["Compiler", "JDK", "JVM", "JRE"],
+    answer: "JVM"
+  },
+  {
+    question: "Which of the following statements is true about Java’s object-oriented nature?",
+    options: [
+      "Java supports only procedural programming",
+      "Java is a semi-object-oriented language",
+      "Java fully supports OOP features",
+      "Java does not support inheritance"
+    ],
+    answer: "Java fully supports OOP features"
+  },
+  {
+    question: "What makes Java architecture-neutral or machine-independent?",
+    options: [
+      "Use of assembler",
+      "Bytecode and JVM",
+      "Platform-specific instructions",
+      "Use of C libraries"
+    ],
+    answer: "Bytecode and JVM"
+  },
+  {
+    question: "Which component is used to compile Java source code into bytecode?",
+    options: ["JVM", "JRE", "JDK", "Java Compiler (javac)"],
+    answer: "Java Compiler (javac)"
+  },
+  {
+    question: "What is included in the JDK but not in the JRE?",
+    options: [
+      "Java Standard Library",
+      "JVM",
+      "Development Tools (like compiler, debugger)",
+      "Bytecode"
+    ],
+    answer: "Development Tools (like compiler, debugger)"
+  },
+  {
+    question: "Which component is responsible for executing Java bytecode?",
+    options: ["JRE", "Java Compiler", "JVM", "JDK"],
+    answer: "JVM"
+  },
+   {
+    question: "What is Java bytecode?",
+    options: [
+      "Code written in Java syntax",
+      "Machine code for Windows",
+      "Intermediate code executed by the JVM",
+      "Binary file specific to Linux"
+    ],
+    answer: "Intermediate code executed by the JVM"
+  },
+  {
+    question: "Which of the following best describes the JVM?",
+    options: [
+      "Java Debugging Kit",
+      "Java Development Manager",
+      "Java Virtual Machine, which runs bytecode",
+      "A plugin for browsers"
+    ],
+    answer: "Java Virtual Machine, which runs bytecode"
+  },
+  {
+    question: "What is the full form of JDK?",
+    options: [
+      "Java Data Keeper",
+      "Java Developer Kit",
+      "Java Development Kit",
+      "Java Dynamic Kit"
+    ],
+    answer: "Java Development Kit"
+  },
+  {
+    question: "What is the main advantage of Java bytecode?",
+    options: [
+      "It increases code length",
+      "It ensures hardware dependency",
+      "It enables platform independence",
+      "It is readable by the developer"
+    ],
+    answer: "It enables platform independence"
+  },
+  {
+    question: "What is the function of the class loader in the JVM?",
+    options: [
+      "It loads source code",
+      "It compiles Java files",
+      "It loads class files into memory",
+      "It performs garbage collection"
+    ],
+    answer: "It loads class files into memory"
+  },
+  {
+    question: "What does the PATH environment variable do in Java setup?",
+    options: [
+      "It points to the JVM location",
+      "It allows running Java commands from any directory",
+      "It links Java classes",
+      "It sets the heap size"
+    ],
+    answer: "It allows running Java commands from any directory"
+  },
+  {
+    question: "What is the purpose of the CLASSPATH variable?",
+    options: [
+      "To locate .exe files",
+      "To set the Java version",
+      "To locate .class files needed during compilation or runtime",
+      "To store environment logs"
+    ],
+    answer: "To locate .class files needed during compilation or runtime"
+  },
+  {
+    question: "What part of the JVM is responsible for translating bytecode into machine code?",
+    options: [
+      "ClassLoader",
+      "Execution Engine",
+      "Java Compiler",
+      "Native Method Interface"
+    ],
+    answer: "Execution Engine"
+  },
+  {
+    question: "Which memory area in JVM stores class-level data like static variables?",
+    options: [
+      "Stack",
+      "Heap",
+      "Class Area",
+      "Native Method Stack"
+    ],
+    answer: "Class Area"
+  },
+  {
+    question: "What does WORA stand for in the context of Java?",
+    options: [
+      "Write Often Run Anytime",
+      "Write Once Run Anywhere",
+      "Write Or Run Again",
+      "None of the above"
+    ],
+    answer: "Write Once Run Anywhere"
+  },
+  {
+    question: "What is the first step in Java program development?",
+    options: [
+      "Write code in Notepad",
+      "Compile the Java code",
+      "Install the JDK",
+      "Execute the program"
+    ],
+    answer: "Install the JDK"
+  },
+  {
+    question: "Which file extension is used to save Java source code?",
+    options: [
+      ".class",
+      ".jav",
+      ".java",
+      ".jvm"
+    ],
+    answer: ".java"
+  },
+  {
+    question: "What command is used to compile a Java program?",
+    options: [
+      "java",
+      "javac",
+      "javadoc",
+      "jvm"
+    ],
+    answer: "javac"
+  },
+  {
+    question: "What is generated after successful compilation of a Java program?",
+    options: [
+      ".java file",
+      ".exe file",
+      ".txt file",
+      ".class file"
+    ],
+    answer: ".class file"
+  },
+   {
+    question: "Which command is used to run a compiled Java program?",
+    options: [
+      "javac Program.class",
+      "java Program.class",
+      "java Program",
+      "run Program"
+    ],
+    answer: "java Program"
+  },
+  {
+    question: "What does the following Java statement do?\nSystem.out.println(\"Hello, World!\");",
+    options: [
+      "Compiles the program",
+      "Declares a class",
+      "Displays output on the screen",
+      "Terminates the program"
+    ],
+    answer: "Displays output on the screen"
+  },
+  {
+    question: "What is the output of the Hello World program if executed correctly?",
+    options: [
+      "Hello Java",
+      "Hello",
+      "World",
+      "Hello, World!"
+    ],
+    answer: "Hello, World!"
+  },
+  {
+    question: "Which of the following is an example of a Java IDE?",
+    options: [
+      "MS Word",
+      "Eclipse",
+      "Photoshop",
+      "MySQL"
+    ],
+    answer: "Eclipse"
+  },
+  {
+    question: "What is a JAR file in Java?",
+    options: [
+      "A text file",
+      "A compressed executable file containing class files and resources",
+      "A backup file",
+      "A debugging log file"
+    ],
+    answer: "A compressed executable file containing class files and resources"
+  },
+  {
+    question: "What must be configured in the system to run Java commands from any directory?",
+    options: [
+      "CLASSPATH",
+      "JVM",
+      "PATH",
+      "JAR"
+    ],
+    answer: "PATH"
+  },
+  {
+    question: "Which tool is necessary for developing Java programs?",
+    options: [
+      "JVM",
+      "JRE",
+      "JDK",
+      "JAR"
+    ],
+    answer: "JDK"
+  },
+  {
+    question: "What is the purpose of setting the PATH environment variable in Java setup?",
+    options: [
+      "To define memory usage",
+      "To locate Java libraries",
+      "To run Java commands from any directory",
+      "To compile JAR files"
+    ],
+    answer: "To run Java commands from any directory"
+  },
+  {
+    question: "Which of the following is a valid Java source file name?",
+    options: [
+      "MyProgram.exe",
+      "MyProgram.class",
+      "MyProgram.txt",
+      "MyProgram.java"
+    ],
+    answer: "MyProgram.java"
+  },
+  {
+    question: "What is the output of the following program?\n\npublic class MyProgram {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, World!\");\n  }\n}",
+    options: [
+      "Compilation error",
+      "No output",
+      "Hello, World!",
+      "Hello World"
+    ],
+    answer: "Hello, World!"
+  },
+  {
+    question: "Which command is used to compile a Java program?",
+    options: [
+      "java MyProgram.java",
+      "javac MyProgram",
+      "javac MyProgram.java",
+      "run MyProgram.java"
+    ],
+    answer: "javac MyProgram.java"
+  },
+  {
+    question: "After compiling MyProgram.java, what file is generated?",
+    options: [
+      "MyProgram.doc",
+      "MyProgram.exe",
+      "MyProgram.txt",
+      "MyProgram.class"
+    ],
+    answer: "MyProgram.class"
+  },
+  {
+    question: "What command is used to execute a compiled Java program?",
+    options: [
+      "java MyProgram.class",
+      "run MyProgram",
+      "execute MyProgram",
+      "java MyProgram"
+    ],
+    answer: "java MyProgram"
+  },
+  {
+    question: "Which tool can help you test and debug Java code?",
+    options: [
+      "File Explorer",
+      "System.out.println()",
+      "Browser Console",
+      "Paint"
+    ],
+    answer: "System.out.println()"
+  },
+  {
+    question: "What is the purpose of packaging Java code into a JAR file?",
+    options: [
+      "To compile the code",
+      "To delete class files",
+      "To distribute the program",
+      "To install Java"
+    ],
+    answer: "To distribute the program"
+  },
+  {
+    question: "What is true about Java’s \"Write Once, Run Anywhere\" capability?",
+    options: [
+      "Java only runs on Windows",
+      "Java must be recompiled on each OS",
+      "Java programs run on any device with JVM",
+      "Java doesn’t support Linux"
+    ],
+    answer: "Java programs run on any device with JVM"
+  },
+  {
+    question: "Which of the following is a valid Java keyword?",
+    options: [
+      "define",
+      "implement",
+      "implements",
+      "function"
+    ],
+    answer: "implements"
+  },
+  {
+    question: "What happens if you use a Java keyword as a variable name?",
+    options: [
+      "It will be automatically converted",
+      "It will be ignored by the compiler",
+      "It causes a compile-time error",
+      "It will run but give wrong output"
+    ],
+    answer: "It causes a compile-time error"
+  },
+  {
+    question: "Which of these is NOT a valid Java keyword?",
+    options: [
+      "goto",
+      "constant",
+      "volatile",
+      "abstract"
+    ],
+    answer: "constant"
+  },
+  {
+    question: "Which type of comment is used to generate external documentation using Javadoc?",
+    options: [
+      "// Comment",
+      "/* Comment /",
+      "/** Comment */",
+      "# Comment"
+    ],
+    answer: "/** Comment */"
+  },
+  {
+    question: "Which Java comment style is used for single-line comments?",
+    options: [
+      "/* comment /",
+      "# comment",
+      "/* comment */",
+      "// comment"
+    ],
+    answer: "// comment"
+  },
+  {
+    question: "Which of the following is a primitive data type in Java?",
+    options: [
+      "String",
+      "boolean",
+      "Array",
+      "Class"
+    ],
+    answer: "boolean"
+  },
+  {
+    question: "Which of these data types can store a 64-bit integer value?",
+    options: [
+      "int",
+      "short",
+      "long",
+      "float"
+    ],
+    answer: "long"
+  },
+  {
+    question: "Which keyword is used to define a variable that can be shared among all instances of a class?",
+    options: [
+      "final",
+      "static",
+      "public",
+      "this"
+    ],
+    answer: "static"
+  },
+  {
+    question: "What is the correct syntax for declaring a variable in Java?",
+    options: [
+      "int x = 10;",
+      "x int = 10;",
+      "declare int x = 10;",
+      "integer x = 10;"
+    ],
+    answer: "int x = 10;"
+  },
+  {
+    question: "What type of variable is declared inside a method in Java?",
+    options: [
+      "Instance variable",
+      "Class variable",
+      "Local variable",
+      "Static variable"
+    ],
+    answer: "Local variable"
+  },
+  {
+    question: "What will be the output of the following code?\nint a = 10, b = 5;\nSystem.out.println(a % b);",
+    options: [
+      "2",
+      "0",
+      "5",
+      "10"
+    ],
+    answer: "0"
+  },
+   {
+    question: "Which of the following is the correct assignment operator in Java?",
+    options: [
+      ":=",
+      "==",
+      "=",
+      "equals"
+    ],
+    answer: "="
+  },
+  {
+    question: "What is the output of this code?\nint x = 4;\nx += 3;\nSystem.out.println(x);",
+    options: [
+      "4",
+      "3",
+      "7",
+      "Error"
+    ],
+    answer: "7"
+  },
+  {
+    question: "Which relational operator is used to check not equal to?",
+    options: [
+      "!=",
+      "<>",
+      "=!",
+      "^="
+    ],
+    answer: "!="
+  },
+  {
+    question: "Which of the following operators has the highest precedence?",
+    options: [
+      "+",
+      "*",
+      "&&",
+      "="
+    ],
+    answer: "*"
+  },
+  {
+    question: "What does the following logical expression return?\ntrue && false",
+    options: [
+      "true",
+      "false",
+      "error",
+      "0"
+    ],
+    answer: "false"
+  },
+  {
+    question: "What is the difference between ++i and i++?",
+    options: [
+      "No difference",
+      "++i is post-increment, i++ is pre-increment",
+      "++i is pre-increment, i++ is post-increment",
+      "Both are pre-increment"
+    ],
+    answer: "++i is pre-increment, i++ is post-increment"
+  },
+  {
+    question: "What is the result of this code?\nint i = 0;\nint j = i++;\nSystem.out.println(j);",
+    options: [
+      "1",
+      "0",
+      "Error",
+      "Undefined"
+    ],
+    answer: "0"
+  },
+  {
+    question: "Which of these is not a logical operator in Java?",
+    options: [
+      "&&",
+      "||",
+      "!",
+      "^^"
+    ],
+    answer: "^^"
+  },
+  {
+    question: "What will be the value of x after executing the following code?\nint x = 10;\nx %= 3;",
+    options: [
+      "3",
+      "1",
+      "0",
+      "10"
+    ],
+    answer: "1"
+  },
+  {
+    question: "What will be the output of this code?\nint a = 10, b = 20;\nSystem.out.println(a + b);",
+    options: [
+      "1020",
+      "30",
+      "10 + 20",
+      "Compile error"
+    ],
+    answer: "30"
+  },
+  {
+    question: "Which of these is an assignment operator?",
+    options: [
+      "==",
+      "=",
+      "!=",
+      "&&"
+    ],
+    answer: "="
+  },
+  {
+    question: "What is the result of the expression: 5 + 2 * 3?",
+    options: [
+      "21",
+      "11",
+      "15",
+      "7"
+    ],
+    answer: "11"
+  },
+    {
+    question: "Which operator is used to find the remainder?",
+    options: [
+      "/",
+      "%",
+      "*",
+      "//"
+    ],
+    answer: "%"
+  },
+  {
+    question: `What is the output of the following?\nint x = 5;\nx *= 2 + 3;\nSystem.out.println(x);`,
+    options: [
+      "25",
+      "40",
+      "10",
+      "15"
+    ],
+    answer: "25"
+  },
+  {
+    question: "Which operator checks if two values are not equal?",
+    options: [
+      "=",
+      "==",
+      "!=",
+      "<>"
+    ],
+    answer: "!="
+  },
+  {
+    question: "Which of these is a logical OR operator in Java?",
+    options: [
+      "|",
+      "||",
+      "or",
+      "&&"
+    ],
+    answer: "||"
+  },
+  {
+    question: "Which of the following is the correct way to concatenate two strings in Java?",
+    options: [
+      "str1 . str2",
+      "str1 + str2",
+      "concat(str1, str2)",
+      "str1 & str2"
+    ],
+    answer: "str1 + str2"
+  },
+  {
+    question: `What will be the output?\nString s = "Hello";\ns.concat("World");\nSystem.out.println(s);`,
+    options: [
+      "Hello",
+      "HelloWorld",
+      "World",
+      "Error"
+    ],
+    answer: "Hello"
+  },
+  {
+    question: "What method is used to get the length of a string?",
+    options: [
+      "length()",
+      "size()",
+      "getLength()",
+      "count()"
+    ],
+    answer: "length()"
+  },
+  {
+    question: `What is the output?\nString s1 = "Java";\nString s2 = "Java";\nSystem.out.println(s1 == s2);`,
+    options: [
+      "false",
+      "true",
+      "Compile error",
+      "Cannot compare strings"
+    ],
+    answer: "true"
+  },
+  {
+    question: "Which of the following creates a new string object in heap memory?",
+    options: [
+      'String s = "Hello";',
+      'String s = new String("Hello");',
+      'String s = String.valueOf("Hello");',
+      'String s = "Hello" + "";'
+    ],
+    answer: 'String s = new String("Hello");'
+  },
+  {
+    question: "What does the equals() method do in Java?",
+    options: [
+      "Compares reference",
+      "Compares content",
+      "Creates a string",
+      "Converts to lowercase"
+    ],
+    answer: "Compares content"
+  },
+  {
+    question: "Which class is used for mutable strings and is thread-safe?",
+    options: [
+      "String",
+      "StringBuilder",
+      "StringBuffer",
+      "StringTokenizer"
+    ],
+    answer: "StringBuffer"
+  },
+  {
+    question: "Which method is used to split a string in Java?",
+    options: ["split()", "slice()", "divide()", "cut()"],
+    answer: "split()"
+  },
+  {
+    question: "Java में डेटा इनपुट के लिए कौन सा Stream इस्तेमाल होता है?",
+    options: ["System.out", "System.in", "System.err", "FileOutputStream"],
+    answer: "System.in"
+  },
+  {
+    question: "System.out.println() और System.out.print() में क्या फर्क है?",
+    options: [
+      "println() अगले लाइन में कर्सर ले जाता है, print() नहीं",
+      "print() अगले लाइन में कर्सर ले जाता है, println() नहीं",
+      "दोनों एक जैसे हैं",
+      "println() कर्सर को रोक देता है"
+    ],
+    answer: "println() अगले लाइन में कर्सर ले जाता है, print() नहीं"
+  },
+  {
+    question: "Java में formatted output के लिए कौन सा method इस्तेमाल किया जाता है?",
+    options: ["print()", "println()", "printf()", "format()"],
+    answer: "printf()"
+  },
+  {
+    question: "printf() में %s का उपयोग किसलिए किया जाता है?",
+    options: ["Integer के लिए", "String के लिए", "Floating-point नंबर के लिए", "Boolean के लिए"],
+    answer: "String के लिए"
+  },
+  {
+    question: "Java में FileOutputStream किस लिए उपयोग होता है?",
+    options: [
+      "फ़ाइल से डेटा पढ़ने के लिए",
+      "फ़ाइल में डेटा लिखने के लिए",
+      "कंसोल पर आउटपुट देने के लिए",
+      "कंसोल से इनपुट लेने के लिए"
+    ],
+    answer: "फ़ाइल में डेटा लिखने के लिए"
+  },
+  {
+    question: "Java में System.err का उपयोग किस लिए किया जाता है?",
+    options: [
+      "सामान्य आउटपुट के लिए",
+      "त्रुटि संदेशों के लिए",
+      "फाइल से इनपुट के लिए",
+      "कंसोल से इनपुट के लिए"
+    ],
+    answer: "त्रुटि संदेशों के लिए"
+  },
+  {
+    question: "कौन सा class Java में mutable string objects के लिए उपयोग किया जाता है?",
+    options: ["String", "StringBuffer", "StringTokenizer", "CharSequence"],
+    answer: "StringBuffer"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा class InputStream को represent नहीं करता?",
+    options: ["FileInputStream", "BufferedInputStream", "FileOutputStream", "ByteArrayInputStream"],
+    answer: "FileOutputStream"
+  },
+  {
+    question: "System.out.printf(\"Age: %d\", 25); में %d का क्या अर्थ है?",
+    options: [
+      "String placeholder",
+      "Integer placeholder",
+      "Floating number placeholder",
+      "Boolean placeholder"
+    ],
+    answer: "Integer placeholder"
+  },
+  {
+    question: "Java I/O में Stream का क्या मतलब है?",
+    options: [
+      "एक डेटा का संग्रह",
+      "एक डेटा का क्रमबद्ध अनुक्रम",
+      "डेटा का एक स्थिर मूल्य",
+      "एक फाइल"
+    ],
+    answer: "एक डेटा का क्रमबद्ध अनुक्रम"
+  },
+  {
+    question: "Scanner class का उपयोग किस पैकेज से किया जाता है?",
+    options: ["java.io", "java.util", "java.lang", "java.net"],
+    answer: "java.util"
+  },
+  {
+    question: "Scanner class में किस method से पूरा लाइन (String) इनपुट लिया जाता है?",
+    options: ["next()", "nextLine()", "nextChar()", "nextString()"],
+    answer: "nextLine()"
+  },
+   {
+    question: "Scanner class में एक character input लेने के लिए कौन सा expression सही है?",
+    options: [
+      "sc.nextChar()",
+      "sc.next().charAt(0)",
+      "sc.nextCharAt(0)",
+      "sc.nextLine().charAt(1)"
+    ],
+    answer: "sc.next().charAt(0)"
+  },
+  {
+    question: "Scanner class में int प्रकार का इनपुट लेने के लिए कौन सा method उपयोग किया जाता है?",
+    options: ["nextInteger()", "getInt()", "nextInt()", "readInt()"],
+    answer: "nextInt()"
+  },
+   {
+    question: "Scanner class का उपयोग करते समय इनपुट समाप्ति (EOF) की जांच करने के लिए कौन सा method प्रयोग होता है?",
+    options: ["hasNext()", "hasNextInt()", "hasNextLine()", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "निम्नलिखित में से कौन सा Scanner class का method सही नहीं है?",
+    options: ["nextBoolean()", "nextFloat()", "nextDouble()", "nextChar()"],
+    answer: "nextChar()"
+  },
+  {
+    question: "Scanner object बंद करने के लिए कौन सा method प्रयोग किया जाता है?",
+    options: ["stop()", "close()", "end()", "finish()"],
+    answer: "close()"
+  },
+  {
+    question: "Scanner class का उपयोग कौन से इनपुट स्रोत से किया जा सकता है?",
+    options: ["Standard Input (System.in)", "Files", "Strings", "उपरोक्त सभी"],
+    answer: "उपरोक्त सभी"
+  },
+  {
+    question: "Scanner का कौन सा method एक Boolean value पढ़ने के लिए उपयोग होता है?",
+    options: ["nextBool()", "nextBoolean()", "getBoolean()", "readBoolean()"],
+    answer: "nextBoolean()"
+  },
+  {
+    question: "Scanner class competitive programming के लिए क्यों कम उपयुक्त मानी जाती है?",
+    options: [
+      "यह मुश्किल है",
+      "यह धीमी होती है",
+      "यह गलत परिणाम देती है",
+      "यह केवल स्ट्रिंग इनपुट लेती है"
+    ],
+    answer: "यह धीमी होती है"
+  },
+  {
+    question: "Java में Console class किस पैकेज में उपलब्ध है?",
+    options: ["java.io", "java.util", "java.lang", "java.net"],
+    answer: "java.io"
+  },
+  {
+    question: "Console object प्राप्त करने के लिए कौन सा method प्रयोग होता है?",
+    options: [
+      "System.getConsole()",
+      "System.console()",
+      "Console.getConsole()",
+      "Console.console()"
+    ],
+    answer: "System.console()"
+  },
+  {
+    question: "Console से एक पूरी लाइन पढ़ने के लिए कौन सा method उपयोग किया जाता है?",
+    options: ["read()", "readLine()", "nextLine()", "getLine()"],
+    answer: "readLine()"
+  },
+  {
+    question: "Console से पासवर्ड सुरक्षित रूप से पढ़ने के लिए कौन सा method उपलब्ध है?",
+    options: ["readPassword()", "getPassword()", "readSecure()", "nextPassword()"],
+    answer: "readPassword()"
+  },
+  {
+    question: "Console class के readPassword() method से प्राप्त मान किस प्रकार का होता है?",
+    options: ["String", "char[]", "byte[]", "int"],
+    answer: "char[]"
+  },
+  {
+    question: "Console class का उपयोग कब संभव नहीं होता?",
+    options: [
+      "GUI applications में",
+      "Standard input/output के लिए",
+      "जब Java program IDE से चल रहा हो",
+      "दोनों A और C"
+    ],
+    answer: "दोनों A और C"
+  },
+  {
+    question: "Console से इनपुट लेते समय क्या output cursor स्क्रीन पर दिखता है?",
+    options: ["हाँ", "नहीं", "कभी-कभी", "केवल password के लिए नहीं"],
+    answer: "केवल password के लिए नहीं"
+  },
+  {
+    question: "Console class में formatted output देने के लिए कौन सा method होता है?",
+    options: ["print()", "println()", "format()", "printf()"],
+    answer: "printf()"
+  },
+  {
+    question: "Console से इनपुट लेते समय NullPointerException कब आता है?",
+    options: [
+      "जब Console object null होता है",
+      "जब इनपुट गलत होता है",
+      "जब आउटपुट डिवाइस जुड़ा न हो",
+      "Console में NullPointerException नहीं आता"
+    ],
+    answer: "जब Console object null होता है"
+  },
+   {
+    question: "Console class में डेटा पढ़ने के लिए कौन से method उपलब्ध हैं?",
+    options: [
+      "readLine() और readPassword()",
+      "next() और nextLine()",
+      "input() और get()",
+      "scan() और getInput()"
+    ],
+    answer: "readLine() और readPassword()"
+  },
+  {
+    question: "Java में control flow statements का मुख्य उद्देश्य क्या है?",
+    options: [
+      "प्रोग्राम को तेजी से चलाना",
+      "प्रोग्राम की flow को नियंत्रित करना",
+      "प्रोग्राम के errors को ठीक करना",
+      "डेटा को स्टोर करना"
+    ],
+    answer: "प्रोग्राम की flow को नियंत्रित करना"
+  },
+  {
+    question: "Java में Decision-Making statements कौन-कौन से हैं?",
+    options: [
+      "if और for",
+      "if और switch",
+      "for और while",
+      "break और continue"
+    ],
+    answer: "if और switch"
+  },
+  {
+    question: "Simple if statement में कौन-सी चीज़ जांची जाती है?",
+    options: [
+      "कोई integer मान",
+      "कोई string मान",
+      "Boolean condition",
+      "कोई loop condition"
+    ],
+    answer: "Boolean condition"
+  },
+  {
+    question: "नीचे दिए गए कोड में कौन-सा output आएगा?\nint x = 10;\nint y = 12;\nif(x + y > 20) {\n  System.out.println(\"x + y is greater than 20\");\n}",
+    options: [
+      "x + y is greater than 20",
+      "No output",
+      "Compilation error",
+      "None of the above"
+    ],
+    answer: "x + y is greater than 20"
+  },
+  {
+    question: "if-else statement में else block कब execute होता है?",
+    options: [
+      "जब if condition true हो",
+      "जब if condition false हो",
+      "हमेशा execute होता है",
+      "कभी execute नहीं होता"
+    ],
+    answer: "जब if condition false हो"
+  },
+  {
+    question: "if-else-if ladder का उपयोग कब किया जाता है?",
+    options: [
+      "केवल दो conditions के लिए",
+      "जब एक से ज्यादा conditions चेक करनी हों",
+      "केवल integer values के लिए",
+      "केवल loop के अंदर"
+    ],
+    answer: "जब एक से ज्यादा conditions चेक करनी हों"
+  },
+  {
+    question: "Nested if statement क्या होता है?",
+    options: [
+      "एक if के अंदर दूसरा if या else if हो",
+      "केवल एक if statement हो",
+      "केवल else block हो",
+      "None of the above"
+    ],
+    answer: "एक if के अंदर दूसरा if या else if हो"
+  },
+  {
+    question: "switch statement में कौन-कौन से डेटा टाइप उपयोग किए जा सकते हैं?",
+    options: [
+      "int, short, byte, char, String, Enum",
+      "float, double, long",
+      "boolean, double",
+      "None of the above"
+    ],
+    answer: "int, short, byte, char, String, Enum"
+  },
+  {
+    question: "switch statement में break का क्या उपयोग है?",
+    options: [
+      "प्रोग्राम को बंद करने के लिए",
+      "case execution को रोकने और switch से बाहर निकलने के लिए",
+      "नए case को शुरू करने के लिए",
+      "default case को skip करने के लिए"
+    ],
+    answer: "case execution को रोकने और switch से बाहर निकलने के लिए"
+  },
+  {
+    question: "नीचे दिए गए switch-case कोड का output क्या होगा?\nint num = 2;\nswitch (num){\n  case 0:\n    System.out.println(\"number is 0\");\n    break;\n  case 1:\n    System.out.println(\"number is 1\");\n    break;\n  default:\n    System.out.println(num);\n}",
+    options: [
+      "number is 0",
+      "number is 1",
+      "2",
+      "कोई output नहीं"
+    ],
+    answer: "2"
+  },
+  {
+    question: "Java में for loop का सही syntax कौन सा है?",
+    options: [
+      "for(initialization, condition, increment/decrement) { //statements }",
+      "for(initialization; condition; increment/decrement) { //statements }",
+      "for(condition; initialization; increment/decrement) { //statements }",
+      "for(initialization; increment; condition) { //statements }"
+    ],
+    answer: "for(initialization; condition; increment/decrement) { //statements }"
+  },
+  {
+    question: "Java का for-each loop किसके लिए उपयोग होता है?",
+    options: [
+      "जब लूप की संख्या पता हो",
+      "Array या Collection के elements को traverse करने के लिए",
+      "केवल Strings के लिए",
+      "कोई भी नहीं"
+    ],
+    answer: "Array या Collection के elements को traverse करने के लिए"
+  },
+   {
+    question: "while loop में condition कब चेक की जाती है?",
+    options: [
+      "Loop के body के बाद",
+      "Loop के body के पहले",
+      "कभी नहीं",
+      "केवल loop के बीच में"
+    ],
+    answer: "Loop के body के पहले"
+  },
+  {
+    question: "do-while loop में condition कब चेक की जाती है?",
+    options: [
+      "Loop के body के बाद",
+      "Loop के body के पहले",
+      "Loop के body के बीच में",
+      "कभी नहीं"
+    ],
+    answer: "Loop के body के बाद"
+  },
+  {
+    question: "कौन सा loop कम से कम एक बार जरूर execute होता है?",
+    options: [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "None of the above"
+    ],
+    answer: "do-while loop"
+  },
+  {
+    question: "break statement का उपयोग कब किया जाता है?",
+    options: [
+      "Loop या switch-case से बाहर निकलने के लिए",
+      "Loop को skip करने के लिए",
+      "Loop को restart करने के लिए",
+      "Loop को pause करने के लिए"
+    ],
+    answer: "Loop या switch-case से बाहर निकलने के लिए"
+  },
+  {
+    question: "continue statement क्या करता है?",
+    options: [
+      "Loop को पूरी तरह बंद कर देता है",
+      "Loop की current iteration को skip करता है और next iteration शुरू करता है",
+      "Loop को restart करता है",
+      "Loop की शुरुआत पर control ले जाता है"
+    ],
+    answer: "Loop की current iteration को skip करता है और next iteration शुरू करता है"
+  },
+  {
+    question: "निम्नलिखित कोड का आउटपुट क्या होगा?\nfor(int i=0; i<=5; i++) {\n  if(i == 3) {\n    break;\n  }\n  System.out.print(i + \" \");\n}",
+    options: [
+      "0 1 2 3 4 5",
+      "0 1 2",
+      "3 4 5",
+      "कोई आउटपुट नहीं"
+    ],
+    answer: "0 1 2"
+  },
+  {
+    question: "निम्नलिखित कोड का आउटपुट क्या होगा?\nfor(int i=0; i<=5; i++) {\n  if(i == 3) {\n    continue;\n  }\n  System.out.print(i + \" \");\n}",
+    options: [
+      "0 1 2 4 5",
+      "0 1 2 3 4 5",
+      "3 4 5",
+      "0 1 2"
+    ],
+    answer: "0 1 2 4 5"
+  },
+  {
+    question: "Java में labeled break का क्या उपयोग है?",
+    options: [
+      "किसी भी loop को तुरंत बंद करने के लिए",
+      "केवल inner loop को बंद करने के लिए",
+      "किसी विशेष labeled loop को बंद करने के लिए, खासकर nested loops में",
+      "Loop को skip करने के लिए"
+    ],
+    answer: "किसी विशेष labeled loop को बंद करने के लिए, खासकर nested loops में"
+  },
+  {
+    question: "What does System.exit(0) signify in Java?",
+    options: [
+      "Abnormal program termination",
+      "Successful program termination",
+      "JVM restart",
+      "Loop termination"
+    ],
+    answer: "Successful program termination"
+  },
+  {
+    question: "Which class contains the exit() method in Java?",
+    options: [
+      "java.util.System",
+      "java.lang.System",
+      "java.io.System",
+      "java.lang.Runtime"
+    ],
+    answer: "java.lang.System"
+  },
+  {
+    question: "What happens when System.exit() is called inside a try block?",
+    options: [
+      "finally block executes before JVM terminates",
+      "JVM terminates immediately, and finally block does not execute",
+      "catch block executes before JVM terminates",
+      "Program continues normally"
+    ],
+    answer: "JVM terminates immediately, and finally block does not execute"
+  },
+  {
+    question: "In Java, does the goto statement exist?",
+    options: [
+      "Yes, and it is frequently used",
+      "No, it is reserved but not implemented",
+      "Yes, but only in switch statements",
+      "No, replaced by return statements"
+    ],
+    answer: "No, it is reserved but not implemented"
+  },
+  {
+    question: "Which statement is used to exit a method prematurely?",
+    options: [
+      "break",
+      "continue",
+      "return",
+      "exit"
+    ],
+    answer: "return"
+  },
+  {
+    question: "What does a non-zero status code in System.exit(status) indicate?",
+    options: [
+      "Normal termination",
+      "Abnormal termination or error",
+      "JVM restart",
+      "No effect on program termination"
+    ],
+    answer: "Abnormal termination or error"
+  },
+   {
+    question: "Which of the following is true about the break statement in Java?",
+    options: [
+      "It exits only the current innermost loop or switch statement",
+      "It terminates the entire program",
+      "It skips the current iteration and continues next",
+      "It can be used outside loops"
+    ],
+    answer: "It exits only the current innermost loop or switch statement"
+  },
+  {
+    question: "How does Java achieve similar behavior to goto?",
+    options: [
+      "Using labeled break and continue statements",
+      "Using multiple return statements",
+      "By using System.exit()",
+      "By recursive method calls only"
+    ],
+    answer: "Using labeled break and continue statements"
+  },
+  {
+    question: "Which of the following is NOT a valid reason for Java not supporting goto?",
+    options: [
+      "Difficult to read and maintain code",
+      "Makes compiler optimization harder",
+      "Java does not allow any control flow statements",
+      "Labels with break/continue can replace goto functionality"
+    ],
+    answer: "Java does not allow any control flow statements"
+  },
+  {
+    question: "What happens when return statement is executed in a void method?",
+    options: [
+      "The program terminates",
+      "The method exits immediately without returning a value",
+      "It throws a compile-time error",
+      "It returns a null value"
+    ],
+    answer: "The method exits immediately without returning a value"
+  },
+  {
+    question: "Which of the following is NOT a valid integer data type in Java?",
+    options: [
+      "byte",
+      "short",
+      "float",
+      "int"
+    ],
+    answer: "float"
+  },
+  {
+    question: "What is the range of the byte data type in Java?",
+    options: [
+      "-32768 to 32767",
+      "-128 to 127",
+      "-2147483648 to 2147483647",
+      "-9223372036854775808 to 9223372036854775807"
+    ],
+    answer: "-128 to 127"
+  },
+  {
+    question: "How do you denote a long literal value in Java?",
+    options: [
+      "Append l or L at the end",
+      "Append f at the end",
+      "Append d at the end",
+      "No special notation needed"
+    ],
+    answer: "Append l or L at the end"
+  },
+  {
+    question: "Which data type would you use to store the value 3.14159 in Java?",
+    options: [
+      "int",
+      "float",
+      "double",
+      "byte"
+    ],
+    answer: "double"
+  },
+  {
+    question: "How do you declare a float literal in Java?",
+    options: [
+      "float f = 5.75;",
+      "float f = 5.75f;",
+      "float f = 5.75d;",
+      "float f = 5;"
+    ],
+    answer: "float f = 5.75f;"
+  },
+  {
+    question: "In Java, a String is internally represented as:",
+    options: [
+      "int array",
+      "char array",
+      "float array",
+      "boolean array"
+    ],
+    answer: "char array"
+  },
+  {
+    question: "Which class in Java is used to represent Strings?",
+    options: [
+      "java.util.String",
+      "java.lang.String",
+      "java.io.String",
+      "java.lang.CharSequence"
+    ],
+    answer: "java.lang.String"
+  },
+  {
+    question: "What is the difference between creating a String using string literal and using new keyword?",
+    options: [
+      "Literal creates object on heap, new creates object in string pool",
+      "Literal creates object in string pool, new creates object on heap",
+      "Both create objects in the heap",
+      "Both create objects in the string pool"
+    ],
+    answer: "Literal creates object in string pool, new creates object on heap"
+  },
+  {
+    question: "What will be the output of the following code?\nchar[] ch = {'J', 'a', 'v', 'a'};\nString s = new String(ch);\nSystem.out.println(s);",
+    options: [
+      "J a v a",
+      "Java",
+      "[J, a, v, a]",
+      "Compilation error"
+    ],
+    answer: "Java"
+  },
+  {
+    question: "Which of the following methods is NOT part of the String class in Java?",
+    options: [
+      "concat()",
+      "substring()",
+      "compare()",
+      "split()"
+    ],
+    answer: "compare()"
+  },
+  {
+    question: "What is true about arrays in Java?",
+    options: [
+      "Arrays can store elements of different types",
+      "Array size can be changed at runtime",
+      "Array elements are stored in contiguous memory locations",
+      "Arrays are not objects in Java"
+    ],
+    answer: "Array elements are stored in contiguous memory locations"
+  },
+  {
+    question: "How do you get the length of an array in Java?",
+    options: [
+      "array.length()",
+      "array.size()",
+      "array.length",
+      "sizeof(array)"
+    ],
+    answer: "array.length"
+  },
+  {
+    question: "Which of the following is the correct way to declare an array in Java?",
+    options: [
+      "int arr;",
+      "int arr[];",
+      "int[] arr;",
+      "Both B and C"
+    ],
+    answer: "Both B and C"
+  },
+  {
+    question: "How do you instantiate an integer array of size 10 in Java?",
+    options: [
+      "int[] arr = new int[10];",
+      "int arr = new int[10];",
+      "int arr[] = new int();",
+      "int arr = new int[];"
+    ],
+    answer: "int[] arr = new int[10];"
+  },
+  {
+    question: "Which of the following statements about Java arrays is FALSE?",
+    options: [
+      "Arrays are objects in Java",
+      "Array elements can be accessed randomly using index",
+      "Array length can be changed dynamically",
+      "Array implements Serializable and Cloneable interfaces"
+    ],
+    answer: "Array length can be changed dynamically"
+  },
+  {
+    question: "How do you traverse a Java array using a for-each loop?",
+    options: [
+      "for(int i=0; i<arr.length; i++)",
+      "for(int i : arr)",
+      "for each int i in arr",
+      "foreach(int i in arr)"
+    ],
+    answer: "for(int i : arr)"
+  },
+   {
+    question: "How can you pass an array to a method in Java?",
+    options: [
+      "Pass the reference of the array to the method parameter",
+      "Pass each element of the array individually",
+      "Java does not support passing arrays to methods",
+      "Pass array length only"
+    ],
+    answer: "Pass the reference of the array to the method parameter"
+  },
+  {
+    question: "What is the correct syntax to declare a 2D array in Java?",
+    options: [
+      "int arr[][];",
+      "int[] arr[];",
+      "int[][] arr;",
+      "All of the above"
+    ],
+    answer: "All of the above"
+  },
+  {
+    question: "What will be the output of the following code snippet?\nint[] a = {33, 3, 4, 5};\nfor(int i : a) {\n    System.out.print(i + \" \");\n}",
+    options: [
+      "33 3 4 5",
+      "3345",
+      "Error",
+      "None of the above"
+    ],
+    answer: "33 3 4 5"
+  },
+  {
+    question: "Which of the following statements correctly initializes a 2D array?",
+    options: [
+      "int[][] arr = {{1, 2}, {3, 4}};",
+      "int[][] arr = new int[2][2];",
+      "Both A and B",
+      "None of the above"
+    ],
+    answer: "Both A and B"
+  },
+  {
+    question: "In Java, what happens if you try to access an array index that is out of bounds?",
+    options: [
+      "Returns null",
+      "Returns default value of element type",
+      "Throws ArrayIndexOutOfBoundsException",
+      "Compiles with warning"
+    ],
+    answer: "Throws ArrayIndexOutOfBoundsException"
+  },
+  {
+    question: "Which of the following is NOT true for arrays in Java?",
+    options: [
+      "Arrays implement Serializable interface",
+      "Arrays implement Cloneable interface",
+      "Arrays can grow dynamically like ArrayList",
+      "Arrays have a fixed size once created"
+    ],
+    answer: "Arrays can grow dynamically like ArrayList"
+  },
+  {
+    question: "What is the output of matrix addition given below?\nint a[][] = {{1,3,4}, {3,4,5}};\nint b[][] = {{1,3,4}, {3,4,5}};\nint c[][] = new int[2][3];\n\nfor(int i=0; i<2; i++) {\n    for(int j=0; j<3; j++) {\n        c[i][j] = a[i][j] + b[i][j];\n        System.out.print(c[i][j] + \" \");\n    }\n    System.out.println();\n}",
+    options: [
+      "2 6 8\n6 8 10",
+      "1 3 4\n3 4 5",
+      "Error",
+      "None of the above"
+    ],
+    answer: "2 6 8\n6 8 10"
+  },
+  {
+    question: "What is a class in Java?",
+    options: [
+      "A collection of objects",
+      "A blueprint for creating objects",
+      "A method to perform actions",
+      "None of the above"
+    ],
+    answer: "A blueprint for creating objects"
+  },
+  {
+    question: "How do you create an object of a class named Main in Java?",
+    options: [
+      "Main myObj = new Main();",
+      "Main myObj = Main();",
+      "new Main = myObj();",
+      "object myObj = new Main();"
+    ],
+    answer: "Main myObj = new Main();"
+  },
+  {
+    question: "Which keyword is used to define a class in Java?",
+    options: [
+      "object",
+      "class",
+      "interface",
+      "method"
+    ],
+    answer: "class"
+  },
+  {
+    question: "What does the static keyword mean when used with a method?",
+    options: [
+      "The method can only be called from an object",
+      "The method belongs to the class, not objects",
+      "The method cannot be called at all",
+      "The method must return a value"
+    ],
+    answer: "The method belongs to the class, not objects"
+  },
+  {
+    question: "What is the return type of a method declared as void?",
+    options: [
+      "It returns an integer",
+      "It returns a string",
+      "It does not return any value",
+      "It returns a boolean"
+    ],
+    answer: "It does not return any value"
+  },
+  {
+    question: "How do you call a method named myMethod inside the same class?",
+    options: [
+      "call myMethod();",
+      "myMethod;",
+      "myMethod();",
+      "execute myMethod();"
+    ],
+    answer: "myMethod();"
+  },
+   {
+    question: `What will be the output of the following code?
+public class Main {
+    int x = 5;
+    public static void main(String[] args) {
+        Main myObj = new Main();
+        System.out.println(myObj.x);
+    }
+}`,
+    options: ["0", "5", "Compilation Error", "Runtime Error"],
+    answer: "5"
+  },
+  {
+    question: "Why do we use methods in Java?",
+    options: [
+      "To store data",
+      "To create objects",
+      "To reuse code and perform actions",
+      "To declare variables"
+    ],
+    answer: "To reuse code and perform actions"
+  },
+  {
+    question: "What happens if you try to call a non-static method from a static context without creating an object?",
+    options: [
+      "It works fine",
+      "Compilation Error",
+      "Runtime Error",
+      "Warning only"
+    ],
+    answer: "Compilation Error"
+  },
+  {
+    question: "In Java, everything is associated with ________ and ________?",
+    options: [
+      "Methods and Variables",
+      "Classes and Objects",
+      "Interfaces and Abstract Classes",
+      "Functions and Procedures"
+    ],
+    answer: "Classes and Objects"
+  },
+  {
+    question: "Which of the following is NOT true about methods in Java?",
+    options: [
+      "Methods must be declared inside a class",
+      "Methods can have parameters",
+      "Methods always return a value",
+      "Methods can be called to execute code block"
+    ],
+    answer: "Methods always return a value"
+  },
+  {
+    question: `Consider the following method declaration:
+static void display() {
+    System.out.println("Hello World");
+}
+What is the output when display() is called?`,
+    options: [
+      "Nothing, it returns void",
+      "Hello World",
+      "Compilation error",
+      "Runtime error"
+    ],
+    answer: "Hello World"
+  },
+  {
+    question: "जब हम Java में किसी method को object parameter के रूप में भेजते हैं, तो क्या होता है?",
+    options: [
+      "Object की एक नई copy बनती है और उसे भेजा जाता है",
+      "Object का reference (पता) भेजा जाता है",
+      "Primitive value भेजी जाती है",
+      "Method में object नहीं भेजा जा सकता"
+    ],
+    answer: "Object का reference (पता) भेजा जाता है"
+  },
+  {
+    question: "यदि एक method में object parameter के माध्यम से attribute को modify किया जाता है, तो क्या होता है?",
+    options: [
+      "केवल method के अंदर परिवर्तन होता है, original object unchanged रहता है",
+      "Original object के attributes भी बदल जाते हैं",
+      "Compilation error आता है",
+      "Runtime error आता है"
+    ],
+    answer: "Original object के attributes भी बदल जाते हैं"
+  },
+  {
+    question: `नीचे दिए गए constructor में कौन-कौन से attributes initialize हो रहे हैं?
+public MyClass(int attribute1, String attribute2, double attribute3) {
+    this.attribute1 = attribute1;
+    this.attribute2 = attribute2;
+    this.attribute3 = attribute3;
+}`,
+    options: [
+      "केवल attribute1",
+      "attribute1 और attribute2",
+      "attribute1, attribute2 और attribute3",
+      "कोई भी नहीं"
+    ],
+    answer: "attribute1, attribute2 और attribute3"
+  },
+  {
+    question: "क्या Java में primitive types और objects दोनों को method में parameter के रूप में पास किया जा सकता है?",
+    options: [
+      "केवल primitive types",
+      "केवल objects",
+      "दोनों, primitive types और objects",
+      "कोई भी नहीं"
+    ],
+    answer: "दोनों, primitive types और objects"
+  },
+  {
+    question: "निम्न में से कौन सही है?",
+    options: [
+      "Java में objects method को parameter के रूप में भेजते समय उनके values की copy भेजता है।",
+      "Java में objects method को parameter के रूप में भेजते समय उनके references भेजता है।",
+      "Java में objects method को parameter के रूप में नहीं भेजे जा सकते।",
+      "Java में objects method को parameter के रूप में भेजते समय उन्हें clone कर देता है।"
+    ],
+    answer: "Java में objects method को parameter के रूप में भेजते समय उनके references भेजता है।"
+  },
+  {
+    question: `नीचे दिए गए method signature में myMethod कौन सा parameter ले रहा है?
+public void myMethod(MyClass obj) {
+    // method body
+}`,
+    options: [
+      "Primitive type",
+      "Object reference of MyClass",
+      "Array",
+      "None"
+    ],
+    answer: "Object reference of MyClass"
+  },
+  {
+    question: "यदि हम method में object parameter को modify करते हैं, तो original object पर क्या प्रभाव पड़ेगा?",
+    options: [
+      "Original object भी modify हो जाएगा।",
+      "Original object unaffected रहेगा।",
+      "Compile-time error होगा।",
+      "Runtime error होगा।"
+    ],
+    answer: "Original object भी modify हो जाएगा।"
+  },
+  {
+    question: `Java में object को parameter के रूप में pass करने का मतलब है:`,
+    options: [
+      "Call by value",
+      "Call by reference",
+      "Call by object",
+      "Call by pointer"
+    ],
+    answer: "Call by value",
+    explanation: "Java में हमेशा Call by Value होती है, लेकिन उस value में object का reference होता है।"
+  },
+  {
+    question: "Java में method overloading का मतलब क्या है?",
+    options: [
+      "एक ही नाम के दो या अधिक method लेकिन return type अलग-अलग हो",
+      "एक ही नाम के दो या अधिक method लेकिन parameters (number या type) अलग-अलग हो",
+      "दो method के नाम और parameters दोनों अलग-अलग हों",
+      "एक method को बार-बार call करना"
+    ],
+    answer: "एक ही नाम के दो या अधिक method लेकिन parameters (number या type) अलग-अलग हो"
+  },
+  {
+    question: "कौन सा कारण method overloading का मुख्य कारण है?",
+    options: [
+      "Code को जटिल बनाना",
+      "Code को पढ़ने और समझने में आसानी करना",
+      "अलग-अलग method नाम रखना",
+      "Return type बदलना"
+    ],
+    answer: "Code को पढ़ने और समझने में आसानी करना"
+  },
+  {
+    question: "Java में method overloading कैसे achieve की जाती है?",
+    options: [
+      "Method के नाम बदल कर",
+      "Method के parameter की संख्या या data type बदल कर",
+      "केवल return type बदल कर",
+      "Method को static बनाकर"
+    ],
+    answer: "Method के parameter की संख्या या data type बदल कर"
+  },
+  {
+    question: "क्या केवल method के return type को बदलने से method overloading होती है?",
+    options: [
+      "हाँ",
+      "नहीं"
+    ],
+    answer: "नहीं"
+  },
+  {
+    question: `नीचे दिए गए कोड में कौन-कौन से method overloaded हैं?
+void add(int a, int b) { ... }
+void add(int a, int b, int c) { ... }
+void add(float a, float b) { ... }`,
+    options: [
+      "तीनों methods overloaded हैं",
+      "केवल पहले दो methods overloaded हैं",
+      "केवल पहले और तीसरे methods overloaded हैं",
+      "कोई भी overloaded नहीं है"
+    ],
+    answer: "तीनों methods overloaded हैं"
+  },
+  {
+    question: `नीचे दिए गए method signatures में से कौन method overloading नहीं है?
+A) void display(int a)
+B) int display(int a)
+C) void display(float a)
+D) void display(int a, int b)`,
+    options: [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    answer: "B",
+    explanation: "Return type बदलने से ओवरलोडिंग नहीं होती, parameters भी एक जैसे हैं"
+  },
+  {
+    question: "यदि एक class में दो methods का नाम समान है और उनके parameters की संख्या समान है लेकिन type अलग-अलग है, तो क्या यह method overloading है?",
+    options: [
+      "हाँ",
+      "नहीं"
+    ],
+    answer: "हाँ"
+  },
+  {
+    question: "Method overloading का फायदा क्या है?",
+    options: [
+      "Code redundancy बढ़ता है",
+      "Program slow होता है",
+      "Code का पुनः उपयोग (reuse) और readability बढ़ती है",
+      "Complication बढ़ता है"
+    ],
+    answer: "Code का पुनः उपयोग (reuse) और readability बढ़ती है"
+  },
+  {
+    question: "क्या method overloading inheritance से जुड़ा हुआ concept है?",
+    options: [
+      "हाँ",
+      "नहीं"
+    ],
+    answer: "नहीं",
+    explanation: "यह polymorphism का part है, लेकिन inheritance से सीधे संबंधित नहीं"
+  },
+   {
+    question: "Java में method overloading को कौन सी type की polymorphism कहा जाता है?",
+    options: [
+      "Runtime polymorphism",
+      "Compile-time polymorphism",
+      "Dynamic polymorphism",
+      "None of the above"
+    ],
+    answer: "Compile-time polymorphism"
+  },
+  {
+    question: "Constructor का नाम कैसा होता है?",
+    options: [
+      "किसी भी नाम का हो सकता है",
+      "Class के नाम के समान होना चाहिए",
+      "method के नाम जैसा होना चाहिए",
+      "कोई भी नाम, पर return type void हो"
+    ],
+    answer: "Class के नाम के समान होना चाहिए"
+  },
+  {
+    question: "Constructor में कौन सा return type होता है?",
+    options: [
+      "int",
+      "void",
+      "कोई return type नहीं होता",
+      "String"
+    ],
+    answer: "कोई return type नहीं होता"
+  },
+  {
+    question: "Java में default constructor कब बनता है?",
+    options: [
+      "जब programmer explicitly define नहीं करता",
+      "जब कोई parameterized constructor होता है",
+      "हर class के लिए हमेशा बनता है",
+      "जब main method होता है"
+    ],
+    answer: "जब programmer explicitly define नहीं करता"
+  },
+    {
+    question: "Constructor overloading क्या है?",
+    options: [
+      "एक constructor को बार-बार call करना",
+      "एक class में एक से ज्यादा constructors होना, जो अलग-अलग parameters लेते हों",
+      "Constructor को override करना",
+      "Constructor का नाम बदलना"
+    ],
+    answer: "एक class में एक से ज्यादा constructors होना, जो अलग-अलग parameters लेते हों"
+  },
+  {
+    question: "Constructor को static बनाया जा सकता है?",
+    options: [
+      "हाँ",
+      "नहीं",
+      "कभी-कभी",
+      "सिर्फ default constructor को"
+    ],
+    answer: "नहीं"
+  },
+  {
+    question: `निम्न में से कौन सा constructor सही है?
+class Test {
+    Test() {
+        System.out.println("Constructor called");
+    }
+}`,
+    options: [
+      "Valid constructor",
+      "Invalid constructor, return type missing",
+      "Invalid constructor, name mismatch",
+      "Invalid constructor, static होना चाहिए"
+    ],
+    answer: "Valid constructor"
+  },
+  {
+    question: "जब हम कोई constructor नहीं लिखते तो Java compiler क्या करता है?",
+    options: [
+      "Compile error देता है",
+      "Default no-arg constructor बनाता है",
+      "Parameterized constructor बनाता है",
+      "Object नहीं बनाता"
+    ],
+    answer: "Default no-arg constructor बनाता है"
+  },
+  {
+    question: "Constructor में return type define किया जाता है?",
+    options: [
+      "हाँ, void होता है",
+      "हाँ, int हो सकता है",
+      "नहीं, return type नहीं होता",
+      "हाँ, String हो सकता है"
+    ],
+    answer: "नहीं, return type नहीं होता"
+  },
+  {
+    question: "Constructor overloading में क्या जरूरी है?",
+    options: [
+      "Constructors के नाम अलग होने चाहिए",
+      "Constructors के parameters का type या number अलग होना चाहिए",
+      "Constructors का return type अलग होना चाहिए",
+      "Constructor के अंदर का code अलग होना चाहिए"
+    ],
+    answer: "Constructors के parameters का type या number अलग होना चाहिए"
+  },
+  {
+    question: "निम्न में से कौन सी बात गलत है?",
+    options: [
+      "Constructor का नाम class के नाम जैसा होता है",
+      "Constructor में return type होता है",
+      "Constructor overloading हो सकती है",
+      "Default constructor compiler बनाता है"
+    ],
+    answer: "Constructor में return type होता है"
+  },
+  {
+    question: "Inheritance में क्या relationship होता है?",
+    options: [
+      "HAS-A",
+      "IS-A",
+      "USES-A",
+      "CREATE-A"
+    ],
+    answer: "IS-A"
+  },
+  {
+    question: "Java में कौन-सी inheritance directly support नहीं होती?",
+    options: [
+      "Single Inheritance",
+      "Multiple Inheritance (class से)",
+      "Multilevel Inheritance",
+      "Hierarchical Inheritance"
+    ],
+    answer: "Multiple Inheritance (class से)"
+  },
+  {
+    question: "कौन-सा keyword Java में inheritance के लिए use होता है?",
+    options: [
+      "implement",
+      "inherit",
+      "extends",
+      "super"
+    ],
+    answer: "extends"
+  },
+  {
+    question: "अगर class Dog extends class Animal है, तो Dog class को Animal class के कौन से members inherited होंगे?",
+    options: [
+      "सिर्फ methods",
+      "सिर्फ variables",
+      "दोनों variables और methods (except private)",
+      "कुछ नहीं"
+    ],
+    answer: "दोनों variables और methods (except private)"
+  },
+  {
+    question: "निम्न में से कौन-सा सही है?",
+    options: [
+      "Child class अपने parent class के private members को directly access कर सकता है।",
+      "Child class parent class के public और protected members को access कर सकता है।",
+      "Child class parent class के सभी members को access कर सकता है।",
+      "Child class parent class के methods को override नहीं कर सकता।"
+    ],
+    answer: "Child class parent class के public और protected members को access कर सकता है।"
+  },
+  {
+    question: "Multilevel inheritance में inheritance की कितनी levels हो सकती हैं?",
+    options: [
+      "केवल 2",
+      "केवल 3",
+      "3 या उससे अधिक",
+      "केवल 1"
+    ],
+    answer: "3 या उससे अधिक"
+  },
+  {
+    question: "Hierarchical inheritance में कितनी classes एक ही parent class को inherit करती हैं?",
+    options: [
+      "एक ही class",
+      "दो या उससे अधिक classes",
+      "केवल दो classes",
+      "कोई नहीं"
+    ],
+    answer: "दो या उससे अधिक classes"
+  },
+   {
+    question: "Java में एक class से multiple classes inheritance possible है?",
+    options: [
+      "हाँ, directly possible है।",
+      "नहीं, Java में class multiple inheritance supported नहीं है।",
+      "केवल abstract classes से possible है।",
+      "केवल interfaces से possible है।"
+    ],
+    answer: "नहीं, Java में class multiple inheritance supported नहीं है।"
+  },
+  {
+    question: "Java में multiple inheritance कैसे achieve किया जाता है?",
+    options: [
+      "Classes के द्वारा",
+      "Interfaces के द्वारा",
+      "Abstract classes के द्वारा",
+      "Static classes के द्वारा"
+    ],
+    answer: "Interfaces के द्वारा"
+  },
+  {
+    question: "कौन-सा keyword child class में parent class के constructor को call करने के लिए उपयोग किया जाता है?",
+    options: [
+      "this()",
+      "super()",
+      "parent()",
+      "base()"
+    ],
+    answer: "super()"
+  },
+  {
+    question: "Java में method overriding का मुख्य उद्देश्य क्या है?",
+    options: [
+      "Compile-time polymorphism प्राप्त करना",
+      "Run-time polymorphism प्राप्त करना",
+      "Memory saving",
+      "Method hiding"
+    ],
+    answer: "Run-time polymorphism प्राप्त करना"
+  },
+  {
+    question: "कौन सा नियम method overriding के लिए आवश्यक नहीं है?",
+    options: [
+      "Method का नाम और parameter समान होने चाहिए",
+      "Return type अलग हो सकता है",
+      "Method final नहीं होना चाहिए",
+      "Method static नहीं होना चाहिए"
+    ],
+    answer: "Return type अलग हो सकता है"
+  },
+  {
+    question: "यदि parent class का method final है, तो क्या उसे subclass में override किया जा सकता है?",
+    options: [
+      "हाँ",
+      "नहीं",
+      "केवल protected access modifier के साथ",
+      "केवल private method होने पर"
+    ],
+    answer: "नहीं"
+  },
+  {
+    question: "यदि parent class का method private है, तो subclass में उसी नाम से method define करने पर वह क्या कहलाएगा?",
+    options: [
+      "Method overriding",
+      "Method hiding",
+      "Compile-time error",
+      "एक नया method (no overriding)"
+    ],
+    answer: "एक नया method (no overriding)"
+  },
+  {
+    question: "Java में static methods को override किया जाता है या नहीं?",
+    options: [
+      "हाँ, runtime पर",
+      "नहीं, compile-time पर",
+      "नहीं, उसे method hiding कहते हैं",
+      "हाँ, परंतु केवल interface में"
+    ],
+    answer: "नहीं, उसे method hiding कहते हैं"
+  },
+  {
+    question: "Method overriding में कौन सा keyword superclass के method को subclass में call करने के लिए प्रयोग होता है?",
+    options: [
+      "this",
+      "super",
+      "static",
+      "override"
+    ],
+    answer: "super"
+  },
+  {
+    question: "Overriding method का access modifier superclass के method से...",
+    options: [
+      "कम restrictive होना चाहिए",
+      "अधिक restrictive हो सकता है",
+      "कम या बराबर restrictive होना चाहिए",
+      "कोई नियम नहीं है"
+    ],
+    answer: "कम या बराबर restrictive होना चाहिए"
+  },
+  {
+    question: "निम्न में से कौन सा statement सही है?",
+    options: [
+      "Overriding static methods causes compile-time error",
+      "Private methods can be overridden",
+      "Final methods can be overridden",
+      "Subclass method का return type unrelated हो सकता है"
+    ],
+    answer: "Overriding static methods causes compile-time error"
+  },
+  {
+    question: "यदि parent class का method protected है, तो subclass में उसे कैसे override किया जा सकता है?",
+    options: [
+      "केवल private",
+      "protected या public",
+      "केवल protected",
+      "default"
+    ],
+    answer: "protected या public"
+  },
+  {
+    question: `यदि superclass का object subclass को reference कर रहा हो, तो कौन सा method call होगा?
+Parent p = new Child();
+p.show();`,
+    options: [
+      "Parent का show()",
+      "Compile time error",
+      "Child का show()",
+      "Static method"
+    ],
+    answer: "Child का show()"
+  },
+   {
+    question: "Java में Exception Handling का मूल उद्देश्य क्या है?",
+    options: [
+      "कंपाइलर को तेजी से चलाना",
+      "प्रोग्राम को debug करना",
+      "रंटाइम errors को handle करना",
+      "Static variables को manage करना"
+    ],
+    answer: "रंटाइम errors को handle करना"
+  },
+  {
+    question: "इनमें से कौन-सी Checked Exception है?",
+    options: [
+      "NullPointerException",
+      "ArithmeticException",
+      "IOException",
+      "ArrayIndexOutOfBoundsException"
+    ],
+    answer: "IOException"
+  },
+  {
+    question: "Unchecked Exceptions को कौनसा क्लास रिप्रेज़ेंट करता है?",
+    options: [
+      "Exception",
+      "Throwable",
+      "IOException",
+      "RuntimeException"
+    ],
+    answer: "RuntimeException"
+  },
+  {
+    question: "try के साथ कौन-कौन से blocks use हो सकते हैं?",
+    options: [
+      "catch only",
+      "finally only",
+      "catch और finally दोनों",
+      "उपर्युक्त सभी"
+    ],
+    answer: "उपर्युक्त सभी"
+  },
+  {
+    question: "यदि try block में कोई exception नहीं आता है, तो क्या finally block execute होता है?",
+    options: [
+      "हाँ",
+      "नहीं",
+      "केवल तब जब catch भी हो",
+      "केवल NullPointerException के लिए"
+    ],
+    answer: "हाँ"
+  },
+  {
+    question: "'throw' और 'throws' में क्या अंतर है?",
+    options: [
+      "दोनों एक ही चीज़ हैं",
+      "throw object को फेंकता है, throws method declaration में use होता है",
+      "throws object को फेंकता है",
+      "throw static keyword है"
+    ],
+    answer: "throw object को फेंकता है, throws method declaration में use होता है"
+  },
+  {
+    question: "यदि कोई Exception catch block में handle नहीं होता तो क्या होता है?",
+    options: [
+      "Program continue चलता है",
+      "Program terminate हो जाता है",
+      "Compiler warning देता है",
+      "JVM automatically recover कर लेती है"
+    ],
+    answer: "Program terminate हो जाता है"
+  },
+  {
+    question: "Java में Custom Exception बनाने के लिए किस class को extend करते हैं?",
+    options: [
+      "Object",
+      "RuntimeException",
+      "Throwable",
+      "Exception"
+    ],
+    answer: "Exception"
+  },
+  {
+    question: "finalize() method का उपयोग किसके लिए किया जाता है?",
+    options: [
+      "File को close करने के लिए",
+      "Memory release से पहले cleanup करने के लिए",
+      "Code compile करने के लिए",
+      "Final class declare करने के लिए"
+    ],
+    answer: "Memory release से पहले cleanup करने के लिए"
+  },
+  {
+    question: "निम्नलिखित में से कौन-सा keyword Final Class बनाने के लिए प्रयोग होता है?",
+    options: [
+      "finalize",
+      "finally",
+      "final",
+      "constant"
+    ],
+    answer: "final"
+  },
+  {
+    question: "Multiple catch blocks में कौन-सा catch block पहले execute होता है?",
+    options: [
+      "सबसे general exception वाला",
+      "सबसे specific exception वाला",
+      "सबसे आखिरी वाला",
+      "JVM decide करती है"
+    ],
+    answer: "सबसे specific exception वाला"
+  },
+  {
+    question: "In Java, how are virtual functions implemented? / Java में virtual functions को कैसे लागू किया जाता है?",
+    options: [
+      "Using virtual keyword",
+      "Using abstract keyword only",
+      "All non-static, non-final methods are virtual by default",
+      "Java does not support virtual functions"
+    ],
+    answer: "All non-static, non-final methods are virtual by default"
+  },
+  {
+    question: "Which of the following method types cannot be overridden in Java? / Java में इनमें से कौन-सा method override नहीं किया जा सकता?",
+    options: [
+      "public method",
+      "private method",
+      "protected method",
+      "default method"
+    ],
+    answer: "private method"
+  },
+  {
+    question: `What will be the output of the following code?
+class Parent {
+    void v1() {
+        System.out.println("Parent");
+    }
+}
+class Child extends Parent {
+    void v1() {
+        System.out.println("Child");
+    }
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.v1();
+    }
+}`,
+    options: [
+      "Parent",
+      "Child",
+      "Compilation Error",
+      "Runtime Error"
+    ],
+    answer: "Child"
+  },
+  {
+    question: "Which keyword in Java prevents a method from being overridden? / Java में किस keyword से method को override होने से रोका जा सकता है?",
+    options: [
+      "static",
+      "final",
+      "abstract",
+      "private"
+    ],
+    answer: "final"
+  },
+  {
+    question: "In Java, which of the following is true about virtual methods?",
+    options: [
+      "Java does not allow virtual methods",
+      "Only static methods are virtual",
+      "Non-static, non-final methods are virtual",
+      "Virtual methods must be declared using a keyword"
+    ],
+    answer: "Non-static, non-final methods are virtual"
+  },
+  {
+    question: "What is the relationship required for method overriding to work in Java? / Java में method overriding के लिए किस प्रकार का relationship आवश्यक है?",
+    options: [
+      "HAS-A",
+      "IS-A",
+      "USES-A",
+      "NONE"
+    ],
+    answer: "IS-A"
+  },
+  {
+    question: "Which of these features is NOT supported by interfaces in Java (prior to Java 8)?",
+    options: [
+      "Multiple inheritance",
+      "Abstract methods",
+      "Method implementations",
+      "Polymorphism"
+    ],
+    answer: "Method implementations"
+  },
+  {
+    question: "What is the purpose of an abstract class in Java?",
+    options: [
+      "To create objects directly",
+      "To force subclasses to implement certain methods",
+      "To prevent inheritance",
+      "None of the above"
+    ],
+    answer: "To force subclasses to implement certain methods"
+  },
+  {
+    question: "Which of the following can be present in both Abstract Class and Interface (Java 8+)?",
+    options: [
+      "Constructors",
+      "Static Methods",
+      "Instance Variables",
+      "Private Constructors"
+    ],
+    answer: "Static Methods"
+  },
+  {
+    question: "Which of the following is true about method overriding in Java?",
+    options: [
+      "Static methods can be overridden",
+      "Final methods can be overridden",
+      "Method overriding occurs at compile time",
+      "Method overriding is a runtime polymorphism feature"
+    ],
+    answer: "Method overriding is a runtime polymorphism feature"
+  },
+  {
+    question: "What is the purpose of abstraction in Java? / Java में abstraction का मुख्य उद्देश्य क्या है?",
+    options: [
+      "Code duplication",
+      "Memory saving",
+      "Hiding implementation details and showing only essential features",
+      "Faster execution"
+    ],
+    answer: "Hiding implementation details and showing only essential features"
+  },
+   {
+    question: "What will happen if you try to create an object of an abstract class? / अगर आप किसी abstract class का object बनाने की कोशिश करते हैं तो क्या होगा?",
+    options: [
+      "Object बन जाएगा",
+      "Compile-time error",
+      "Run-time error",
+      "Nothing happens"
+    ],
+    answer: "Compile-time error",
+    explanation: "Abstract class का object सीधे नहीं बनाया जा सकता। इसे subclass से inherit करना पड़ता है।"
+  },
+  {
+    question: "Which of the following is true about abstract classes in Java? / Java में abstract classes के बारे में कौन-सा सही है?",
+    options: [
+      "Abstract classes can be instantiated",
+      "Abstract classes cannot have concrete (regular) methods",
+      "Abstract classes must have at least one abstract method",
+      "Abstract classes can have both abstract and non-abstract methods"
+    ],
+    answer: "Abstract classes can have both abstract and non-abstract methods",
+    explanation: "Abstract class में abstract methods के साथ-साथ concrete methods भी हो सकते हैं।"
+  },
+  {
+    question: "What is the correct declaration of an abstract method? / निम्नलिखित में से कौन-सा abstract method का सही syntax है?",
+    options: [
+      "public void show() {}",
+      "public abstract void show();",
+      "abstract show() void;",
+      "void show() abstract;"
+    ],
+    answer: "public abstract void show();",
+    explanation: "Abstract method का body नहीं होता, और वह class में केवल declare होता है।"
+  },
+  {
+    question: "Where can an abstract method exist in Java? / Java में abstract method कहाँ हो सकता है?",
+    options: [
+      "In any class",
+      "Only in a final class",
+      "Only in an abstract class",
+      "In interface only"
+    ],
+    answer: "Only in an abstract class",
+    explanation: "Abstract method केवल abstract class के अंदर ही हो सकता है।"
+  },
+  {
+    question: `What is the output of the following code?
+abstract class Animal {
+    public abstract void animalSound();
+    public void sleep() {
+        System.out.println("Zzz");
+    }
+}
+class Pig extends Animal {
+    public void animalSound() {
+        System.out.println("The pig says: wee wee");
+    }
+}
+class Main {
+    public static void main(String[] args) {
+        Pig myPig = new Pig();
+        myPig.animalSound();
+        myPig.sleep();
+    }
+}`,
+    options: [
+      "Compilation error",
+      "The pig says: wee wee\nZzz",
+      "The pig says: wee wee\nError",
+      "Zzz only"
+    ],
+    answer: "The pig says: wee wee\nZzz",
+    explanation: "Pig class ने animalSound() को override किया है और sleep() method abstract class से inherited है।"
+  },
+  {
+    question: "Which keyword is used to define an abstract class or method in Java? / Java में abstract class या method घोषित करने के लिए कौन-सा keyword उपयोग होता है?",
+    options: [
+      "interface",
+      "extends",
+      "final",
+      "abstract"
+    ],
+    answer: "abstract"
+  },
+  {
+    question: "Which of the following is NOT allowed in an abstract class? / Abstract class में निम्नलिखित में से क्या allowed नहीं है?",
+    options: [
+      "Constructors",
+      "Static methods",
+      "Object creation",
+      "Non-abstract methods"
+    ],
+    answer: "Object creation",
+    explanation: "Abstract class का object नहीं बनाया जा सकता।"
+  },
+  {
+    question: "Can an abstract class have a main() method in Java? / क्या abstract class में main() method हो सकता है?",
+    options: [
+      "No",
+      "Yes, but cannot run",
+      "Yes, and it can run",
+      "Only if inherited"
+    ],
+    answer: "Yes, and it can run",
+    explanation: "Abstract class में main method हो सकती है और उसे रन भी किया जा सकता है।"
+  },
+  {
+    question: "Why do we use abstract classes? / हम abstract classes क्यों उपयोग करते हैं?",
+    options: [
+      "To force subclasses to implement certain methods",
+      "To create objects",
+      "For file operations",
+      "To hide public methods"
+    ],
+    answer: "To force subclasses to implement certain methods",
+    explanation: "Abstract class का उद्देश्य होता है कि subclasses जरूरी methods को implement करें।"
+  },
+  {
+    question: "Which keyword is used to declare an abstract class in Java? / Java में abstract class को घोषित करने के लिए कौन-सा कीवर्ड प्रयोग होता है?",
+    options: [
+      "final",
+      "class",
+      "abstract",
+      "interface"
+    ],
+    answer: "abstract"
+  },
+  {
+    question: "Which of the following is TRUE about an abstract class? / निम्नलिखित में से abstract class के बारे में कौन-सा सही है?",
+    options: [
+      "It cannot have any non-abstract methods / इसमें कोई non-abstract methods नहीं हो सकते",
+      "It must contain at least one abstract method / इसमें कम से कम एक abstract method होना जरूरी है",
+      "It can have both abstract and non-abstract methods / इसमें abstract और non-abstract दोनों methods हो सकते हैं",
+      "It cannot contain constructors / इसमें constructors नहीं हो सकते"
+    ],
+    answer: "It can have both abstract and non-abstract methods / इसमें abstract और non-abstract दोनों methods हो सकते हैं"
+  },
+  {
+    question: "Can an abstract class in Java be instantiated? / क्या Java में abstract class का object बनाया जा सकता है?",
+    options: [
+      "Yes, always / हाँ, हमेशा",
+      "Only if it has a main() method / केवल अगर इसमें main() method हो",
+      "No / नहीं",
+      "Only in case of inner class / केवल inner class के लिए"
+    ],
+    answer: "No / नहीं"
+  },
+  {
+    question: "Which of the following can an abstract class contain? / Abstract class में निम्नलिखित में से क्या हो सकता है?",
+    options: [
+      "Abstract methods only / केवल abstract methods",
+      "Final methods only / केवल final methods",
+      "Static methods, constructors, and final methods / Static methods, constructors और final methods",
+      "Only static variables / केवल static variables"
+    ],
+    answer: "Static methods, constructors, and final methods / Static methods, constructors और final methods"
+  },
+  {
+    question: "What feature of abstract class supports hiding implementation details from the user? / Abstract class की कौन-सी विशेषता उपयोगकर्ता से implementation details छुपाने में मदद करती है?",
+    options: [
+      "Inheritance / विरासत",
+      "Encapsulation / संक्षारण",
+      "Abstraction / अमूर्तन",
+      "Polymorphism / बहुरूपता"
+    ],
+    answer: "Abstraction / अमूर्तन"
+  },
+  {
+    question: "Which feature of abstract class helps reduce dependency between classes? / Abstract class की कौन-सी विशेषता classes के बीच dependency कम करती है?",
+    options: [
+      "Dynamic Binding / डायनामिक बाइंडिंग",
+      "Loose Coupling / कमजोर जोड़ना",
+      "Encapsulation / संक्षारण",
+      "Static Resolution / स्थिर समाधान"
+    ],
+    answer: "Loose Coupling / कमजोर जोड़ना",
+    explanation: "Loose Coupling abstraction के जरिये प्राप्त होती है, जो code dependencies को कम करती है।"
+  },
+  {
+    question: "How does an abstract class help with code reusability? / Abstract class कोड पुन: उपयोग में कैसे मदद करता है?",
+    options: [
+      "By allowing multiple inheritance / multiple inheritance की अनुमति देकर",
+      "By allowing method overloading / method overloading की अनुमति देकर",
+      "By defining abstract methods once and reusing through subclasses / abstract methods को एक बार परिभाषित कर subclasses में पुन: उपयोग करके",
+      "By avoiding constructors / constructors से बचकर"
+    ],
+    answer: "By defining abstract methods once and reusing through subclasses / abstract methods को एक बार परिभाषित कर subclasses में पुन: उपयोग करके"
+  },
+  {
+    question: "What does dynamic resolution in context of abstract classes refer to? / Abstract classes के संदर्भ में dynamic resolution का क्या मतलब है?",
+    options: [
+      "Resolving classpath issues / classpath समस्याओं का समाधान",
+      "Resolving method calls at compile time / compile time पर method कॉल का समाधान",
+      "Resolving method calls at runtime using polymorphism / runtime पर polymorphism से method कॉल का समाधान",
+      "Resolving constructors dynamically / constructors को dynamic रूप से हल करना"
+    ],
+    answer: "Resolving method calls at runtime using polymorphism / runtime पर polymorphism से method कॉल का समाधान",
+    explanation: "Dynamic resolution runtime polymorphism को कहते हैं, जहाँ सही method execution समय पर चुना जाता है।"
+  },
+  {
+    question: "Which of the following is NOT a benefit of abstract class? / निम्नलिखित में से कौन abstract class का लाभ नहीं है?",
+    options: [
+      "Data abstraction / डेटा अमूर्तन",
+      "Code duplication / कोड पुनरावृत्ति",
+      "Loose coupling / कमजोर जोड़ना",
+      "Code reusability / कोड पुन: उपयोग"
+    ],
+    answer: "Code duplication / कोड पुनरावृत्ति",
+    explanation: "Abstract class कोड पुनरावृत्ति को कम करता है, उसे बढ़ावा नहीं देता।"
+  },
+  {
+    question: "Which of the following statements about abstract classes is FALSE? / abstract classes के बारे में निम्नलिखित में से कौन-सा कथन गलत है?",
+    options: [
+      "An abstract class can have static methods / abstract class में static methods हो सकते हैं",
+      "An abstract class can have constructors / abstract class में constructors हो सकते हैं",
+      "An abstract class must be inherited to be used / abstract class का उपयोग करने के लिए इसे inherit करना आवश्यक है",
+      "An abstract class can be instantiated directly / abstract class का सीधे object बनाया जा सकता है"
+    ],
+    answer: "An abstract class can be instantiated directly / abstract class का सीधे object बनाया जा सकता है"
+  },
+  {
+    question: "What is an interface in Java? / Java में Interface क्या है?",
+    options: [
+      "A class with all static methods / सभी static methods वाली class",
+      "A blueprint of a class with abstract methods and constants / abstract methods और constants वाली class का blueprint",
+      "A final class with only constructors / केवल constructors वाली final class",
+      "A subclass of an abstract class / abstract class की subclass"
+    ],
+    answer: "A blueprint of a class with abstract methods and constants / abstract methods और constants वाली class का blueprint",
+    explanation: "Interface में केवल abstract methods और static constants होते हैं, यह एक blueprint होता है।"
+  },
+  {
+    question: "Which of the following can an interface contain by default (Java 7 and earlier)? / Java 7 और पहले version में interface में क्या हो सकता है?",
+    options: [
+      "Abstract methods only / केवल abstract methods",
+      "Method bodies / method के body",
+      "Instance variables / instance variables",
+      "Constructors / constructors"
+    ],
+    answer: "Abstract methods only / केवल abstract methods"
+  },
+  {
+    question: "From which Java version can interfaces have default and static methods? / Java के किस version से interfaces में default और static methods हो सकते हैं?",
+    options: [
+      "Java 6",
+      "Java 7",
+      "Java 8",
+      "Java 9"
+    ],
+    answer: "Java 8"
+  },
+   {
+    question: "Since which Java version can interfaces have private methods? / Java के किस version से interfaces में private methods हो सकते हैं?",
+    options: [
+      "Java 6",
+      "Java 8",
+      "Java 9",
+      "Java 10"
+    ],
+    answer: "Java 9"
+  },
+  {
+    question: "Can we create an object of an interface in Java? / क्या Java में interface का object बनाया जा सकता है?",
+    options: [
+      "Yes / हाँ",
+      "No / नहीं",
+      "Only if it has static methods / केवल अगर इसमें static methods हों",
+      "Only through anonymous classes / केवल anonymous classes के द्वारा"
+    ],
+    answer: "No / नहीं",
+    explanation: "Interface को instantiate (object बनाना) नहीं किया जा सकता।"
+  },
+  {
+    question: "What type of relationship does an interface represent in Java? / Java में interface किस प्रकार का संबंध दर्शाता है?",
+    options: [
+      "HAS-A",
+      "CAN-A",
+      "IS-A",
+      "USES-A"
+    ],
+    answer: "IS-A",
+    explanation: "Interface IS-A relationship को दर्शाता है क्योंकि class interface को implement करके उसका रूप लेती है।"
+  },
+  {
+    question: "Which of the following is true about variables declared in an interface? / Interface में declare किए गए variables के बारे में कौन-सा सही है?",
+    options: [
+      "They are public, static, and final by default / वे default रूप से public, static, और final होते हैं",
+      "They are private and final / वे private और final होते हैं",
+      "They can be instance variables / वे instance variables हो सकते हैं",
+      "They are mutable / वे mutable होते हैं"
+    ],
+    answer: "They are public, static, and final by default / वे default रूप से public, static, और final होते हैं"
+  },
+  {
+    question: "One of the major advantages of using interfaces in Java is: / Java में interfaces उपयोग करने का एक मुख्य लाभ क्या है?",
+    options: [
+      "Simplifies multithreading / मल्टीथ्रेडिंग को आसान बनाना",
+      "Enables multiple inheritance / multiple inheritance की अनुमति देना",
+      "Increases memory usage / मेमोरी उपयोग बढ़ाना",
+      "Slows down execution / execution धीमा करना"
+    ],
+    answer: "Enables multiple inheritance / multiple inheritance की अनुमति देना"
+  },
+  {
+    question: "What happens if a class does not implement all methods of an interface? / अगर कोई class interface के सभी methods implement न करे तो क्या होता है?",
+    options: [
+      "It compiles normally / यह सामान्य रूप से compile होता है",
+      "It becomes an abstract class / यह abstract class बन जाता है",
+      "It throws runtime error / runtime error होता है",
+      "It ignores the interface / यह interface को ignore करता है"
+    ],
+    answer: "It becomes an abstract class / यह abstract class बन जाता है"
+  },
+  {
+    question: "Which of the following statements is FALSE about interfaces in Java? / Java में interfaces के बारे में कौन-सा कथन गलत है?",
+    options: [
+      "Interfaces support abstraction / Interfaces अमूर्तन का समर्थन करते हैं",
+      "Interfaces can have constructors / Interfaces में constructors हो सकते हैं",
+      "Interfaces can have static methods (Java 8+) / Interfaces में static methods हो सकते हैं (Java 8+)",
+      "Interfaces can have private methods (Java 9+) / Interfaces में private methods हो सकते हैं (Java 9+)"
+    ],
+    answer: "Interfaces can have constructors / Interfaces में constructors हो सकते हैं",
+    explanation: "Interface में constructors नहीं होते क्योंकि उनका object नहीं बनता।"
+  },
+  {
+    question: "What is method overriding in Java? / Java में Method Overriding क्या है?",
+    options: [
+      "When subclass hides a variable from parent class / जब subclass parent class का variable छुपाता है",
+      "When subclass has a method with different name from parent / जब subclass का method नाम parent से अलग हो",
+      "When subclass provides its own implementation of a method declared in parent class / जब subclass parent class के method का अपना implementation देता है",
+      "When subclass inherits methods only / जब subclass केवल methods inherit करता है"
+    ],
+    answer: "When subclass provides its own implementation of a method declared in parent class / जब subclass parent class के method का अपना implementation देता है"
+  },
+  {
+    question: "Which of the following is true about method overriding? / Method overriding के बारे में कौन-सा सही है?",
+    options: [
+      "It happens at compile time / यह compile time पर होता है",
+      "It is used for method overloading / यह method overloading के लिए उपयोग होता है",
+      "It supports runtime polymorphism / यह runtime polymorphism का समर्थन करता है",
+      "Overridden method must be static / overridden method static होना चाहिए"
+    ],
+    answer: "It supports runtime polymorphism / यह runtime polymorphism का समर्थन करता है",
+    explanation: "Method overriding runtime polymorphism (Dynamic Method Dispatch) को सक्षम बनाता है।"
+  },
+  {
+    question: "What are the requirements for method overriding? / Method overriding के लिए आवश्यकताएँ क्या हैं?",
+    options: [
+      "Method name must differ / method का नाम अलग होना चाहिए",
+      "Method must have different parameters / method के parameters अलग होने चाहिए",
+      "Method must have same name and parameters, and there must be IS-A relationship / method का नाम और parameters same होने चाहिए, और IS-A संबंध होना चाहिए",
+      "Class must be abstract / class abstract होनी चाहिए"
+    ],
+    answer: "Method must have same name and parameters, and there must be IS-A relationship / method का नाम और parameters same होने चाहिए, और IS-A संबंध होना चाहिए"
+  },
+  {
+    question: "Which keyword is commonly used to refer to the parent class method in case of overriding? / Overriding में parent class के method को refer करने के लिए कौन-सा keyword सामान्यत: उपयोग होता है?",
+    options: [
+      "this",
+      "super",
+      "final",
+      "override"
+    ],
+    answer: "super"
+  },
+   {
+    question: `5. What will be the output of the following code?\n
+class Vehicle {
+    void run() {
+        System.out.println("Vehicle is running");
+    }
+}
+class Bike extends Vehicle {
+    void run() {
+        System.out.println("Bike is running safely");
+    }
+    public static void main(String args[]) {
+        Bike obj = new Bike();
+        obj.run();
+    }
+}\n
+कोड का आउटपुट क्या होगा?`,
+    options: [
+      "Vehicle is running",
+      "Compilation error",
+      "Bike is running safely",
+      "No output"
+    ],
+    answer: "Bike is running safely"
+  },
+  {
+    question: "6. Which of the following methods cannot be overridden in Java? / Java में निम्न में से कौन-से methods override नहीं किए जा सकते?",
+    options: [
+      "Private methods / private method",
+      "Final methods / final method",
+      "Static methods / static method",
+      "All of the above / उपरोक्त सभी"
+    ],
+    answer: "All of the above / उपरोक्त सभी",
+    explanation: "private, final, और static methods को override नहीं किया जा सकता।"
+  },
+  {
+    question: "7. Can method overriding occur without inheritance? / क्या method overriding बिना inheritance के हो सकता है?",
+    options: [
+      "Yes / हाँ",
+      "No / नहीं"
+    ],
+    answer: "No / नहीं",
+    explanation: "Overriding तभी संभव है जब दो classes में IS-A (inheritance) संबंध हो।"
+  },
+  {
+    question: "8. In method overriding, which method is executed at runtime? / Method overriding में runtime पर कौन-सा method execute होता है?",
+    options: [
+      "Parent class method / Parent class का method",
+      "The method according to reference type / Reference type के अनुसार method",
+      "The method according to object type / Object type के अनुसार method",
+      "All of the above / उपरोक्त सभी"
+    ],
+    answer: "The method according to object type / Object type के अनुसार method",
+    explanation: "Overridden method का निर्णय runtime पर object के type के अनुसार होता है।"
+  },
+  {
+    question: "9. What is the main advantage of method overriding? / Method overriding का मुख्य लाभ क्या है?",
+    options: [
+      "Compile-time safety / Compile-time सुरक्षा",
+      "Faster execution / तेज execution",
+      "Achieving runtime polymorphism / Runtime polymorphism प्राप्त करना",
+      "Reduced inheritance / Inheritance कम करना"
+    ],
+    answer: "Achieving runtime polymorphism / Runtime polymorphism प्राप्त करना"
+  },
+  {
+    question: "10. What happens if the method in subclass has a different parameter than in the parent class? / यदि subclass में method के parameter parent से अलग हों तो क्या होगा?",
+    options: [
+      "Method will be overridden / Method override होगा",
+      "It will be method overloading, not overriding / यह method overloading होगा, overriding नहीं",
+      "Compile-time error / Compile-time error होगा",
+      "Runtime exception / Runtime exception होगा"
+    ],
+    answer: "It will be method overloading, not overriding / यह method overloading होगा, overriding नहीं"
+  },
+  {
+    question: "1. What does Polymorphism mean in Java? / Java में Polymorphism का क्या अर्थ है?",
+    options: [
+      "One form / एक रूप",
+      "Many forms / अनेक रूप",
+      "One class / एक class",
+      "Many classes without inheritance / बिना inheritance के कई classes"
+    ],
+    answer: "Many forms / अनेक रूप"
+  },
+  {
+    question: "2. Polymorphism is possible in Java because of which feature? / Java में Polymorphism किस feature की वजह से संभव है?",
+    options: [
+      "Encapsulation / इनकैप्सुलेशन",
+      "Inheritance / इनहेरिटेंस",
+      "Abstraction / अमूर्तन",
+      "Interface / इंटरफेस"
+    ],
+    answer: "Inheritance / इनहेरिटेंस",
+    explanation: "Polymorphism inheritance पर निर्भर करता है जहाँ subclass superclass के method का अपना specific implementation देता है।"
+  },
+  {
+    question: `3. Which of the following best describes method overriding related to polymorphism?\n
+    Polymorphism से संबंधित method overriding को सबसे सही तरीके से कौन सा वर्णन करता है?`,
+    options: [
+      "Same method name with different parameters / एक ही method नाम लेकिन अलग parameters",
+      "Same method name and parameters in subclass and superclass with different implementation / subclass और superclass में एक ही नाम और parameters के साथ अलग implementation",
+      "Different method name with same parameters / अलग method नाम लेकिन एक जैसे parameters",
+      "Only static methods can be overridden / केवल static methods को ही override किया जा सकता है"
+    ],
+    answer: "Same method name and parameters in subclass and superclass with different implementation / subclass और superclass में एक ही नाम और parameters के साथ अलग implementation"
+  },
+  {
+    question: `4. What is the output of the following code?\n
+class Animal {
+  public void animalSound() {
+    System.out.println("The animal makes a sound");
+  }
+}
+
+class Pig extends Animal {
+  public void animalSound() {
+    System.out.println("The pig says: wee wee");
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    Animal myAnimal = new Pig();
+    myAnimal.animalSound();
+  }
+}\n
+इस कोड का आउटपुट क्या होगा?`,
+    options: [
+      "The animal makes a sound",
+      "The pig says: wee wee",
+      "Compile-time error",
+      "Runtime error"
+    ],
+    answer: "The pig says: wee wee"
+  },
+  {
+    question: "5. What type of polymorphism is method overriding in Java? / Java में method overriding किस प्रकार का polymorphism है?",
+    options: [
+      "Compile-time polymorphism / Compile-time polymorphism",
+      "Runtime polymorphism / Runtime polymorphism",
+      "Static polymorphism / Static polymorphism",
+      "Operator overloading / Operator overloading"
+    ],
+    answer: "Runtime polymorphism / Runtime polymorphism"
+  },
+  {
+    question: "6. Which of the following is NOT an example of polymorphism? / निम्न में से कौन polymorphism का उदाहरण नहीं है?",
+    options: [
+      "Method Overloading / Method Overloading",
+      "Method Overriding / Method Overriding",
+      "Multiple Inheritance / Multiple Inheritance",
+      "Dynamic method dispatch / Dynamic method dispatch"
+    ],
+    answer: "Multiple Inheritance / Multiple Inheritance",
+    explanation: "Multiple inheritance inheritance का एक रूप है, polymorphism नहीं।"
+  },
+  {
+    question: "7. Which mechanism allows the JVM to decide which method to call at runtime? / JVM runtime पर कौन सा mechanism उपयोग करता है method call तय करने के लिए?",
+    options: [
+      "Static binding / Static binding",
+      "Dynamic binding / Dynamic binding",
+      "Early binding / Early binding",
+      "Method overloading / Method overloading"
+    ],
+    answer: "Dynamic binding / Dynamic binding"
+  },
+  {
+    question: "8. Can polymorphism be achieved without inheritance? / क्या polymorphism inheritance के बिना संभव है?",
+    options: [
+      "Yes / हाँ",
+      "No / नहीं"
+    ],
+    answer: "No / नहीं"
+  },
+  {
+    question: `9. What is the relationship between polymorphism and the IS-A relationship?\n
+    Polymorphism और IS-A relationship के बीच क्या संबंध है?`,
+    options: [
+      "Polymorphism is independent of IS-A relationship / Polymorphism IS-A relationship से स्वतंत्र है",
+      "Polymorphism requires IS-A relationship (inheritance) to work / Polymorphism के लिए IS-A relationship (inheritance) आवश्यक है",
+      "Polymorphism replaces IS-A relationship / Polymorphism IS-A relationship को बदल देता है",
+      "None of the above / उपरोक्त में से कोई नहीं"
+    ],
+    answer: "Polymorphism requires IS-A relationship (inheritance) to work / Polymorphism के लिए IS-A relationship (inheritance) आवश्यक है"
+  },
+  {
+    question: `10. Which of the following is the main advantage of polymorphism in Java?\n
+    Java में polymorphism का मुख्य लाभ क्या है?`,
+    options: [
+      "Code duplication / कोड की पुनरावृत्ति",
+      "Code flexibility and reusability / कोड की लचीलापन और पुन: उपयोग",
+      "More memory usage / अधिक मेमोरी उपयोग",
+      "Reduced inheritance / कम inheritance"
+    ],
+    answer: "Code flexibility and reusability / कोड की लचीलापन और पुन: उपयोग"
+  },
+  {
+    question: `1. What is an interface in Java?\n
+    Java में interface क्या है?`,
+    options: [
+      "A class with method bodies / method bodies वाला class",
+      "A collection of abstract methods and constants / abstract methods और constants का समूह",
+      "A class with instance variables only / केवल instance variables वाला class",
+      "A class that cannot be extended / ऐसा class जो extend नहीं किया जा सकता"
+    ],
+    answer: "A collection of abstract methods and constants / abstract methods और constants का समूह"
+  },
+  {
+    question: "2. Which keyword is used to declare an interface in Java? / Java में interface declare करने के लिए कौन सा keyword उपयोग होता है?",
+    options: [
+      "class",
+      "implements",
+      "interface",
+      "abstract"
+    ],
+    answer: "interface"
+  },
+  {
+    question: "3. By default, the methods in an interface are: / interface में methods by default किस प्रकार के होते हैं?",
+    options: [
+      "private and abstract",
+      "public and abstract",
+      "public and concrete",
+      "static and final"
+    ],
+    answer: "public and abstract"
+  },
+  {
+    question: "4. Which of the following is true about variables declared in an interface? / interface में घोषित variables के बारे में सही क्या है?",
+    options: [
+      "They are instance variables",
+      "They are private and final",
+      "They are public, static, and final",
+      "They can be changed by implementing classes"
+    ],
+    answer: "They are public, static, and final"
+  },
+  {
+    question: "5. From which Java version onwards can interfaces have default and static methods? / Java के किस version से interfaces में default और static methods हो सकते हैं?",
+    options: [
+      "Java 6",
+      "Java 7",
+      "Java 8",
+      "Java 9"
+    ],
+    answer: "Java 8"
+  },
+  {
+    question: "6. Can an interface have a constructor in Java? / क्या Java में interface का constructor हो सकता है?",
+    options: [
+      "Yes",
+      "No"
+    ],
+    answer: "No"
+  },
+  {
+    question: "7. What keyword is used by a class to implement an interface? / interface को implement करने के लिए class कौन सा keyword use करती है?",
+    options: [
+      "extends",
+      "implements",
+      "inherits",
+      "interface"
+    ],
+    answer: "implements"
+  },
+  {
+    question: "8. Can a Java class implement more than one interface? / क्या Java class एक से अधिक interfaces implement कर सकती है?",
+    options: [
+      "Yes",
+      "No"
+    ],
+    answer: "Yes"
+  },
+  {
+    question: "9. If a class implements an interface but does not implement all methods of that interface, then the class must be declared as: / अगर class interface implement करती है लेकिन सभी methods को implement नहीं करती, तो class को किस रूप में घोषित करना चाहिए?",
+    options: [
+      "final",
+      "abstract",
+      "static",
+      "public"
+    ],
+    answer: "abstract"
+  },
+  {
+    question: "10. Which of the following statements is true? / निम्न में से कौन सा कथन सही है?",
+    options: [
+      "Interfaces can extend classes.",
+      "Interfaces can extend multiple interfaces.",
+      "Interfaces cannot extend other interfaces.",
+      "Interfaces can have instance variables."
+    ],
+    answer: "Interfaces can extend multiple interfaces."
+  },
+  {
+    question: "11. How can an interface extend multiple interfaces? / Interface कई interfaces को कैसे extend कर सकता है?",
+    options: [
+      "Using comma separated list of interfaces after extends keyword / extends के बाद interfaces की comma से अलग सूची",
+      "Using multiple implements keywords / कई implements keywords का उपयोग करके",
+      "Interfaces cannot extend multiple interfaces / Interface कई interfaces extend नहीं कर सकता",
+      "Using super keyword / super keyword का उपयोग करके"
+    ],
+    answer: "Using comma separated list of interfaces after extends keyword / extends के बाद interfaces की comma से अलग सूची"
+  },
+  {
+    question: "12. Why are interfaces used in Java? (Select the best answer) / Java में interfaces क्यों उपयोग किए जाते हैं? (सर्वश्रेष्ठ उत्तर चुनें)",
+    options: [
+      "To achieve complete abstraction and multiple inheritance / पूर्ण abstraction और multiple inheritance प्राप्त करने के लिए",
+      "To create objects directly / सीधे objects बनाने के लिए",
+      "To hold instance variables / instance variables रखने के लिए",
+      "To avoid inheritance / inheritance से बचने के लिए"
+    ],
+    answer: "To achieve complete abstraction and multiple inheritance / पूर्ण abstraction और multiple inheritance प्राप्त करने के लिए"
+  },
+  {
+    question: `13. Which access modifier must be used for methods implementing an interface method?\n
+    Interface method को implement करने वाले method के लिए कौन सा access modifier उपयोग करना चाहिए?`,
+    options: [
+      "private",
+      "protected",
+      "public",
+      "default"
+    ],
+    answer: "public"
+  },
+  {
+    question: `14. What happens if a method in implementing class is not declared public?\n
+    अगर implementing class में method को public नहीं declare किया गया तो क्या होगा?`,
+    options: [
+      "Compile-time error",
+      "Runtime error",
+      "Program runs but gives warning",
+      "No issue"
+    ],
+    answer: "Compile-time error"
+  },
+  {
+    question: `15. Which of the following is NOT true about interfaces in Java?\n
+    Java के interfaces के बारे में निम्न में से कौन सा कथन सही नहीं है?`,
+    options: [
+      "They provide full abstraction",
+      "They can contain constructors",
+      "They can contain default methods",
+      "They can be implemented by classes"
+    ],
+    answer: "They can contain constructors"
+  },
+  {
+    question: `1. What is a package in Java?\n
+    Java में package क्या है?`,
+    options: [
+      "A folder containing unrelated files / unrelated files वाला folder",
+      "A physical folder (directory) containing related classes and interfaces / संबंधित classes और interfaces वाला physical folder",
+      "A single Java file / एक Java file",
+      "A data type / एक data type"
+    ],
+    answer: "A physical folder (directory) containing related classes and interfaces / संबंधित classes और interfaces वाला physical folder"
+  },
+  {
+    question: `2. Why do we use packages in Java?\n
+    Java में packages क्यों उपयोग किए जाते हैं?`,
+    options: [
+      "To store variables only / केवल variables स्टोर करने के लिए",
+      "To avoid naming conflicts and organize code / नामकरण संघर्ष से बचने और कोड व्यवस्थित करने के लिए",
+      "To write comments in code / कोड में comments लिखने के लिए",
+      "To run Java programs faster / Java programs को तेज़ चलाने के लिए"
+    ],
+    answer: "To avoid naming conflicts and organize code / नामकरण संघर्ष से बचने और कोड व्यवस्थित करने के लिए"
+  },
+  {
+    question: `3. Which keyword is used to declare a package in a Java source file?\n
+    Java source file में package declare करने के लिए कौन सा keyword उपयोग होता है?`,
+    options: [
+      "import",
+      "package",
+      "class",
+      "extends"
+    ],
+    answer: "package"
+  },
+  {
+    question: `4. Where must the package declaration appear in a Java source file?\n
+    Java source file में package declaration कहाँ आनी चाहिए?`,
+    options: [
+      "Anywhere in the file / फ़ाइल में कहीं भी",
+      "After class declaration / class declaration के बाद",
+      "At the first line of the file / फ़ाइल की पहली लाइन में",
+      "After the main method / main method के बाद"
+    ],
+    answer: "At the first line of the file / फ़ाइल की पहली लाइन में"
+  },
+  {
+    question: `5. What happens if two classes have the same name but are placed in different packages?\n
+    अगर दो classes के नाम एक जैसे हैं लेकिन वे अलग-अलग packages में हैं तो क्या होगा?`,
+    options: [
+      "It causes a naming conflict / नामकरण संघर्ष होगा",
+      "The compiler throws an error / compiler error देगा",
+      "No conflict occurs, they are treated as different classes / कोई संघर्ष नहीं होगा, वे अलग-अलग classes माने जाएंगे",
+      "Only one class will be used by the compiler / compiler केवल एक class का उपयोग करेगा"
+    ],
+    answer: "No conflict occurs, they are treated as different classes / कोई संघर्ष नहीं होगा, वे अलग-अलग classes माने जाएंगे"
+  },
+  {
+    question: `6. Which of the following is NOT an advantage of using packages?\n
+    निम्न में से कौन सा पैकेज का लाभ नहीं है?`,
+    options: [
+      "Code reusability / कोड पुन: उपयोग",
+      "Naming conflict resolution / नामकरण संघर्ष का समाधान",
+      "Execution speed improvement / निष्पादन गति सुधार",
+      "Organized file structure / व्यवस्थित फ़ाइल संरचना"
+    ],
+    answer: "Execution speed improvement / निष्पादन गति सुधार"
+  },
+  {
+    question: `7. What are the two main types of packages in Java?\n
+    Java में पैकेज के दो मुख्य प्रकार कौन से हैं?`,
+    options: [
+      "Public and Private packages",
+      "User-defined and Built-in packages",
+      "Local and Global packages",
+      "Class and Interface packages"
+    ],
+    answer: "User-defined and Built-in packages"
+  },
+  {
+    question: `8. How do you create a user-defined package in Java?\n
+    Java में user-defined package कैसे बनाते हैं?`,
+    options: [
+      "By using the import keyword / import keyword से",
+      "By writing package packageName; at the top of the source file / source file के ऊपर package packageName; लिखकर",
+      "By writing class packageName {} / class packageName {} लिखकर",
+      "By extending a package / package extend करके"
+    ],
+    answer: "By writing package packageName; at the top of the source file / source file के ऊपर package packageName; लिखकर"
+  },
+  {
+    question: `9. Which of the following is the correct naming convention for package names?\n
+    package नामों के लिए सही naming convention क्या है?`,
+    options: [
+      "Package names should be uppercase / पैकेज नाम uppercase में होने चाहिए",
+      "Package names should be a mix of uppercase and lowercase / पैकेज नाम uppercase और lowercase का मिश्रण होने चाहिए",
+      "Package names should be in lowercase / पैकेज नाम lowercase में होने चाहिए",
+      "Package names should start with a number / पैकेज नाम संख्या से शुरू होने चाहिए"
+    ],
+    answer: "Package names should be in lowercase / पैकेज नाम lowercase में होने चाहिए"
+  },
+   {
+    question: `10. What is an example of a proper package declaration?\n
+    सही package declaration का उदाहरण कौन सा है?`,
+    options: [
+      "Package MyPackage;",
+      "package com.ibm.hdfc.loan.homeloan;",
+      "package LoanHome;",
+      "package comIBMLoanHomeLoan;"
+    ],
+    answer: "package com.ibm.hdfc.loan.homeloan;"
+  },
+  {
+    question: `11. Which package type contains Java's built-in classes like java.lang, java.util, etc.?\n
+    Java के built-in classes जैसे java.lang, java.util आदि किस package type में होते हैं?`,
+    options: [
+      "User-defined package",
+      "Built-in (predefined) package",
+      "Abstract package",
+      "Static package"
+    ],
+    answer: "Built-in (predefined) package"
+  },
+  {
+    question: `12. What kind of access control can packages provide in Java?\n
+    Java में packages किस प्रकार का access control प्रदान कर सकते हैं?`,
+    options: [
+      "Public only",
+      "Private only",
+      "Visibility control to restrict access within the package",
+      "No access control"
+    ],
+    answer: "Visibility control to restrict access within the package"
+  },
+  {
+    question: `13. If no package is specified in a Java file, in which package does the class reside?\n
+    यदि Java फ़ाइल में कोई package specified नहीं है, तो class किस package में होती है?`,
+    options: [
+      "default package (unnamed package)",
+      "java.lang",
+      "user-defined package",
+      "built-in package"
+    ],
+    answer: "default package (unnamed package)"
+  },
+  {
+    question: `1. What does AWT stand for in Java?\n
+    Java में AWT का क्या मतलब है?`,
+    options: [
+      "Abstract Window Toolkit",
+      "Advanced Window Technology",
+      "Automatic Window Tool",
+      "Abstract Widget Tool"
+    ],
+    answer: "Abstract Window Toolkit"
+  },
+  {
+    question: `2. What is the main purpose of AWT?\n
+    AWT का मुख्य उद्देश्य क्या है?`,
+    options: [
+      "To write console applications",
+      "To provide GUI components for Java programs",
+      "To create database connections",
+      "To handle networking operations"
+    ],
+    answer: "To provide GUI components for Java programs"
+  },
+  {
+    question: `3. Which of the following is NOT an AWT component?\n
+    निम्न में से कौन AWT component नहीं है?`,
+    options: [
+      "Button",
+      "TextField",
+      "ScrollBar",
+      "JLabel"
+    ],
+    answer: "JLabel"
+  },
+  {
+    question: `4. In AWT, what is a Container?\n
+    AWT में Container क्या होता है?`,
+    options: [
+      "A class that holds components and manages their layout",
+      "A type of Button",
+      "A component that receives user input only",
+      "A class for file handling"
+    ],
+    answer: "A class that holds components and manages their layout"
+  },
+  {
+    question: `5. Which of the following is a top-level container in AWT?\n
+    निम्न में से कौन AWT का top-level container है?`,
+    options: [
+      "Panel",
+      "Frame",
+      "Button",
+      "TextField"
+    ],
+    answer: "Frame"
+  },
+  {
+    question: `6. What is the relationship between Frame and Window in AWT?\n
+    AWT में Frame और Window का क्या संबंध है?`,
+    options: [
+      "Frame is a subclass of Window",
+      "Window is a subclass of Frame",
+      "They are unrelated",
+      "Both are interfaces"
+    ],
+    answer: "Frame is a subclass of Window"
+  },
+  {
+    question: `7. Which container is typically used to group components together and is itself a component?\n
+    कौन सा container आमतौर पर components को समूहित करने के लिए उपयोग होता है और स्वयं भी एक component होता है?`,
+    options: [
+      "Window",
+      "Frame",
+      "Panel",
+      "Dialog"
+    ],
+    answer: "Panel"
+  },
+  {
+    question: `8. Can an AWT Dialog exist without a Frame?\n
+    क्या AWT Dialog Frame के बिना exist कर सकता है?`,
+    options: [
+      "Yes",
+      "No"
+    ],
+    answer: "No"
+  },
+  {
+    question: `9. How do you add a component to a container in AWT?\n
+    AWT में component को container में कैसे जोड़ा जाता है?`,
+    options: [
+      "Using the add() method of the container",
+      "Using the insert() method of the component",
+      "Using the connect() method",
+      "Using the append() method"
+    ],
+    answer: "Using the add() method of the container"
+  },
+  {
+    question: `10. What is the default visibility state of a newly created Frame?\n
+    नए बनाए गए Frame की default visibility स्थिति क्या होती है?`,
+    options: [
+      "Visible",
+      "Invisible"
+    ],
+    answer: "Invisible",
+    explanation: "A Frame is invisible by default and must be shown by calling show() or setVisible(true)."
+  },
+  {
+    question: `11. Which method is used to make a Frame visible?\n
+    Frame को visible बनाने के लिए कौन सा method उपयोग होता है?`,
+    options: [
+      "show()",
+      "display()",
+      "open()",
+      "visible()"
+    ],
+    answer: "show()",
+    explanation: "In later Java versions, setVisible(true) is preferred over show()."
+  },
+  {
+    question: `12. What is the role of the init() method in an applet?\n
+    Applet में init() method का क्या रोल होता है?`,
+    options: [
+      "It runs the main program",
+      "It initializes the applet and is called automatically",
+      "It closes the applet",
+      "It destroys the applet"
+    ],
+    answer: "It initializes the applet and is called automatically"
+  },
+  {
+    question: `13. Which class in AWT serves as the base class for all components?\n
+    AWT में कौन सी class सभी components की base class होती है?`,
+    options: [
+      "Container",
+      "Component",
+      "Frame",
+      "Panel"
+    ],
+    answer: "Component"
+  },
+  {
+    question: `14. What does the AWT use to manage the placement and sizing of components within containers?\n
+    Containers के अंदर components की placement और sizing को manage करने के लिए AWT क्या उपयोग करता है?`,
+    options: [
+      "Layout Managers",
+      "Managers",
+      "Containers",
+      "Components"
+    ],
+    answer: "Layout Managers"
+  },
+  {
+    question: `15. Which of the following is NOT a container class provided by AWT?\n
+    निम्न में से कौन AWT द्वारा प्रदान की गई container class नहीं है?`,
+    options: [
+      "Window",
+      "Frame",
+      "Dialog",
+      "JButton"
+    ],
+    answer: "JButton",
+    explanation: "JButton is a Swing component, not AWT."
+  },
+  {
+    question: `What does AWT stand for in Java?\n
+    Java में AWT का पूरा नाम क्या है?`,
+    options: [
+      "Abstract Window Toolkit",
+      "Advanced Window Technology",
+      "Automated Window Tools",
+      "Application Window Toolkit"
+    ],
+    answer: "Abstract Window Toolkit"
+  },
+  {
+    question: `AWT components are called heavyweight components because:\n
+    AWT components को heavyweight components इसलिए कहा जाता है क्योंकि:`,
+    options: [
+      "They consume more memory",
+      "They use native OS resources",
+      "They are slower than Swing components",
+      "They are written in Java only"
+    ],
+    answer: "They use native OS resources"
+  },
+  {
+    question: `Which package contains the AWT classes?\n
+    AWT classes किस package में होती हैं?`,
+    options: [
+      "java.awt",
+      "java.io",
+      "java.net",
+      "java.swing"
+    ],
+    answer: "java.awt"
+  },
+    {
+    question: `Which class is the superclass for all AWT components?\n
+    सभी AWT components की superclass कौन सी class है?`,
+    options: [
+      "Container",
+      "Object",
+      "Component",
+      "Window"
+    ],
+    answer: "Component"
+  },
+  {
+    question: `Which of the following is NOT an AWT component?\n
+    निम्न में से कौन AWT component नहीं है?`,
+    options: [
+      "Button",
+      "Checkbox",
+      "JLabel",
+      "TextField"
+    ],
+    answer: "JLabel",
+    explanation: "JLabel Swing का component है, AWT का नहीं।"
+  },
+  {
+    question: `Which AWT container class can have a border and title?\n
+    कौन सा AWT container class border और title रख सकता है?`,
+    options: ["Window", "Frame", "Panel", "Applet"],
+    answer: "Frame"
+  },
+  {
+    question: `Which method is used to add a component to a container in AWT?\n
+    AWT में container में component जोड़ने के लिए कौन सा method use होता है?`,
+    options: ["put()", "add()", "insert()", "attach()"],
+    answer: "add()"
+  },
+  {
+    question: `Which class is used to create a top-level window without border or title?\n
+    बिना border या title के top-level window बनाने के लिए कौन सी class use होती है?`,
+    options: ["Frame", "Dialog", "Window", "Panel"],
+    answer: "Window"
+  },
+  {
+    question: `Which of the following is a lightweight component?\n
+    निम्न में से lightweight component कौन सा है?`,
+    options: ["Button (AWT)", "JButton (Swing)", "Checkbox (AWT)", "Frame (AWT)"],
+    answer: "JButton (Swing)"
+  },
+  {
+    question: `What is the direct superclass of the class Frame?\n
+    Frame class की direct superclass कौन सी है?`,
+    options: ["Component", "Container", "Window", "Panel"],
+    answer: "Window"
+  },
+  {
+    question: `Which AWT container is used to hold and group other components?\n
+    कौन सा AWT container components को group करने के लिए use होता है?`,
+    options: ["Window", "Container", "Panel", "Frame"],
+    answer: "Panel"
+  },
+  {
+    question: `In Java AWT, the 'Choice' component is used for:\n
+    Java AWT में 'Choice' component किस काम के लिए use होता है?`,
+    options: [
+      "Multi-line text input",
+      "Single selection from a dropdown list",
+      "Multiple selection from list",
+      "Checkbox group"
+    ],
+    answer: "Single selection from a dropdown list"
+  },
+  {
+    question: `Which method is used to make a Frame visible?\n
+    Frame को visible बनाने के लिए कौन सा method use होता है?`,
+    options: [
+      "setVisible(true)",
+      "show()",
+      "display()",
+      "open()"
+    ],
+    answer: "setVisible(true)",
+    explanation: "show() भी काम करता है, लेकिन setVisible(true) modern Java में preferred है।"
+  },
+  {
+    question: `Applet class is a subclass of which AWT class?\n
+    Applet class किस AWT class की subclass है?`,
+    options: ["Frame", "Window", "Panel", "Dialog"],
+    answer: "Panel"
+  },
+  {
+    question: `The layout manager that arranges components in a left-to-right flow is called:\n
+    Components को left-to-right flow में arrange करने वाला layout manager कौन सा है?`,
+    options: ["GridLayout", "BorderLayout", "FlowLayout", "CardLayout"],
+    answer: "FlowLayout"
+  },
+  {
+    question: `What is an event in Java AWT?\n
+    Java AWT में event क्या होता है?`,
+    options: [
+      "A method that performs an action",
+      "A change in the state of an object due to user interaction",
+      "A class used to draw graphics",
+      "None of the above"
+    ],
+    answer: "A change in the state of an object due to user interaction"
+  },
+  {
+    question: `Which model does Java use for event handling?\n
+    Java event handling के लिए कौन सा model use करता है?`,
+    options: [
+      "Inheritance Model",
+      "Delegation Event Model",
+      "Observer Pattern",
+      "None of the above"
+    ],
+    answer: "Delegation Event Model"
+  },
+  {
+    question: `In the Delegation Event Model, what is the role of the Listener?\n
+    Delegation Event Model में Listener का क्या role होता है?`,
+    options: [
+      "Generate events",
+      "Handle the events",
+      "Register source objects",
+      "Display GUI components"
+    ],
+    answer: "Handle the events"
+  },
+  {
+    question: `Which interface must be implemented to handle button click events in Java AWT?\n
+    Button click events को handle करने के लिए कौन सा interface implement करना पड़ता है?`,
+    options: [
+      "MouseListener",
+      "WindowListener",
+      "ActionListener",
+      "KeyListener"
+    ],
+    answer: "ActionListener"
+  },
+  {
+    question: `What method is called when an action event occurs on a button?\n
+    Button पर action event होने पर कौन सा method call होता है?`,
+    options: [
+      "buttonClicked()",
+      "actionPerformed()",
+      "handleEvent()",
+      "eventOccurred()"
+    ],
+    answer: "actionPerformed()"
+  },
+  {
+    question: `Which method is used to register a listener with a source object?\n
+    Listener को source object के साथ register करने के लिए कौन सा method use होता है?`,
+    options: [
+      "addListener()",
+      "registerListener()",
+      "addActionListener()",
+      "attachListener()"
+    ],
+    answer: "addActionListener()"
+  },
+  {
+    question: `Which of the following is NOT an example of a foreground event?\n
+    निम्न में से कौन foreground event नहीं है?`,
+    options: [
+      "Button click",
+      "Mouse movement",
+      "Timer expiration",
+      "Keyboard typing"
+    ],
+    answer: "Timer expiration"
+  },
+  {
+    question: `What does the method getActionCommand() return in event handling?\n
+    Event handling में getActionCommand() method क्या return करता है?`,
+    options: [
+      "The source object of the event",
+      "The string command associated with the event source",
+      "The type of the event",
+      "The timestamp of the event"
+    ],
+    answer: "The string command associated with the event source"
+  },
+  {
+    question: `What is a callback method in event handling?\n
+    Event handling में callback method क्या होती है?`,
+    options: [
+      "A method that initiates an event",
+      "A method provided by API that is invoked in response to an event",
+      "A method used to register listeners",
+      "None of the above"
+    ],
+    answer: "A method provided by API that is invoked in response to an event"
+  },
+  {
+    question: `Which of the following classes is a source of events in Java AWT?\n
+    निम्न में से कौन सी class Java AWT में event का source होती है?`,
+    options: ["Button", "Label", "Panel", "Frame"],
+    answer: "Button"
+  },
+  {
+    question: `Which class in Java is the superclass of all AWT events?\n
+    Java में सभी AWT events की superclass कौन सी class है?`,
+    options: ["EventObject", "AWTEvent", "ActionEvent", "InputEvent"],
+    answer: "AWTEvent"
+  },
+  {
+    question: `The EventObject class belongs to which package?\n
+    EventObject class किस package में आती है?`,
+    options: ["java.awt.event", "java.util", "java.awt", "java.lang"],
+    answer: "java.util"
+  },
+  {
+    question: `What is the purpose of the source field in the EventObject class?\n
+    EventObject class के source field का उद्देश्य क्या है?`,
+    options: [
+      "To store the listener of the event",
+      "To store the object on which the event initially occurred",
+      "To store the type of event",
+      "To store the event timestamp"
+    ],
+    answer: "To store the object on which the event initially occurred"
+  },
+  {
+    question: `Which of the following events is triggered by pressing a key?\n
+    नीचे दिए गए में से कौन सा event key press करने पर triggered होता है?`,
+    options: ["MouseEvent", "KeyEvent", "ActionEvent", "InputEvent"],
+    answer: "KeyEvent"
+  },
+  {
+    question: `Which event class is generated when a mouse button is clicked on a component?\n
+    Mouse button click होने पर कौन सा event class generate होता है?`,
+    options: ["KeyEvent", "ActionEvent", "MouseEvent", "InputEvent"],
+    answer: "MouseEvent"
+  },
+  {
+    question: `Which event class is generated when a button in a GUI is clicked?\n
+    GUI में button click होने पर कौन सा event class generate होता है?`,
+    options: ["MouseEvent", "ActionEvent", "InputEvent", "WindowEvent"],
+    answer: "ActionEvent"
+  },
+  {
+    question: `Which class provides the method getSource() to get the source of the event?\n
+    Event का source प्राप्त करने के लिए getSource() method कौन सी class देती है?`,
+    options: ["AWTEvent", "EventObject", "ActionEvent", "Listener"],
+    answer: "EventObject"
+  },
+  {
+    question: `Which class is a direct subclass of java.lang.Object and implements Serializable interface for event handling?\n
+    कौन सी class java.lang.Object की direct subclass है और Serializable interface implement करती है?`,
+    options: ["EventListener", "EventObject", "AWTEvent", "ActionEvent"],
+    answer: "EventObject"
+  },
+  {
+    question: `In Java AWT, which of the following is NOT an event class?\n
+    Java AWT में नीचे दिए गए में से कौन event class नहीं है?`,
+    options: ["ActionEvent", "MouseEvent", "WindowEvent", "ContainerEvent", "None of the above"],
+    answer: "None of the above"
+  },
+  {
+    question: `The delegation event model in Java requires that:\n
+    Java का delegation event model क्या require करता है?`,
+    options: [
+      "The event source registers with the listener",
+      "The listener registers with the event source",
+      "The event source and listener communicate directly without registration",
+      "None of the above"
+    ],
+    answer: "The listener registers with the event source"
+  },
+  {
+    question: `Which interface acts as a marker interface for all event listener interfaces in Java?\n
+    Java में सभी event listener interfaces के लिए marker interface कौन सा है?`,
+    options: ["EventObject", "EventListener", "ActionListener", "MouseListener"],
+    answer: "EventListener"
+  },
+  {
+    question: `The EventListener interface is defined in which package?\n
+    EventListener interface किस package में defined है?`,
+    options: ["java.awt.event", "java.awt", "java.util", "java.lang"],
+    answer: "java.util"
+  },
+  {
+    question: `Which event listener interface is used to receive action events like button clicks?\n
+    Button click जैसे action events receive करने के लिए कौन सा listener interface use होता है?`,
+    options: ["MouseListener", "KeyListener", "ActionListener", "WindowListener"],
+    answer: "ActionListener"
+  },
+  {
+    question: `Which listener interface is responsible for receiving key events?\n
+    Key events receive करने के लिए कौन सा listener interface होता है?`,
+    options: ["ItemListener", "KeyListener", "TextListener", "ComponentListener"],
+    answer: "KeyListener"
+  },
+  {
+    question: `Which event listener interface is used to listen for changes in components like resizing or moving?\n
+    Component के resizing या moving जैसे बदलावों को सुनने के लिए कौन सा listener interface होता है?`,
+    options: ["ComponentListener", "WindowListener", "ActionListener", "MouseListener"],
+    answer: "ComponentListener"
+  },
+  {
+    question: `Which listener interface listens for mouse events such as clicks, enters, or exits?\n
+    Mouse events जैसे clicks, enters या exits को सुनने वाला listener interface कौन सा है?`,
+    options: ["MouseListener", "KeyListener", "ItemListener", "TextListener"],
+    answer: "MouseListener"
+  },
+  {
+    question: `Which interface is used to listen for item selection or deselection events (e.g., CheckBoxes or Choice)?\n
+    Item selection या deselection events (जैसे CheckBoxes या Choice) को सुनने के लिए कौन सा interface use होता है?`,
+    options: ["ItemListener", "ActionListener", "ComponentListener", "WindowListener"],
+    answer: "ItemListener"
+  },
+  {
+    question: `TextListener interface listens to changes in which component?\n
+    TextListener interface किस component के बदलावों को सुनता है?`,
+    options: ["Text components (TextField, TextArea)", "Window components", "Mouse components", "Keyboard components"],
+    answer: "Text components (TextField, TextArea)"
+  },
+  {
+    question: `WindowListener is used to handle events related to:\n
+    WindowListener किस तरह के events को handle करता है?`,
+    options: ["Window opening, closing, minimizing, etc.", "Button clicks", "Mouse clicks", "Keyboard input"],
+    answer: "Window opening, closing, minimizing, etc."
+  },
+  {
+    question: `In Java event handling, every listener method accepts an object which is a subclass of:\n
+    Java event handling में हर listener method किस class का subclass object accept करता है?`,
+    options: ["EventListener", "EventObject", "AWTEvent", "ActionEvent"],
+    answer: "EventObject"
+  },
+  {
+    question: `What is the main purpose of a Layout Manager in AWT?\n
+    AWT में Layout Manager का मुख्य उद्देश्य क्या है?`,
+    options: [
+      "To handle events",
+      "To arrange components within a container automatically",
+      "To create components",
+      "To draw graphics"
+    ],
+    answer: "To arrange components within a container automatically"
+  },
+   {
+    question: `If no layout manager is specified for a container, what happens?\n
+    यदि किसी container के लिए layout manager specify नहीं किया जाता है, तो क्या होता है?`,
+    options: [
+      "Components are not displayed",
+      "Components are arranged randomly",
+      "Default layout manager arranges the components",
+      "Application throws an error"
+    ],
+    answer: "Default layout manager arranges the components"
+  },
+  {
+    question: `Which interface must be implemented by all layout manager classes?\n
+    सभी layout manager classes को कौन सा interface implement करना चाहिए?`,
+    options: ["LayoutManager", "LayoutManager2", "EventListener", "Container"],
+    answer: "LayoutManager"
+  },
+  {
+    question: `Which AWT layout manager arranges components in five regions: north, south, east, west, and center?\n
+    कौन सा AWT layout manager components को पांच regions (north, south, east, west, center) में arrange करता है?`,
+    options: ["FlowLayout", "GridLayout", "BorderLayout", "CardLayout"],
+    answer: "BorderLayout"
+  },
+  {
+    question: `Which layout manager treats each component as a card, where only one card is visible at a time?\n
+    कौन सा layout manager components को card की तरह treat करता है, जिसमें एक बार में केवल एक card visible होता है?`,
+    options: ["GridLayout", "CardLayout", "FlowLayout", "GridBagLayout"],
+    answer: "CardLayout"
+  },
+  {
+    question: `Which layout manager is the default layout for containers like Panel?\n
+    Panel जैसे containers के लिए default layout manager कौन सा है?`,
+    options: ["FlowLayout", "BorderLayout", "GridLayout", "GridBagLayout"],
+    answer: "FlowLayout"
+  },
+  {
+    question: `Which layout manager arranges components in a rectangular grid with equal-sized cells?\n
+    कौन सा layout manager components को बराबर size वाले rectangular grid में arrange करता है?`,
+    options: ["BorderLayout", "GridLayout", "FlowLayout", "CardLayout"],
+    answer: "GridLayout"
+  },
+  {
+    question: `Which is the most flexible layout manager that allows components to be aligned vertically, horizontally or along their baseline without needing components to be the same size?\n
+    कौन सा layout manager सबसे flexible है, जो components को vertical, horizontal या baseline के अनुसार align कर सकता है बिना components का size एक जैसा होने की आवश्यकता के?`,
+    options: ["GridBagLayout", "CardLayout", "BorderLayout", "FlowLayout"],
+    answer: "GridBagLayout"
+  },
+  {
+    question: `LayoutManager2 interface is a sub-interface of which interface?\n
+    LayoutManager2 interface किस interface का sub-interface है?`,
+    options: ["LayoutManager", "EventListener", "Container", "Component"],
+    answer: "LayoutManager"
+  },
+  {
+    question: `Why is manual layout of components often difficult in Java GUI applications?\n
+    Java GUI applications में components का manual layout करना अक्सर कठिन क्यों होता है?`,
+    options: [
+      "Components cannot be moved manually",
+      "It is tedious and the width/height of components may be unknown",
+      "Java does not support manual layout",
+      "Layout managers always override manual layout"
+    ],
+    answer: "It is tedious and the width/height of components may be unknown"
+  }
+];
+
+let quizData = []; // This will hold the selected subset of questions
+let currentQuestion = 0;
+let selectedAnswers = [];
+let skippedQuestions = [];
+let totalTime = 50 * 60; // 50 minutes in seconds
+let timerInterval;
+let quizStarted = false;
+
+// --- Confirmation Pop-up on Refresh/Close ---
+window.addEventListener('beforeunload', function (event) {
+    if (quizStarted && totalTime > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+// --- End Confirmation Pop-up ---
+
+
+function startTimer() {
+    updateTimer();
+    timerInterval = setInterval(() => {
+        totalTime--;
+        updateTimer();
+        if (totalTime <= 0) {
+            clearInterval(timerInterval);
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startQuiz() {
+    const selectedRadio = document.querySelector('input[name="questionSet"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a question set to start the quiz.");
+        return;
+    }
+    const selectedValue = selectedRadio.value;
+
+    if (selectedValue.startsWith('set_')) {
+        const setIndex = parseInt(selectedValue.split('_')[1]);
+        const startIndex = setIndex * 25;
+        const endIndex = startIndex + 25;
+        quizData = fullQuizData.slice(startIndex, endIndex);
+    } else if (selectedValue === 'full') {
+        quizData = shuffleArray([...fullQuizData]); // Shuffle all questions for full test
+    } else {
+        // Default to a 25 question set if something unexpected happens
+        quizData = shuffleArray([...fullQuizData]).slice(0, 25);
+    }
+
+    selectedAnswers = new Array(quizData.length).fill(null);
+    skippedQuestions = new Array(quizData.length).fill(false);
+    currentQuestion = 0;
+    quizStarted = true;
+
+    document.getElementById('quantitySelection').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+
+    loadQuestion();
+    startTimer();
+}
+
+
+function loadQuestion() {
+    if(quizData.length === 0) {
+        document.getElementById('question').innerText = "No questions available.";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('prevBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        updateQuestionTracker();
+        return;
+    }
+    const q = quizData[currentQuestion];
+    document.getElementById('question').innerText = `${currentQuestion + 1}. ${q.question}`;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = "";
+
+    const isCurrentQuestionAnswered = (selectedAnswers[currentQuestion] !== null) || skippedQuestions[currentQuestion];
+
+    q.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.classList.add("option-btn");
+        btn.innerText = option;
+        btn.setAttribute("role", "listitem");
+        btn.onclick = () => selectOption(option, btn);
+
+        if(isCurrentQuestionAnswered) {
+            btn.disabled = true;
+            if (option === q.answer) {
+                btn.classList.add("correct");
+            } else if (option === selectedAnswers[currentQuestion]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            if(selectedAnswers[currentQuestion] === option) {
+                btn.classList.add("selected");
+            }
+        }
+        optionsDiv.appendChild(btn);
+    });
+
+    document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+    document.getElementById('nextBtn').disabled = currentQuestion === quizData.length -1 || totalTime <= 0;
+    document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+    document.getElementById('skipBtn').disabled = totalTime <= 0;
+    document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+    updateQuestionTracker();
+}
+
+function selectOption(option, clickedButton) {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    selectedAnswers[currentQuestion] = option;
+    skippedQuestions[currentQuestion] = false;
+
+    const q = quizData[currentQuestion];
+    const isCorrect = (option === q.answer);
+
+    const optionButtons = document.querySelectorAll('#options .option-btn');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === q.answer) {
+            btn.classList.add("correct");
+        } else if (btn === clickedButton && !isCorrect) {
+            btn.classList.add("incorrect");
+        }
+        btn.classList.remove("selected");
+    });
+
+    updateQuestionTracker();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function skipQuestion() {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    skippedQuestions[currentQuestion] = true;
+    selectedAnswers[currentQuestion] = null;
+    updateQuestionTracker();
+    nextQuestion();
+}
+
+function updateQuestionTracker() {
+    const tracker = document.getElementById("questionTracker");
+    tracker.innerHTML = "";
+    quizData.forEach((_, index) => {
+        const indicator = document.createElement("div");
+        indicator.classList.add("question-indicator");
+
+        if(selectedAnswers[index] !== null) {
+            indicator.classList.add("answered");
+            indicator.classList.remove("skipped");
+        } else if(skippedQuestions[index]) {
+            indicator.classList.add("skipped");
+            indicator.classList.remove("answered");
+        } else {
+            indicator.classList.remove("answered", "skipped");
+        }
+
+        if(index === currentQuestion) {
+            indicator.classList.add("active");
+        }
+        indicator.innerText = index + 1;
+        indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${selectedAnswers[index] !== null ? 'answered' : skippedQuestions[index] ? 'skipped' : 'not attempted'}`);
+        indicator.onclick = () => {
+            if(totalTime <= 0) return;
+            currentQuestion = index;
+            loadQuestion();
+        };
+        tracker.appendChild(indicator);
+    });
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizStarted = false;
+    document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+    document.getElementById("prevBtn").disabled = true;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("submitBtn").disabled = true;
+
+    let correctCount = 0;
+    let incorrectQuestions = [];
+
+    quizData.forEach((q, i) => {
+        if (selectedAnswers[i] !== null) {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        } else if (skippedQuestions[i]) {
+             incorrectQuestions.push({
+                question: q.question,
+                yourAnswer: "(Skipped)",
+                correctAnswer: q.answer
+            });
+        }
+    });
+
+    sessionStorage.setItem('quizScore', correctCount);
+    sessionStorage.setItem('quizTotal', quizData.length);
+    sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+    // Redirect to results page, ensure you have a results.html file
+    window.location.href = "results.html";
+}
+
+
+// Event Listener for Skip Button
+document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+// Function to generate quantity selection radio buttons
+function generateQuantityOptions() {
+    const radioOptionsDiv = document.getElementById('radioOptions');
+    radioOptionsDiv.innerHTML = ''; // Clear existing options
+
+    const totalQuestions = fullQuizData.length;
+    const questionsPerSet = 25;
+    const num25QuestionSets = Math.floor(totalQuestions / questionsPerSet);
+    const remainingQuestions = totalQuestions % questionsPerSet;
+
+    // Add 25-question sets
+    for (let i = 0; i < num25QuestionSets; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${i}" ${i === 0 ? 'checked' : ''}> Set ${i + 1} (${questionsPerSet} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add a set for remaining questions if any
+    if (remainingQuestions > 0) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${num25QuestionSets}"> Set ${num25QuestionSets + 1} (${remainingQuestions} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add Full Test option
+    const fullTestLabel = document.createElement('label');
+    fullTestLabel.innerHTML = `
+        <input type="radio" name="questionSet" value="full" ${num25QuestionSets === 0 && remainingQuestions === 0 ? 'checked' : ''}> Full Test (${totalQuestions} Questions)
+    `;
+    radioOptionsDiv.appendChild(fullTestLabel);
+}
+
+// Initialize quiz setup on page load
+window.onload = function() {
+    document.getElementById('quiz').style.display = 'none'; // Hide quiz initially
+    document.getElementById('timer').style.display = 'none'; // Hide timer initially
+    generateQuantityOptions(); // Populate radio buttons
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* New style for explanation box */
+    .explanation-box {
+        background-color: #f0f8ff; /* Light blue background */
+        border: 1px solid #cceeff; /* Light blue border */
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.5;
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="explanation-box" id="explanationBox"></div>        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" onclick="skipQuestion()" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+
+  const fullQuizData = [
+  {
+    "question": "What is the importance of good dressing manners in professional settings? | पेशेवर सेटिंग्स में अच्छे ड्रेसिंग मैनर्स का महत्व क्या है?",
+    "options": [
+      "To attract attention | ध्यान आकर्षित करने के लिए",
+      "To create a positive impression | सकारात्मक प्रभाव पैदा करने के लिए",
+      "To blend in with the crowd | भीड़ में घुलने-मिलने के लिए",
+      "To show off wealth | धन दिखाने के लिए"
+    ],
+    "answer": "To create a positive impression | सकारात्मक प्रभाव पैदा करने के लिए",
+    "explanation": "Good dressing manners in professional settings are crucial **to create a positive impression**. Your attire conveys professionalism, respect, and attention to detail. (पेशेवर सेटिंग्स में अच्छे ड्रेसिंग मैनर्स **सकारात्मक प्रभाव पैदा करने** के लिए महत्वपूर्ण हैं। आपकी पोशाक व्यावसायिकता, सम्मान और विवरण पर ध्यान दर्शाती है।)"
+  },
+  {
+    "question": "What is an example of non-verbal communication? | गैर-मौखिक संप्रेषण का एक उदाहरण क्या है?",
+    "options": [
+      "Writing an email | एक ईमेल लिखना",
+      "Nodding your head | सिर हिलाना",
+      "Making a phone call | फोन कॉल करना",
+      "Reading a book | किताब पढ़ना"
+    ],
+    "answer": "Nodding your head | सिर हिलाना",
+    "explanation": "**Nodding your head** is a classic example of non-verbal communication, often used to indicate agreement or understanding without speaking. ( **सिर हिलाना** गैर-मौखिक संचार का एक उत्कृष्ट उदाहरण है, जिसका उपयोग अक्सर बिना बोले सहमति या समझ दर्शाने के लिए किया जाता है।)"
+  },
+  {
+    "question": "What is a common interpretation of crossed arms in non-verbal communication? | गैर-मौखिक संप्रेषण में क्रॉस्ड आर्म्स का सामान्य अर्थ क्या है?",
+    "options": [
+      "Openness | खुलापन",
+      "Defensiveness | रक्षा की भावना",
+      "Happiness | खुशी",
+      "Confusion | भ्रम"
+    ],
+    "answer": "Defensiveness | रक्षा की भावना",
+    "explanation": "In non-verbal communication, **crossed arms** are often interpreted as a sign of **defensiveness** or a closed-off posture, suggesting discomfort or disagreement. (गैर-मौखिक संचार में, **क्रॉस्ड आर्म्स** को अक्सर **रक्षा की भावना** या एक बंद मुद्रा के संकेत के रूप में व्याख्या किया जाता है, जो असहजता या असहमति का सुझाव देता है।)"
+  },
+  {
+    "question": "Which component of SWOT analysis helps identify potential areas for growth? | SWOT विश्लेषण का कौन सा घटक संभावित विकास क्षेत्रों की पहचान करने में मदद करता है?",
+    "options": [
+      "Strengths | ताकत",
+      "Weaknesses | कमजोरियां",
+      "Opportunities | अवसर",
+      "Threats | खतरे"
+    ],
+    "answer": "Opportunities | अवसर",
+    "explanation": "In SWOT analysis, **Opportunities** refer to external factors that the organization can leverage for growth and development. (SWOT विश्लेषण में, **अवसर** उन बाहरी कारकों को संदर्भित करते हैं जिनका उपयोग संगठन विकास के लिए कर सकता है।)"
+  },
+  {
+    "question": "Which of the following best describes motivation? | निम्नलिखित में से कौन सा प्रेरणा का सबसे अच्छा वर्णन करता है?",
+    "options": [
+      "Apathy towards goals | लक्ष्यों के प्रति उदासीनता",
+      "Drive to achieve something | कुछ हासिल करने की प्रेरणा",
+      "Lack of interest | रुचि की कमी",
+      "Avoiding tasks | कार्यों से बचना"
+    ],
+    "answer": "Drive to achieve something | कुछ हासिल करने की प्रेरणा",
+    "explanation": "**Motivation** is best described as the **drive to achieve something**, the internal or external factors that energize, direct, and sustain behavior. ( **प्रेरणा** को सबसे अच्छे से **कुछ हासिल करने की प्रेरणा** के रूप में वर्णित किया जाता है, वे आंतरिक या बाहरी कारक जो व्यवहार को ऊर्जा, दिशा और बनाए रखते हैं।)"
+  },
+  {
+    "question": "Which factor is crucial for a successful interview session? | सफल साक्षात्कार सत्र के लिए कौन सा कारक महत्वपूर्ण है?",
+    "options": [
+      "Clear communication | स्पष्ट संप्रेषण",
+      "Arriving late | देर से आना",
+      "Avoiding questions | प्रश्नों से बचना",
+      "Wearing casual clothes | आकस्मिक कपड़े पहनना"
+    ],
+    "answer": "Clear communication | स्पष्ट संप्रेषण",
+    "explanation": "**Clear communication** is crucial for a successful interview. It ensures that both the interviewer and interviewee understand each other, leading to a productive discussion. ( **स्पष्ट संप्रेषण** एक सफल साक्षात्कार के लिए महत्वपूर्ण है। यह सुनिश्चित करता है कि साक्षात्कारकर्ता और साक्षात्कार देने वाला दोनों एक-दूसरे को समझें, जिससे एक उत्पादक चर्चा होती है।)"
+  },
+  {
+    "question": "Which of the following can enhance motivation? | निम्नलिखित में से कौन प्रेरणा को बढ़ा सकता है?",
+    "options": [
+      "Setting clear goals | स्पष्ट लक्ष्य निर्धारित करना",
+      "Avoiding responsibilities | जिम्मेदारियों से बचना",
+      "Criticizing others | दूसरों की आलोचना करना",
+      "Neglecting tasks | कार्यों की उपेक्षा करना"
+    ],
+    "answer": "Setting clear goals | स्पष्ट लक्ष्य निर्धारित करना",
+    "explanation": "**Setting clear goals** provides direction and a sense of purpose, which are powerful motivators. Knowing what you're working towards makes it easier to stay focused and driven. ( **स्पष्ट लक्ष्य निर्धारित करना** दिशा और उद्देश्य की भावना प्रदान करता है, जो शक्तिशाली प्रेरक होते हैं। यह जानना कि आप किस दिशा में काम कर रहे हैं, ध्यान केंद्रित और प्रेरित रहना आसान बनाता है।)"
+  },
+  {
+    "question": "Which activity is essential before attending an interview? | साक्षात्कार में भाग लेने से पहले कौन सी गतिविधि आवश्यक है?",
+    "options": [
+      "Watching TV | टीवी देखना",
+      "Researching the company | कंपनी के बारे में शोध करना",
+      "Ignoring preparation | तैयारी की उपेक्षा करना",
+      "Sleeping late | देर रात तक जागना"
+    ],
+    "answer": "Researching the company | कंपनी के बारे में शोध करना",
+    "explanation": "**Researching the company** before an interview is essential. It shows your genuine interest, helps you tailor your answers, and allows you to ask informed questions. (साक्षात्कार से पहले **कंपनी के बारे में शोध करना** आवश्यक है। यह आपकी सच्ची रुचि को दर्शाता है, आपको अपने उत्तरों को अनुकूलित करने में मदद करता है, और आपको सूचित प्रश्न पूछने की अनुमति देता है।)"
+  },
+  {
+    "question": "Which of the following helps in managing communication effectively? | निम्नलिखित में से कौन संप्रेषण को प्रभावी ढंग से प्रबंधित करने में मदद करता है?",
+    "options": [
+      "Interrupting frequently | बार-बार बाधा डालना",
+      "Active listening | सक्रिय सुनना",
+      "Talking over others | दूसरों पर बात करना",
+      "Ignoring feedback | प्रतिपुष्टि की उपेक्षा करना"
+    ],
+    "answer": "Active listening | सक्रिय सुनना",
+    "explanation": "**Active listening** involves fully concentrating on what is being said, understanding the message, and providing appropriate feedback. This greatly enhances effective communication. ( **सक्रिय सुनना** इसमें कही गई बातों पर पूरी तरह से ध्यान केंद्रित करना, संदेश को समझना और उचित प्रतिक्रिया देना शामिल है। यह प्रभावी संचार को बहुत बढ़ाता है।)"
+  },
+  {
+    "question": "Which component is crucial for ensuring the message is understood as intended? | यह सुनिश्चित करने के लिए कौन सा घटक महत्वपूर्ण है कि संदेश का इच्छानुसार समझा जाए?",
+    "options": [
+      "Noise | शोर",
+      "Feedback | प्रतिपुष्टि",
+      "Distortion | विकृति",
+      "Disruption | विघटन"
+    ],
+    "answer": "Feedback | प्रतिपुष्टि",
+    "explanation": "**Feedback** is crucial in communication as it allows the sender to know if their message was received and understood as intended, enabling clarification if needed. (संचार में **प्रतिपुष्टि** महत्वपूर्ण है क्योंकि यह प्रेषक को यह जानने की अनुमति देती है कि उनका संदेश इच्छानुसार प्राप्त और समझा गया था या नहीं, यदि आवश्यक हो तो स्पष्टीकरण सक्षम करता है।)"
+  },
+  {
+    "question": "Which technique helps in clarifying doubts during a conversation? | बातचीत के दौरान संदेह स्पष्ट करने में कौन सी तकनीक मदद करती है?",
+    "options": [
+      "Asking open-ended questions | खुले-आखिरी प्रश्न पूछना",
+      "Making assumptions | अनुमान लगाना",
+      "Changing the subject | विषय बदलना",
+      "Giving a speech | भाषण देना"
+    ],
+    "answer": "Asking open-ended questions | खुले-आखिरी प्रश्न पूछना",
+    "explanation": "**Asking open-ended questions** encourages the other person to elaborate, providing more details and helping to clarify any doubts or misunderstandings. ( **खुले-आखिरी प्रश्न पूछना** दूसरे व्यक्ति को विस्तार से बताने के लिए प्रोत्साहित करता है, जिससे अधिक विवरण मिलते हैं और किसी भी संदेह या गलतफहमी को स्पष्ट करने में मदद मिलती है।)"
+  },
+  {
+    "question": "Which type of dressing is appropriate for a business meeting? | व्यावसायिक बैठक के लिए कौन से प्रकार की पोशाक उपयुक्त है?",
+    "options": [
+      "Casual | आकस्मिक",
+      "Formal | औपचारिक",
+      "Party | पार्टी",
+      "Sportswear | खेल पोशाक"
+    ],
+    "answer": "Formal | औपचारिक",
+    "explanation": "For a business meeting, **formal** attire is generally appropriate. It conveys professionalism, seriousness, and respect for the occasion and the attendees. (एक व्यावसायिक बैठक के लिए, **औपचारिक** पोशाक आमतौर पर उपयुक्त होती है। यह अवसर और उपस्थित लोगों के लिए व्यावसायिकता, गंभीरता और सम्मान व्यक्त करती है।)"
+  },
+  {
+    "question": "What is the first stage of an interview? | साक्षात्कार का पहला चरण क्या है?",
+    "options": [
+      "Introduction | परिचय",
+      "Conclusion | निष्कर्ष",
+      "Feedback | प्रतिपुष्टि",
+      "Discussion | चर्चा"
+    ],
+    "answer": "Introduction | परिचय",
+    "explanation": "The **introduction** is the first stage of an interview, where the interviewer and candidate greet each other, establish rapport, and set the tone for the discussion. ( **परिचय** साक्षात्कार का पहला चरण है, जहां साक्षात्कारकर्ता और उम्मीदवार एक-दूसरे का अभिवादन करते हैं, तालमेल बिठाते हैं, और चर्चा के लिए माहौल तैयार करते हैं।)"
+  },
+  {
+    "question": "Which non-verbal clue might indicate someone is not interested in a conversation? | कौन सा गैर-मौखिक संकेत यह इंगित कर सकता है कि कोई व्यक्ति बातचीत में रुचि नहीं रखता है?",
+    "options": [
+      "Nodding frequently | बार-बार सिर हिलाना",
+      "Maintaining eye contact | आंखों का संपर्क बनाए रखना",
+      "Looking around the room | कमरे के चारों ओर देखना",
+      "Smiling often | अक्सर मुस्कुराना"
+    ],
+    "answer": "Looking around the room | कमरे के चारों ओर देखना",
+    "explanation": "**Looking around the room** or at a watch, rather than at the speaker, often indicates disinterest or a desire to disengage from the conversation. (बोलने वाले की ओर देखने के बजाय **कमरे के चारों ओर देखना** या घड़ी देखना अक्सर बातचीत में अरुचि या अलग होने की इच्छा को इंगित करता है।)"
+  },
+  {
+    "question": "What does ʹIntonationʹ refer to in oral communication? | मौखिक संप्रेषण में ʹस्वरʹ का क्या अर्थ है?",
+    "options": [
+      "Volume control | ध्वनि नियंत्रण",
+      "Voice pitch variation | आवाज की पिच भिन्नता",
+      "Speaking speed | बोलने की गति",
+      "Clear pronunciation | स्पष्ट उच्चारण"
+    ],
+    "answer": "Voice pitch variation | आवाज की पिच भिन्नता",
+    "explanation": "**Intonation** refers to the **voice pitch variation** or the rise and fall of the voice when speaking. It conveys meaning and emotion beyond the words themselves. ( **स्वर** बोलने के दौरान **आवाज की पिच भिन्नता** या आवाज के उतार-चढ़ाव को संदर्भित करता है। यह शब्दों से परे अर्थ और भावना व्यक्त करता है।)"
+  },
+  {
+    "question": "Which of the following best describes the purpose of voice modulation in a speech? | भाषण में आवाज़ का उतार-चढ़ाव का उद्देश्य क्या है?",
+    "options": [
+      "To maintain a monotone | एकसमान स्वर बनाए रखना",
+      "To vary pitch and tone | पिच और स्वर को बदलना",
+      "To increase speaking speed | बोलने की गति बढ़ाना",
+      "To reduce pauses | विरामों को कम करना"
+    ],
+    "answer": "To vary pitch and tone | पिच और स्वर को बदलना",
+    "explanation": "The purpose of **voice modulation** in a speech is **to vary pitch and tone** to keep the audience engaged, emphasize key points, and convey different emotions or meanings effectively. (भाषण में **आवाज के उतार-चढ़ाव** का उद्देश्य दर्शकों को जोड़े रखने, मुख्य बिंदुओं पर जोर देने और विभिन्न भावनाओं या अर्थों को प्रभावी ढंग से व्यक्त करने के लिए **पिच और स्वर को बदलना** है।)"
+  },
+  {
+    "question": "What is a common technique for image building? | छवि निर्माण के लिए एक सामान्य तकनीक क्या है?",
+    "options": [
+      "Negative feedback | नकारात्मक प्रतिक्रिया",
+      "Positive self-presentation | सकारात्मक आत्म-प्रस्तुति",
+      "Ignoring appearance | उपस्थिति की अनदेखी",
+      "Procrastination | टालमटोल"
+    ],
+    "answer": "Positive self-presentation | सकारात्मक आत्म-प्रस्तुति",
+    "explanation": "**Positive self-presentation** involves consciously managing how you present yourself to others, including your appearance, behavior, and communication, to create a favorable impression. ( **सकारात्मक आत्म-प्रस्तुति** में दूसरों के सामने खुद को कैसे प्रस्तुत करते हैं, जिसमें आपकी उपस्थिति, व्यवहार और संचार शामिल है, इसे जानबूझकर प्रबंधित करना शामिल है, ताकि एक अनुकूल प्रभाव बनाया जा सके।)"
+  },
+  {
+    "question": "Why are mock interviews important for job seekers? | नौकरी चाहने वालों के लिए मॉक इंटरव्यू क्यों महत्वपूर्ण हैं?",
+    "options": [
+      "To avoid preparation | तैयारी से बचने के लिए",
+      "To reduce anxiety | चिंता कम करने के लिए",
+      "To fill time | समय भरने के लिए",
+      "To meet new people | नए लोगों से मिलने के लिए"
+    ],
+    "answer": "To reduce anxiety | चिंता कम करने के लिए",
+    "explanation": "Mock interviews provide a safe environment to practice and receive feedback, which significantly helps **to reduce anxiety** and build confidence for real interviews. (मॉक इंटरव्यू अभ्यास करने और प्रतिक्रिया प्राप्त करने के लिए एक सुरक्षित वातावरण प्रदान करते हैं, जो वास्तविक इंटरव्यू के लिए **चिंता कम करने** और आत्मविश्वास बनाने में काफी मदद करता है।)"
+  },
+  {
+    "question": "What is a sign of a positive attitude? | सकारात्मक दृष्टिकोण का संकेत क्या है?",
+    "options": [
+      "Complaining often | अक्सर शिकायत करना",
+      "Smiling frequently | बार-बार मुस्कुराना",
+      "Frowning constantly | लगातार भौंहें चढ़ाना",
+      "Criticizing others | दूसरों की आलोचना करना"
+    ],
+    "answer": "Smiling frequently | बार-बार मुस्कुराना",
+    "explanation": "**Smiling frequently** is a widely recognized non-verbal cue that indicates a positive attitude, approachability, and friendliness. ( **बार-बार मुस्कुराना** एक व्यापक रूप से मान्यता प्राप्त गैर-मौखिक संकेत है जो एक सकारात्मक दृष्टिकोण, मिलनसारिता और मित्रता को इंगित करता है।)"
+  },
+  {
+    "question": "How can acknowledging your weaknesses positively impact your professional growth? | अपनी कमजोरियों को स्वीकार करना आपके पेशेवर विकास पर सकारात्मक प्रभाव कैसे डाल सकता है?",
+    "options": [
+      "By avoiding new challenges | नई चुनौतियों से बचकर",
+      "By seeking constructive criticism | रचनात्मक आलोचना मांगकर",
+      "By pretending they donʹt exist | उनकी उपेक्षा करने का दिखावा करके",
+      "By ignoring them completely | उन्हें पूरी तरह से नजरअंदाज करके"
+    ],
+    "answer": "By seeking constructive criticism | रचनात्मक आलोचना मांगकर",
+    "explanation": "Acknowledging weaknesses allows you to focus on areas for improvement. **Seeking constructive criticism** is a proactive way to get insights and guidance on how to develop those areas, leading to professional growth. (कमजोरियों को स्वीकार करना आपको सुधार के क्षेत्रों पर ध्यान केंद्रित करने की अनुमति देता है। **रचनात्मक आलोचना मांगना** उन क्षेत्रों को कैसे विकसित किया जाए, इस पर अंतर्दृष्टि और मार्गदर्शन प्राप्त करने का एक सक्रिय तरीका है, जिससे पेशेवर विकास होता है।)"
+  },
+  {
+    "question": "How can feedback from a mock interview improve your real interview performance? | मॉक इंटरव्यू से प्राप्त फीडबैक आपके वास्तविक इंटरव्यू के प्रदर्शन में कैसे सुधार कर सकता है?",
+    "options": [
+      "By ignoring it | इसे नजरअंदाज करके",
+      "By understanding your mistakes | अपनी गलतियों को समझकर",
+      "By feeling discouraged | निराश होकर",
+      "By avoiding practice | अभ्यास से बचकर"
+    ],
+    "answer": "By understanding your mistakes | अपनी गलतियों को समझकर",
+    "explanation": "Feedback from a mock interview provides specific insights into areas where you can improve, allowing you **to understand your mistakes** and refine your responses and behavior for the actual interview. (मॉक इंटरव्यू से मिलने वाला फीडबैक उन क्षेत्रों में विशेष जानकारी प्रदान करता है जहां आप सुधार कर सकते हैं, जिससे आपको **अपनी गलतियों को समझने** और वास्तविक इंटरव्यू के लिए अपने उत्तरों और व्यवहार को बेहतर बनाने में मदद मिलती है।)"
+  },
+  {
+    "question": "What is the primary goal of an interview? | साक्षात्कार का मुख्य लक्ष्य क्या है?",
+    "options": [
+      "To socialize | सामाजिक होना",
+      "To assess candidate suitability | उम्मीदवार की उपयुक्तता का मूल्यांकन करना",
+      "To entertain | मनोरंजन करना",
+      "To confuse applicants | आवेदकों को भ्रमित करना"
+    ],
+    "answer": "To assess candidate suitability | उम्मीदवार की उपयुक्तता का मूल्यांकन करना",
+    "explanation": "The primary goal of an interview, from an organizational perspective, is **to assess candidate suitability** for a particular role by evaluating their skills, experience, and cultural fit. (संगठनात्मक दृष्टिकोण से, साक्षात्कार का प्राथमिक लक्ष्य किसी विशेष भूमिका के लिए **उम्मीदवार की उपयुक्तता का मूल्यांकन करना** है, जिसमें उनके कौशल, अनुभव और सांस्कृतिक अनुकूलता का आकलन किया जाता है।)"
+  },
+  {
+    "question": "Why is non-verbal communication important? | गैर-मौखिक संप्रेषण क्यों महत्वपूर्ण है?",
+    "options": [
+      "It is irrelevant | यह अप्रासंगिक है",
+      "It supports verbal messages | यह मौखिक संदेशों का समर्थन करता है",
+      "It decreases understanding | यह समझ को कम करता है",
+      "It confuses the listener | यह श्रोता को भ्रमित करता है"
+    ],
+    "answer": "It supports verbal messages | यह मौखिक संदेशों का समर्थन करता है",
+    "explanation": "Non-verbal communication, such as body language, facial expressions, and gestures, **supports verbal messages** by adding context, emphasizing points, and conveying emotions, thus enhancing overall understanding. (गैर-मौखिक संचार, जैसे शरीर की भाषा, चेहरे के भाव और हावभाव, मौखिक संदेशों को संदर्भ जोड़कर, बिंदुओं पर जोर देकर और भावनाओं को व्यक्त करके **समर्थन करता है**, जिससे समग्र समझ बढ़ती है।)"
+  },
+  {
+    "question": "Which of the following is an example of a strength? | निम्नलिखित में से कौन सा ताकत का उदाहरण है?",
+    "options": [
+      "Procrastination | टालमटोल",
+      "Punctuality | समय की पाबंदी",
+      "Indecisiveness | अनिश्चितता",
+      "Laziness | आलस्य"
+    ],
+    "answer": "Punctuality | समय की पाबंदी",
+    "explanation": "**Punctuality** (being on time) is a positive trait and a valuable strength, especially in professional and academic settings, indicating reliability and respect for others' time. ( **समय की पाबंदी** (समय पर होना) एक सकारात्मक गुण और एक मूल्यवान ताकत है, खासकर पेशेवर और शैक्षणिक सेटिंग्स में, जो विश्वसनीयता और दूसरों के समय के प्रति सम्मान दर्शाती है।)"
+  },
+  {
+    "question": "How can understanding non-verbal cues improve communication during a meeting? | एक बैठक के दौरान गैर-मौखिक संकेतों को समझने से संप्रेषण में कैसे सुधार हो सकता है?",
+    "options": [
+      "By ignoring body language | शरीर की भाषा की अनदेखी करके",
+      "By identifying true feelings | सच्ची भावनाओं की पहचान करके",
+      "By focusing only on words | केवल शब्दों पर ध्यान केंद्रित करके",
+      "By speaking louder | जोर से बोलकर"
+    ],
+    "answer": "By identifying true feelings | सच्ची भावनाओं की पहचान करके",
+    "explanation": "Understanding non-verbal cues allows you to **identify true feelings** and unspoken sentiments of others. This deeper insight helps you tailor your communication, address underlying issues, and build stronger rapport during a meeting. (गैर-मौखिक संकेतों को समझने से आप दूसरों की **सच्ची भावनाओं** और अनकहे विचारों को पहचान सकते हैं। यह गहरी अंतर्दृष्टि आपको अपने संचार को अनुकूलित करने, अंतर्निहित मुद्दों को संबोधित करने और बैठक के दौरान मजबूत तालमेल बनाने में मदद करती है।)"
+  }
+];
+    let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = []; // true if answered, false if skipped/unanswered
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        initializeQuizOptions();
+    });
+
+    function initializeQuizOptions() {
+        const totalQuestions = fullQuizData.length;
+        if (totalQuestions > 25) {
+            document.getElementById('allQuestionsLabel').style.display = 'inline-block';
+            if (totalQuestions >= 50) {
+                document.getElementById('set26_50_label').style.display = 'inline-block';
+            } else {
+                document.getElementById('set26_X_label').style.display = 'inline-block';
+                // Update the text for '26-X' to reflect the actual number of questions
+                document.getElementById('set26_X_radio').value = `26-${totalQuestions}`;
+                document.getElementById('set26_X_label').querySelector('input').nextSibling.nodeValue = ` Questions 26-${totalQuestions} (Remaining)`;
+            }
+        }
+    }
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz(); // End quiz if time runs out
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet.startsWith("26-")) { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false); // false means not answered yet or skipped
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            document.getElementById('explanationBox').style.display = 'none'; // Hide explanation
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix (if it existed)
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        const explanationBox = document.getElementById('explanationBox');
+        explanationBox.style.display = 'none'; // Hide explanation when loading a new question
+        document.getElementById('result').innerText = ""; // Clear results when loading a question
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else { // If not yet answered, show selected state if any
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        // Show explanation if already answered
+        if (isCurrentQuestionAnswered && q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block"; // Hide skip if answered
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1 && questionAnsweredStatus.every(status => status !== false)) ? "inline-block" : "none"; // Show submit only on last question and if all questions attempted. Adjusted logic for showing submit button
+        // Simplification for submit button display for current setup:
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1) ? "inline-block" : "none";
+
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Prevent selection if time's up or already answered
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true; // Mark as answered
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true; // Disable all buttons after selection
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct"); // Highlight correct answer
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect"); // Highlight user's incorrect choice
+            }
+            btn.classList.remove("selected"); // Remove selected class from all
+        });
+
+        // Display explanation after selection
+        const explanationBox = document.getElementById('explanationBox');
+        if (q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        updateQuestionTracker();
+        // Automatically move to next question if all questions are answered or if it's not the last question and timer is running
+        // Removed auto-next for better user control after seeing explanation
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Cannot skip if time's up or already answered
+
+        selectedAnswers[currentQuestion] = null; // Explicitly mark as null for skipped
+        questionAnsweredStatus[currentQuestion] = false; // Keep as false for skipped/unanswered
+        updateQuestionTracker();
+        nextQuestion(); // Move to the next question
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) { // If answered (true)
+                indicator.classList.add("answered");
+                indicator.classList.remove("skipped"); // Ensure skipped is removed if answered later
+            } else if (selectedAnswers[index] === null) { // If explicitly skipped or not yet attempted
+                indicator.classList.add("skipped");
+                indicator.classList.remove("answered");
+            } else { // If an option was selected but not submitted (shouldn't happen with current selectOption logic)
+                indicator.classList.remove("answered");
+                indicator.classList.remove("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            } else {
+                indicator.classList.remove("active");
+            }
+
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : (selectedAnswers[index] === null ? 'skipped' : 'not answered')}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").style.display = 'none'; // Hide skip button
+        document.getElementById("submitBtn").disabled = true; // Disable submit after clicking
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+        let skippedCount = 0;
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else if (selectedAnswers[i] === null) {
+                skippedCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        const totalQuestions = quizData.length;
+        const score = (correctCount / totalQuestions) * 100;
+
+        let resultText = `Quiz Ended! You scored ${correctCount} out of ${totalQuestions} (${score.toFixed(2)}%).`;
+        if (skippedCount > 0) {
+            resultText += ` You skipped ${skippedCount} question(s).`;
+        }
+        document.getElementById("result").innerText = resultText;
+        document.getElementById("result").style.color = score >= 50 ? "#2f9e44" : "#f03e3e"; // Green for pass, red for fail
+
+        // Optionally, display incorrect answers details
+        if (incorrectQuestions.length > 0) {
+            let incorrectDetails = "<br><br><strong>Incorrect Answers (गलत उत्तर):</strong><br>";
+            incorrectQuestions.forEach((item, index) => {
+                incorrectDetails += `${index + 1}. Q: ${item.question}<br> Your Answer: ${item.yourAnswer}<br> Correct Answer: ${item.correctAnswer}<br><br>`;
+            });
+            // You might want to display this in a separate modal or expanded section
+            // For now, let's just log it to console or append to result if space allows
+            console.log(incorrectDetails);
+            // document.getElementById("result").innerHTML += incorrectDetails; // Uncomment to show on page
+        }
+    }
+</script>
+</body>
+</html>

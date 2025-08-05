@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+     {
+    "question": "JavaScript Code is written inside file having extension _________ | जावास्क्रिप्ट कोड को __________ एक्सटेंशन वाले फाइल के अंदर ललखा जाता है ।",
+    "options": [
+      ".jvs",
+      ".jsc",
+      ".javascript",
+      ".js"
+    ],
+    "answer": ".js"
+  },
+  {
+    "question": "AJAX stands for ________ | AJAX का अर्थ है",
+    "options": [
+      "Asynchronous Javascript and xml",
+      "Advanced JSP and xml",
+      "Asynchronous JSP and xml",
+      "Advanced Javascript and xml"
+    ],
+    "answer": "Asynchronous Javascript and xml"
+  },
+  {
+    "question": "JavaScript is designed for following purpose _______ | जावास्क्रिप्ट को ननम्नललखखत उद्देश्यों के ललए डडजाईन ककया जाता है-",
+    "options": [
+      "To Style HTML Pages | HTML पेजों को स्टाइल करने के ललए",
+      "To Execute Query Related to DB on Server | सर्वर पर DB से संबंधित क्र्ेरी ननष्पादित करने के ललए",
+      "To Perform Server Side Scripting Operation | सर्वर साइड स्क्स्िस्क््टंग ऑपरेशन करने के ललए",
+      "To add interactivity to HTML Pages. | HTML पेज में अन्तरकियाशीलता जोड़ने के ललए"
+    ],
+    "answer": "To add interactivity to HTML Pages. | HTML पेज में अन्तरकियाशीलता जोड़ने के ललए"
+  },
+  {
+    "question": "What is the work of the form control elements in the HTML DOM? | HTML DOM में फॉमथ कं ट्रोल एलीमेंट का क्या कायथ है?",
+    "options": [
+      "User Interface elements | यूजर इंटरफेस एलीमेंट",
+      "All possible elements | सभी संभर् एलीमेंट",
+      "Debugging elements | डीबगींग एलीमेंट",
+      "None of these | इनमें से कोई नहीं"
+    ],
+    "answer": "User Interface elements | यूजर इंटरफेस एलीमेंट"
+  },
+  {
+    "question": "What kind of language is Javascript? | जावास्क्रिप्ट ककस प्रकार की भाषा होती है?",
+    "options": [
+      "Programming | प्रोग्रालमंग",
+      "Application | ए्लीके शन",
+      "Scripting | स्क्रिस्क्प्टंग",
+      "None of these | इनमें से कोई नहीं"
+    ],
+    "answer": "Scripting | स्क्रिस्क्प्टंग"
+  },
+  {
+    "question": "What is the function used to remove all handlers for name events? | नाम घटनाओं के ललए सभी हैंडलसथ को हटाने के ललए ककस फं क्शन का उपयोग ककया जाता है?",
+    "options": [
+      "deleteAllListeners(name)",
+      "deleteListener(name,f)",
+      "removeListener(name,f)",
+      "removeAllListeners(name)"
+    ],
+    "answer": "removeAllListeners(name)"
+  },
+  {
+    "question": "Nested documents inside the HTML documents can be created using ___________ | HTML डॉक्युमेंट्स के अंदर नेरटेड डॉक्युमेंट्स का _________ उपयोग करके बनाए जा सकते हैं",
+    "options": [
+      "frame",
+      "nest",
+      "iframe",
+      "into"
+    ],
+    "answer": "iframe"
+  },
+  {
+    "question": "What is used to identify a user who returns to a Website? | ककसी वेबसाइट पर लौटने वालेयूजर की पहचान करने के ललए ककसका उपयोग ककया जाता है?",
+    "options": [
+      "Cookies | कूकीज",
+      "Plug-ins | ्लग-इन्स",
+      "Scripts | स्क्स्ि्ट",
+      "ASPs"
+    ],
+    "answer": "Cookies | कूकीज"
+  },
+  {
+    "question": "JavaScript can be written _______ | जावास्क्रिप्ट को ललखा जा सकता है",
+    "options": [
+      "directly into JS file and included | सीधे JS फाइल में और शालमल",
+      "directly on the server page | सीिे सर्वर पेज पर",
+      "directly into HTML pages | सीिे HTML पेजों में",
+      "all of these | उपरोक्त सभी"
+    ],
+    "answer": "directly into JS file and included | सीधे JS फाइल में और शालमल"
+  },
+  {
+    "question": "What is the function used to deregister event handler ‘f’? | इवेंट हैंडलर ʹfʹ को डीरस्क्जरटर करने के ललए ककस फं क्शन का उपयोग ककया जाता है?",
+    "options": [
+      "deleteAllListeners(name)",
+      "deleteListener(name,f)",
+      "removeListener(name,f)",
+      "removeAllListeners(name)"
+    ],
+    "answer": "removeListener(name,f)"
+  },
+  {
+    "question": "Dynamic web page _______ | डायनालमक वेब पेज है",
+    "options": [
+      "same every time whenever it displays | जब भी यह प्रिलशवत होता है तो हर बार समान होता है",
+      "generates on demand by a program | ककसी प्रोग्राम द्वारा मांग पर उत्पन्न होता है",
+      "both is same every time whenever | िोनों हर बार एक जैसे ही होते हैं",
+      "none of these | इनमें से कोई नहीं"
+    ],
+    "answer": "generates on demand by a program | ककसी प्रोग्राम द्वारा मांग पर उत्पन्न होता है"
+  },
+  {
+    "question": "Which of the following is correct about JavaScript? | ननम्नललखखत में से कौन सा जावास्क्रिप्ट के बारे में सही है?",
+    "options": [
+      "JavaScript is an Object-Based language | जार्ास्क्स्ि्ट एक ऑब्जेक्ट-आिाररत भाषा है",
+      "JavaScript is Assembly-language | जार्ास्क्स्ि्ट असेंबली-भाषा है",
+      "JavaScript is an Object-Oriented language | जार्ास्क्स्ि्ट एक ऑब्जेक्ट-ओररएंटेड भाषा है",
+      "JavaScript is a High-level language | जावास्क्रिप्ट एक उच्च-रतरीय भाषा है"
+    ],
+    "answer": "JavaScript is a High-level language | जावास्क्रिप्ट एक उच्च-रतरीय भाषा है"
+  },
+  {
+    "question": "Which of the following is an event emitter? | ननम्नललखखत में से कौन एक इवेंट एलमटर है?",
+    "options": [
+      "Once | र्न्स",
+      "Process | प्रोसेस",
+      "Listeners | ललसनसव",
+      "On | ऑन"
+    ],
+    "answer": "Process | प्रोसेस"
+  },
+  {
+    "question": "What is JavaScript? | जावास्क्रिप्ट क्या है?",
+    "options": [
+      "JavaScript is a scripting language used to make the website interactive | जावास्क्रिप्ट एक स्क्रिस्क्प्टंग भाषा है स्क्जसका उपयोग वेबसाइट को इंटरैस्क्क्टव बनाने के ललए ककया जाता है",
+      "JavaScript is an assembly language used to make the website interactive | जार्ास्क्स्ि्ट एक असेंबली भाषा है स्क्जसका उपयोग र्ेबसाइट को इंटरैस्क्क्टर् बनाने के ललए ककया जाता है",
+      "JavaScript is a compiled language used to make the website interactive | जार्ास्क्स्ि्ट एक कं पाइल्ड भाषा है स्क्जसका उपयोग र्ेबसाइट को इंटरैस्क्क्टर् बनाने के ललए ककया जाता है",
+      "None of the mentioned | उपरोक्त में से कोई नहीं"
+    ],
+    "answer": "JavaScript is a scripting language used to make the website interactive | जावास्क्रिप्ट एक स्क्रिस्क्प्टंग भाषा है स्क्जसका उपयोग वेबसाइट को इंटरैस्क्क्टव बनाने के ललए ककया जाता है"
+  },
+  {
+    "question": "The property of JSON() method is __________ | JSON() मर्े ड की गुणवत्ता है_________:",
+    "options": [
+      "it can be invoked manually as object.JSON() | इसे मैन्युअल रूप से object.JSON() के रूप में लागूककया जा सकता है",
+      "it will be automatically invoked by the compiler | इसे कंपाइलर द्र्ारा स्र्चाललत रूप से लागूककया जाएगा",
+      "it is invoked automatically by the JSON.stringify() method | इसे JSON.stringify() ववधध द्वारा रवचाललत रूप से लागूककया जाता है",
+      "it cannot be invoked in any form | इसे ककसी भी रूप में लागूनहीं ककया जा सकता"
+    ],
+    "answer": "it is invoked automatically by the JSON.stringify() method | इसे JSON.stringify() ववधध द्वारा रवचाललत रूप से लागूककया जाता है"
+  },
+  {
+    "question": "The syntax for Integer Variable in JavaScript ________ | जावास्क्रिप्ट में इस्क्न्टजर वेररएबल के ललए लसंटेक्स __________है ।",
+    "options": [
+      "int num;",
+      "integer num;",
+      "Integer num;",
+      "var num;"
+    ],
+    "answer": "var num;"
+  },
+  {
+    "question": "How are windows, tabs, iframes and frames treated according to javascript? | JavaScript के अनुसार ववडं ोज, टैब्स, आईफ्रे म्स और फ्रे म्स का व्यवहार कै से होता है?",
+    "options": [
+      "They are all Browse contexts | र्े सभी ब्राउस्क् ंग कॉन्टेक्स्ट हैं",
+      "They are all Browse information | र्े सभी ब्राउस्क् ंग इन्फॉमेशन हैं",
+      "They are all Window contexts | र्े सभी वर्ंडो कॉन्टेक्स्ट हैं",
+      "They are all Window objects | वे सभी ववंडो ऑब्जेक्ट हैं"
+    ],
+    "answer": "They are all Window objects | वे सभी ववंडो ऑब्जेक्ट हैं"
+  },
+  {
+    "question": "What are the events generated by the Node objects called? | Node ऑब्जेक्ट द्वारा उत्पन्न इवेंट्स को क्या कहा जाता है?",
+    "options": [
+      "Generators | जेनरेटर",
+      "Emitters | एलमटसथ",
+      "Dispatchers | डडस्पैचसव",
+      "Highevents | हाइइर्ेंट्स"
+    ],
+    "answer": "Emitters | एलमटसथ"
+  },
+  {
+    "question": "Which of the following are JavaScript optimizers? | ननम्न में कौन जावास्क्रिप्ट ऑप्टीमाइजर है ?",
+    "options": [
+      "JSMin | जेएसलमन",
+      "Packer | पैकर",
+      "Minify | लमननफाई",
+      "Both JSMin and Packe | जेएसलमन और पैकर दोनों"
+    ],
+    "answer": "Both JSMin and Packe | जेएसलमन और पैकर दोनों"
+  },
+  {
+    "question": "Everything treated in HTML DOM is ________ | HTML DOM में व्यवहाररत सभी चीजें _____ है।",
+    "options": [
+      "node | नोड",
+      "element | एलीमेंट",
+      "attribute | एट्रीब्यूट",
+      "all of these | उपरोक्त सभी"
+    ],
+    "answer": "node | नोड"
+  },
+  {
+    "question": "The meaning for Augmenting classes is that ___________ | Augmenting classes का अर्थ है कक _________:",
+    "options": [
+      "objects inherit prototype properties even in a dynamic state | गनतशील अवरर्ा मेंभी वरतुएं प्रोटोटाइप गुण प्राप्त करती हैं",
+      "objects inherit prototype properties only in a dynamic state | ऑब्जेक्ट के र्ल गनतशील अर्स्था में प्रोटोटाइप गुण प्रा्त करते हैं",
+      "objects inherit prototype properties in the static state | ऑब्जेक्ट स्क्स्थर अर्स्था में प्रोटोटाइप गणु प्रा्त करते हैं",
+      "object doesn’t inherit prototype properties in the static state | ऑब्जक्े ट स्क्स्थर स्क्स्थनत में प्रोटोटाइप गणु प्रा्त नहीं करता है"
+    ],
+    "answer": "objects inherit prototype properties even in a dynamic state | गनतशील अवरर्ा मेंभी वरतुएं प्रोटोटाइप गुण प्राप्त करती हैं"
+  },
+  {
+    "question": "What kind of Side Scripting Language is Javascript? | जावास्क्रिप्ट ककस तरह की साइड स्क्रिस्क्प्टंग लैंग्वेज है?",
+    "options": [
+      "Browser | ब्राउज़र",
+      "ISP",
+      "Server | सर्वर",
+      "None of these | इनमें से कोई नहीं"
+    ],
+    "answer": "Browser | ब्राउज़र"
+  },
+  {
+    "question": "The properties() method is a ________ | properties() मर्े ड एक ________ है",
+    "options": [
+      "Enumerable method | इन्यूरेबल मेथड",
+      "Non-enumerable method | नॉन - इन्यूरेबल मेर्ड",
+      "Operational method | ऑपरेशनल मेथड",
+      "Calling method | कॉललंग मेथड"
+    ],
+    "answer": "Non-enumerable method | नॉन - इन्यूरेबल मेर्ड"
+  },
+  {
+    "question": "The behaviour of the instances present of a class inside a method is defined by __________ | एक मेर्ड के अंदर एक वगथ के मौजदू उदाहरणों का व्यवहार __________ द्वारा पररभावषत ककया गया है",
+    "options": [
+      "Method | मेथड",
+      "Classes | क्लासेस",
+      "Interfaces | इंटरफे स",
+      "Classes and Interfaces | क्लासेस और इंटरफे स"
+    ],
+    "answer": "Classes | क्लासेस"
+  },
+  {
+    "question": "The JavaScript’s syntax calling a function/ method is ________ | जावास्क्रिप्ट लसनटैक्स फं क्शन/मेर्ड करता है",
+    "options": [
+      "Primary expression | प्राइमरी एक्सप्रेशन",
+      "Functional expression | फं क्शनल एक्सप्रेशन",
+      "Invocation expression | इनवोके शन एक्सप्रेशन",
+      "Property Access Expression | प्रोपटी एक्सेस एक्सप्रेशन"
+    ],
+    "answer": "Invocation expression | इनवोके शन एक्सप्रेशन"
+  }
+  ];
+
+let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = [];
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-X") { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false);
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else {
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true;
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct");
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect");
+            }
+            btn.classList.remove("selected");
+        });
+
+        updateQuestionTracker();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = null;
+        questionAnsweredStatus[currentQuestion] = false;
+        updateQuestionTracker();
+        nextQuestion();
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) {
+                indicator.classList.add("answered");
+            } else if (selectedAnswers[index] === null) {
+                indicator.classList.remove("answered");
+                indicator.classList.add("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            }
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : 'not answered'}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").disabled = true;
+        document.getElementById("submitBtn").disabled = true;
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i] || "(No answer selected)",
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        sessionStorage.setItem('quizScore', correctCount);
+        sessionStorage.setItem('quizTotal', quizData.length);
+        sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+        window.location.href = "results.html";
+    }
+
+    document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+    window.onload = function() {
+        const quantitySelectionDiv = document.getElementById('quantitySelection');
+        const quizDiv = document.getElementById('quiz');
+        const radioOptionsDiv = document.getElementById('radioOptions'); // New: Div to hold radio buttons
+        const set26_50_label = document.getElementById('set26_50_label'); // For 26-50
+        const set26_X_label = document.getElementById('set26_X_label');   // For 26-Remaining
+        const allQuestionsLabel = document.getElementById('allQuestionsLabel');
+
+        const totalAvailableQuestions = fullQuizData.length;
+
+        if (totalAvailableQuestions <= 25 && totalAvailableQuestions > 0) {
+            // Scenario 1: Total questions are 25 or less (but more than 0)
+            quantitySelectionDiv.style.display = 'none'; // Hide the selection
+            quizDiv.style.display = 'block'; // Show the quiz directly
+            document.getElementById('timer').style.display = 'block';
+
+            quizData = [...fullQuizData]; // Use all available questions
+            selectedAnswers = new Array(quizData.length).fill(null);
+            questionAnsweredStatus = new Array(quizData.length).fill(false);
+            loadQuestion();
+            startTimer();
+
+        } else if (totalAvailableQuestions > 25) {
+            // Scenario 2: Total questions are more than 25
+            quantitySelectionDiv.style.display = 'block'; // Show the selection
+            quizDiv.style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+
+            // Show and set up "Questions 1-25" (already in HTML, just ensure checked)
+            document.querySelector('input[name="numQuestions"][value="1-25"]').checked = true;
+
+            // Handle "Questions 26-50"
+            if (totalAvailableQuestions >= 50) {
+                set26_50_label.style.display = 'inline-block';
+                document.getElementById('set26_50_radio').disabled = false;
+            } else {
+                set26_50_label.style.display = 'none';
+            }
+
+            // Handle "Questions 26-X (Remaining)" - always available if > 25
+            set26_X_label.style.display = 'inline-block';
+            const set26_X_radio = document.getElementById('set26_X_radio');
+            set26_X_radio.value = `26-${totalAvailableQuestions}`; // Update value
+            set26_X_label.innerHTML = `<input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-${totalAvailableQuestions} (Remaining)`;
+            document.getElementById('set26_X_radio').disabled = false;
+
+
+            // Show "Full Test (All Questions)" option
+            allQuestionsLabel.style.display = 'block';
+            document.getElementById('allQuestionsRadio').disabled = false;
+
+        } else {
+            // Scenario 3: No questions at all
+            quantitySelectionDiv.style.display = 'none';
+            quizDiv.style.display = 'block';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('question').innerText = "No questions available in the quiz data.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    };
+</script>
+</body>
+</html>

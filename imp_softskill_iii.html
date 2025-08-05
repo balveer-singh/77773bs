@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* New style for explanation box */
+    .explanation-box {
+        background-color: #f0f8ff; /* Light blue background */
+        border: 1px solid #cceeff; /* Light blue border */
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.5;
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="explanation-box" id="explanationBox"></div>        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" onclick="skipQuestion()" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+
+  const fullQuizData = [
+  {
+    "question": "Why is public awareness important for energy conservation? | ऊर्जा संरक्षण के लिए सार्वजनिक जागरूकता क्यों महत्वपूर्ण है?",
+    "options": [
+      "It decreases the energy supply | यह ऊर्जा आपूर्ति को कम करता है",
+      "It increases energy costs | यह ऊर्जा लागत को बढ़ाता है",
+      "It encourages responsible energy use | यह जिम्मेदार ऊर्जा उपयोग को प्रोत्साहित करता है",
+      "It promotes wasteful habits | यह अपव्ययकारी आदतों को बढ़ावा देता है"
+    ],
+    "answer": "It encourages responsible energy use | यह जिम्मेदार ऊर्जा उपयोग को प्रोत्साहित करता है",
+    "explanation": "Public awareness helps people understand the importance of energy conservation and adopt practices that reduce waste, leading to responsible use. (सार्वजनिक जागरूकता लोगों को ऊर्जा संरक्षण के महत्व को समझने और कचरे को कम करने वाली प्रथाओं को अपनाने में मदद करती है, जिससे जिम्मेदार उपयोग होता है।)"
+  },
+  {
+    "question": "What is a major drawback of using fossil fuels? | जीवाश्म ईंधन का उपयोग करने का मुख्य नुकसान क्या है?",
+    "options": [
+      "They are renewable | वे नवीकरणीय हैं",
+      "They produce greenhouse gases | वे ग्रीनहाउस गैसों का उत्पादन करते हैं",
+      "They are abundant | वे प्रचुर मात्रा में हैं",
+      "They are cheap | वे सस्ते हैं"
+    ],
+    "answer": "They produce greenhouse gases | वे ग्रीनहाउस गैसों का उत्पादन करते हैं",
+    "explanation": "Fossil fuels, when burned, release large amounts of greenhouse gases, contributing to climate change and air pollution. (जीवाश्म ईंधन, जब जलाए जाते हैं, तो बड़ी मात्रा में ग्रीनहाउस गैसें छोड़ते हैं, जिससे जलवायु परिवर्तन और वायु प्रदूषण में योगदान होता है।)"
+  },
+  {
+    "question": "Why are non-conventional energy resources considered more sustainable? | गैर-पारंपरिक ऊर्जा संसाधनों को अधिक स्थायी क्यों माना जाता है?",
+    "options": [
+      "They are cheaper to produce | वे उत्पादन करने में सस्ते हैं",
+      "They are less efficient | वे कम कुशल हैं",
+      "They are renewable and have lower environmental impact | वे नवीकरणीय और कम पर्यावरणीय प्रभाव वाले होते हैं",
+      "They require more maintenance | उन्हें अधिक रखरखाव की आवश्यकता होती है"
+    ],
+    "answer": "They are renewable and have lower environmental impact | वे नवीकरणीय और कम पर्यावरणीय प्रभाव वाले होते हैं",
+    "explanation": "Non-conventional energy resources like solar and wind are sustainable because they replenish naturally and produce little to no greenhouse gas emissions, reducing environmental harm. (सौर और पवन जैसे गैर-पारंपरिक ऊर्जा संसाधन स्थायी होते हैं क्योंकि वे स्वाभाविक रूप से पुनः भर जाते हैं और बहुत कम या बिल्कुल भी ग्रीनहाउस गैस उत्सर्जन नहीं करते, जिससे पर्यावरणीय नुकसान कम होता है।)"
+  },
+  {
+    "question": "Which energy resource can be created from organic waste? | किस ऊर्जा संसाधन को जैविक कचरे से बनाया जा सकता है?",
+    "options": [
+      "Coal | कोयला",
+      "Natural gas | प्राकृतिक गैस",
+      "Bio-Gas | बायो-गैस",
+      "Uranium | यूरेनियम"
+    ],
+    "answer": "Bio-Gas | बायो-गैस",
+    "explanation": "Bio-gas is produced from the anaerobic digestion of organic matter, such as agricultural waste, manure, and sewage, making it a renewable energy source. (बायो-गैस जैविक पदार्थ, जैसे कृषि अपशिष्ट, खाद और सीवेज के अवायवीय पाचन से उत्पन्न होती है, जिससे यह एक नवीकरणीय ऊर्जा स्रोत बन जाती है।)"
+  },
+  {
+    "question": "What is an example of a conventional energy resource? | पारंपरिक ऊर्जा संसाधन का एक उदाहरण क्या है?",
+    "options": [
+      "Solar power | सौर ऊर्जा",
+      "Wind power | पवन ऊर्जा",
+      "Coal | कोयला",
+      "Geothermal energy | भू-तापीय ऊर्जा"
+    ],
+    "answer": "Coal | कोयला",
+    "explanation": "Conventional energy resources are those that have been in use for a long time and are generally finite, such as coal, oil, and natural gas. Solar, wind, and geothermal are non-conventional. (पारंपरिक ऊर्जा संसाधन वे हैं जो लंबे समय से उपयोग में हैं और आम तौर पर सीमित होते हैं, जैसे कोयला, तेल और प्राकृतिक गैस। सौर, पवन और भू-तापीय गैर-पारंपरिक हैं।)"
+  }
+]
+
+
+    let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = []; // true if answered, false if skipped/unanswered
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        initializeQuizOptions();
+    });
+
+    function initializeQuizOptions() {
+        const totalQuestions = fullQuizData.length;
+        if (totalQuestions > 25) {
+            document.getElementById('allQuestionsLabel').style.display = 'inline-block';
+            if (totalQuestions >= 50) {
+                document.getElementById('set26_50_label').style.display = 'inline-block';
+            } else {
+                document.getElementById('set26_X_label').style.display = 'inline-block';
+                // Update the text for '26-X' to reflect the actual number of questions
+                document.getElementById('set26_X_radio').value = `26-${totalQuestions}`;
+                document.getElementById('set26_X_label').querySelector('input').nextSibling.nodeValue = ` Questions 26-${totalQuestions} (Remaining)`;
+            }
+        }
+    }
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz(); // End quiz if time runs out
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet.startsWith("26-")) { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false); // false means not answered yet or skipped
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            document.getElementById('explanationBox').style.display = 'none'; // Hide explanation
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix (if it existed)
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        const explanationBox = document.getElementById('explanationBox');
+        explanationBox.style.display = 'none'; // Hide explanation when loading a new question
+        document.getElementById('result').innerText = ""; // Clear results when loading a question
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else { // If not yet answered, show selected state if any
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        // Show explanation if already answered
+        if (isCurrentQuestionAnswered && q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block"; // Hide skip if answered
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1 && questionAnsweredStatus.every(status => status !== false)) ? "inline-block" : "none"; // Show submit only on last question and if all questions attempted. Adjusted logic for showing submit button
+        // Simplification for submit button display for current setup:
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1) ? "inline-block" : "none";
+
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Prevent selection if time's up or already answered
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true; // Mark as answered
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true; // Disable all buttons after selection
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct"); // Highlight correct answer
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect"); // Highlight user's incorrect choice
+            }
+            btn.classList.remove("selected"); // Remove selected class from all
+        });
+
+        // Display explanation after selection
+        const explanationBox = document.getElementById('explanationBox');
+        if (q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        updateQuestionTracker();
+        // Automatically move to next question if all questions are answered or if it's not the last question and timer is running
+        // Removed auto-next for better user control after seeing explanation
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Cannot skip if time's up or already answered
+
+        selectedAnswers[currentQuestion] = null; // Explicitly mark as null for skipped
+        questionAnsweredStatus[currentQuestion] = false; // Keep as false for skipped/unanswered
+        updateQuestionTracker();
+        nextQuestion(); // Move to the next question
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) { // If answered (true)
+                indicator.classList.add("answered");
+                indicator.classList.remove("skipped"); // Ensure skipped is removed if answered later
+            } else if (selectedAnswers[index] === null) { // If explicitly skipped or not yet attempted
+                indicator.classList.add("skipped");
+                indicator.classList.remove("answered");
+            } else { // If an option was selected but not submitted (shouldn't happen with current selectOption logic)
+                indicator.classList.remove("answered");
+                indicator.classList.remove("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            } else {
+                indicator.classList.remove("active");
+            }
+
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : (selectedAnswers[index] === null ? 'skipped' : 'not answered')}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").style.display = 'none'; // Hide skip button
+        document.getElementById("submitBtn").disabled = true; // Disable submit after clicking
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+        let skippedCount = 0;
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else if (selectedAnswers[i] === null) {
+                skippedCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        const totalQuestions = quizData.length;
+        const score = (correctCount / totalQuestions) * 100;
+
+        let resultText = `Quiz Ended! You scored ${correctCount} out of ${totalQuestions} (${score.toFixed(2)}%).`;
+        if (skippedCount > 0) {
+            resultText += ` You skipped ${skippedCount} question(s).`;
+        }
+        document.getElementById("result").innerText = resultText;
+        document.getElementById("result").style.color = score >= 50 ? "#2f9e44" : "#f03e3e"; // Green for pass, red for fail
+
+        // Optionally, display incorrect answers details
+        if (incorrectQuestions.length > 0) {
+            let incorrectDetails = "<br><br><strong>Incorrect Answers (गलत उत्तर):</strong><br>";
+            incorrectQuestions.forEach((item, index) => {
+                incorrectDetails += `${index + 1}. Q: ${item.question}<br> Your Answer: ${item.yourAnswer}<br> Correct Answer: ${item.correctAnswer}<br><br>`;
+            });
+            // You might want to display this in a separate modal or expanded section
+            // For now, let's just log it to console or append to result if space allows
+            console.log(incorrectDetails);
+            // document.getElementById("result").innerHTML += incorrectDetails; // Uncomment to show on page
+        }
+    }
+</script>
+</body>
+</html>

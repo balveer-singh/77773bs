@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Module Summary</title>
+    <!-- Poppins font for a clean and modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Removed marked.js as we will no longer be using it for rendering -->
+    <style>
+        /* CSS variables for a consistent theme */
+        :root {
+            --primary-blue: #5964ff;
+            --module-teal: #1ABC9C;
+            --text-dark: #2C3E50;
+            --text-body: #555;
+            --card-bg: #ffffff;
+            --page-gradient-start: #74ebd5;
+            --page-gradient-end: #ACB6E5;
+            --shadow-base: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
+            color: var(--text-body);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-base);
+            width: 95%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* The div that will display the rendered content */
+        #rendered-summary {
+            text-align: left;
+            padding: 25px;
+            background-color: #f7f9fc;
+            border-left: 5px solid var(--module-teal);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1em;
+            line-height: 1.6;
+            
+            /* The 'pre-wrap' value preserves all whitespace and line breaks
+               exactly as they are in the source code. */
+            white-space: pre-wrap;
+        }
+
+        /* Custom styling for markdown elements within the rendered summary */
+        #rendered-summary h1, #rendered-summary h2, #rendered-summary h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-top: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #rendered-summary ul, #rendered-summary ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        #rendered-summary p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* New media query for mobile responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #rendered-summary {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- This is where your summary's title will go -->
+        <h1>Principles of Adult Learning</h1>
+
+        <!-- The content of your summary will be rendered here -->
+        <div id="rendered-summary">
+            <!-- JavaScript will populate this div -->
+        </div>
+
+    </div>
+
+    <!-- 
+        ========================================================================
+        PASTE YOUR SUMMARY HERE
+        ========================================================================
+        
+        - Do not change the 'id="raw-summary"' attribute.
+        - The content you paste here will be displayed with all its original
+          line breaks and spacing.
+    -->
+    <pre id="raw-summary" style="display:none;" type="text/plain">
+वयस्क शिक्षा (Adult Learning): मान्यताएँ और सिद्धांत
+वयस्क शिक्षा की परिभाषा
+वयस्क शिक्षा (Andragogy) शिक्षण की वह विधि और सिद्धांत है जो विशेष रूप से वयस्कों को सीखने में मदद करने के लिए उपयोग की जाती है। यह बाल शिक्षा (Pedagogy) से अलग है, जो बच्चों को पढ़ाने पर केंद्रित होती है।
+वयस्क सीखने की मान्यताएँ (Assumptions of Adult Learning)
+अमेरिकी शिक्षक मैल्कम शेफर्ड नोल्स (Malcolm Knowles) ने वयस्क शिक्षार्थियों की पाँच मुख्य मान्यताएँ बताईं:
+1.	आत्म-अवधारणा (Self-Concept): जैसे-जैसे व्यक्ति परिपक्व होता है, वह निर्भर व्यक्तित्व से आत्मनिर्भर व्यक्तित्व की ओर बढ़ता है।
+2.	अनुभव (Experience): परिपक्व होने पर व्यक्ति के पास अनुभवों का भंडार जमा होता है, जो उसके सीखने के लिए एक मूल्यवान संसाधन बन जाता है।
+3.	सीखने की तत्परता (Readiness to Learn): वयस्क उन्हीं विषयों को सीखने में रुचि रखते हैं जो उनके सामाजिक या व्यावसायिक जीवन की तात्कालिक जरूरतों से संबंधित होते हैं।
+4.	सीखने की दिशा (Orientation to Learning): वयस्क समस्या-केंद्रित (problem-centered) होते हैं, न कि विषय-केंद्रित (subject-centered)। वे ज्ञान को तुरंत लागू करना चाहते हैं।
+5.	सीखने की प्रेरणा (Motivation to Learn): वयस्कों को सीखने की प्रेरणा बाहरी नहीं, बल्कि आंतरिक (internal) होती है।
+वयस्क सीखने के सिद्धांत (Principles of Andragogy)
+नोल्स ने वयस्क शिक्षा के लिए चार सिद्धांत सुझाए:
+1.	वयस्कों को अपनी शिक्षा की योजना बनाने और मूल्यांकन में शामिल होने की आवश्यकता होती है।
+2.	अनुभव (गलतियों सहित) सीखने की गतिविधियों का आधार बनते हैं।
+3.	वयस्क उन विषयों को सीखने में सबसे अधिक रुचि रखते हैं जिनका उनके काम या व्यक्तिगत जीवन से सीधा संबंध होता है।
+4.	वयस्क शिक्षा सामग्री-उन्मुख (content-oriented) के बजाय समस्या-केंद्रित होती है।
+________________________________________
+वयस्क शिक्षा को प्रभावित करने वाले कारक
+कक्षा में, प्रशिक्षकों को उन कारकों को समझना चाहिए जो वयस्क शिक्षार्थियों को प्रभावित करते हैं:
+•	शारीरिक और मानसिक कारक: मानसिक और शारीरिक थकान, ध्यान की कमी, और व्यक्तिगत या भावनात्मक समस्याएं।
+•	मनोवैज्ञानिक कारक: प्रेरणा, धारणा (perception) और दृष्टिकोण (attitude) जैसे आंतरिक प्रभाव।
+•	पर्यावरणीय कारक: सांस्कृतिक, सामाजिक और आर्थिक प्रभाव।
+•	शिक्षण विधियाँ: प्रशिक्षक द्वारा उपयोग की जाने वाली विधियाँ भी शिक्षार्थियों के दृष्टिकोण को प्रभावित करती हैं।
+सीखने की पठार (Learning Plateau)
+यह सीखने की प्रक्रिया में एक ऐसा चरण है जब लगातार अभ्यास के बावजूद शिक्षार्थी की प्रगति रुक जाती है। इस स्थिति के कई कारण हो सकते हैं, जैसे थकान, तनाव, ध्यान में कमी, या प्रशिक्षक द्वारा गलत तकनीक का उपयोग।
+________________________________________
+सकारात्मक शिक्षण वातावरण बनाने की तकनीकें
+•	प्रेरणा: प्रशिक्षक को सीखने के उद्देश्यों को स्पष्ट करके और ऑडियो-विज़ुअल एड्स (Audio-Visual aids) का उपयोग करके शिक्षार्थियों को प्रेरित करना चाहिए।
+•	मार्गदर्शन और परामर्श: जब कोई छात्र सीखने के पठार का अनुभव कर रहा हो, तो उसे उचित मार्गदर्शन और परामर्श प्रदान करना महत्वपूर्ण है।
+•	समस्या-केंद्रित दृष्टिकोण: समूह चर्चा, टीम प्रोजेक्ट और व्यक्तिगत परियोजनाओं जैसी शिक्षार्थी-केंद्रित विधियों का उपयोग करें।
+•	भाषा की बाधाएँ दूर करें: यदि छात्र को तकनीकी शब्द समझने में कठिनाई हो, तो प्रशिक्षक को क्षेत्रीय भाषा में स्पष्टीकरण देना चाहिए।
+•	माता-पिता की भूमिका: माता-पिता को अपने बच्चों को सीखने के लिए एक सहायक वातावरण और भावनात्मक समर्थन प्रदान करना चाहिए।
+•	प्रशिक्षक का दायित्व: प्रशिक्षक को अपने ज्ञान और कौशल को लगातार अपडेट करते रहना चाहिए, क्योंकि "एक दीपक तब तक दूसरे दीपक को नहीं जला सकता जब तक वह खुद जलता न रहे।"
+
+
+    </pre>
+<a href="pot13_i.html">
+  <button style="
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  ">
+    Take Test
+  </button>
+</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawSummaryElement = document.getElementById('raw-summary');
+            const renderedSummaryElement = document.getElementById('rendered-summary');
+
+            // Get the plain text from the pre tag, which includes all spacing and line breaks.
+            const markdownText = rawSummaryElement.textContent;
+
+            // Set the textContent of the rendered div directly.
+            // The `white-space: pre-wrap;` CSS property will handle the formatting.
+            renderedSummaryElement.textContent = markdownText;
+        });
+    </script>
+</body>
+</html>

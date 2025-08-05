@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* New style for explanation box */
+    .explanation-box {
+        background-color: #f0f8ff; /* Light blue background */
+        border: 1px solid #cceeff; /* Light blue border */
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.5;
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="explanation-box" id="explanationBox"></div>        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" onclick="skipQuestion()" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+
+  const fullQuizData = [
+  {
+    "question": "What is the primary advantage of online banking? | ऑनलाइन बैंकिंग का प्राथमिक लाभ क्या है?",
+    "options": [
+      "Long wait times | लंबा प्रतीक्षा समय",
+      "Convenience | सुविधा",
+      "Limited access | सीमित पहुँच",
+      "High fees | उच्च शुल्क"
+    ],
+    "answer": "Convenience | सुविधा",
+    "explanation": "Online banking का सबसे बड़ा फायदा है **सुविधा (Convenience)**. आप कभी भी, कहीं से भी अपने बैंक के काम कर सकते हैं, आपको बैंक जाने की ज़रूरत नहीं पड़ती. 'Long wait times' तो नुकसान है, 'Limited access' और 'High fees' भी मुख्य फायदे नहीं हैं।"
+  },
+  {
+    "question": "Which of the following is an example of logical reasoning? | निम्नलिखित में से कौन तार्किक तर्क का उदाहरण है?",
+    "options": [
+      "Guessing the answer | उत्तर का अनुमान लगाना",
+      "Analyzing patterns in data | डेटा में पैटर्न का विश्लेषण करना",
+      "Ignoring given information | दी गई जानकारी को नजरअंदाज करना",
+      "Memorizing dates | तारीखें याद रखना"
+    ],
+    "answer": "Analyzing patterns in data | डेटा में पैटर्न का विश्लेषण करना",
+    "explanation": "Logical reasoning का मतलब है तर्क से सोचना. **'Analyzing patterns in data' (डेटा में पैटर्न का विश्लेषण करना)** इसका एक उत्तम उदाहरण है क्योंकि इसमें आप जानकारी को देखकर कोई निष्कर्ष निकालते हैं. अनुमान लगाना (Guessing), जानकारी को नज़रअंदाज़ करना (Ignoring information) या सिर्फ याद करना (Memorizing) तार्किक तर्क नहीं हैं।"
+  },
+  {
+    "question": "Which graph type is best for showing changes over time? | समय के साथ बदलाव दिखाने के लिए कौन सा ग्राफ प्रकार सबसे अच्छा है?",
+    "options": [
+      "Bar graph | बार ग्राफ",
+      "Line graph | रेखा ग्राफ",
+      "Pie chart | पाई चार्ट",
+      "Histogram | हिस्टोग्राम"
+    ],
+    "answer": "Line graph | रेखा ग्राफ",
+    "explanation": "समय के साथ होने वाले बदलावों को दिखाने के लिए **Line graph (रेखा ग्राफ)** सबसे अच्छा होता है. इसमें समय (time) X-axis पर होता है और डेटा पॉइंट्स को एक रेखा से जोड़ते हैं, जिससे परिवर्तन स्पष्ट दिखते हैं. Bar graph अलग-अलग चीजों की तुलना के लिए, Pie chart किसी चीज़ के हिस्सों को दिखाने के लिए और Histogram डेटा के वितरण (distribution) के लिए होता है."
+  },
+  {
+    "question": "Which mobile app feature is used to transfer money? | किस मोबाइल ऐप फीचर का उपयोग पैसे स्थानांतरित करने के लिए किया जाता है?",
+    "options": [
+      "Calendar | कैलेंडर",
+      "Payment option | भुगतान विकल्प",
+      "Camera | कैमरा",
+      "Calculator | कैलकुलेटर"
+    ],
+    "answer": "Payment option | भुगतान विकल्प",
+    "explanation": "पैसे ट्रांसफर करने के लिए मोबाइल ऐप में **'Payment option' (भुगतान विकल्प)** या 'Send Money' जैसे फीचर का उपयोग किया जाता है. कैलेंडर, कैमरा या कैलकुलेटर का उपयोग पैसे ट्रांसफर के लिए नहीं होता."
+  },
+  {
+    "question": "Calculate the area of a triangle with base 6 cm and height 4 cm. | 6 cm आधार और 4 cm ऊंचाई वाले त्रिभुज का क्षेत्रफल ज्ञात करें।",
+    "options": [
+      "10 sq cm",
+      "12 sq cm",
+      "14 sq cm",
+      "16 sq cm"
+    ],
+    "answer": "12 sq cm",
+    "explanation": "त्रिभुज (triangle) के क्षेत्रफल (area) का सूत्र है: $0.5 \\times \\text{आधार (base)} \\times \\text{ऊंचाई (height)}$. क्षेत्रफल = $0.5 \\times 6 \\text{ cm} \\times 4 \\text{ cm} = 0.5 \\times 24 \\text{ sq cm} = 12 \\text{ sq cm}."
+  },
+  {
+    "question": "What is the primary benefit of using mobile apps for financial transactions? | वित्तीय लेन-देन के लिए मोबाइल ऐप्स का उपयोग करने का प्राथमिक लाभ क्या है?",
+    "options": [
+      "Inconvenience | असुविधा",
+      "Time-saving | समय की बचत",
+      "High cost | उच्च लागत",
+      "Complex process | जटिल प्रक्रिया"
+    ],
+    "answer": "Time-saving | समय की बचत",
+    "explanation": "मोबाइल ऐप्स से वित्तीय लेनदेन करने का मुख्य लाभ है **समय की बचत (Time-saving)**. आप झटपट भुगतान या ट्रांसफर कर सकते हैं, जिससे आपका समय बचता है. बाकी विकल्प (Inconvenience, High cost, Complex process) इसके लाभ नहीं हैं."
+  },
+  {
+    "question": "What is the perimeter of a square with side length 4 cm? | 4 cm की भुजा वाले वर्ग की परिधि क्या है?",
+    "options": [
+      "8 cm",
+      "12 cm",
+      "16 cm",
+      "20 cm"
+    ],
+    "answer": "16 cm",
+    "explanation": "एक वर्ग (square) का परिमाप (perimeter) उसकी सभी चारों भुजाओं की लंबाई का योग होता है. सूत्र है: $4 \\times \\text{भुजा की लंबाई (side length)}$. परिमाप = $4 \\times 4 \\text{ cm} = 16 \\text{ cm}."
+  },
+  {
+    "question": "Convert 500 square meters to square centimeters. | 500 वर्ग मीटर को वर्ग सेंटीमीटर में परिवर्तित करें।",
+    "options": [
+      "5000 sq cm",
+      "50000 sq cm",
+      "5000000 sq cm",
+      "500000 sq cm"
+    ],
+    "answer": "5000000 sq cm",
+    "explanation": "हमें पता है कि 1 मीटर (meter) = 100 सेंटीमीटर (centimeters). तो, 1 वर्ग मीटर (square meter) = $1 \\text{ m} \\times 1 \\text{ m} = 100 \\text{ cm} \\times 100 \\text{ cm} = 10000 \\text{ sq cm}$. इसलिए, 500 वर्ग मीटर = $500 \\times 10000 \\text{ sq cm} = 5,000,000 \\text{ sq cm}."
+  },
+  {
+    "question": "How can mobile apps enhance financial management? | मोबाइल ऐप्स वित्तीय प्रबंधन को कैसे बढ़ावा दे सकते हैं?",
+    "options": [
+      "By ignoring transactions | लेन-देन को नजरअंदाज करके",
+      "By increasing spending | खर्च बढ़ाकर",
+      "By tracking expenses | खर्चों का पता लगाकर",
+      "By causing confusion | भ्रम पैदा करके"
+    ],
+    "answer": "By tracking expenses | खर्चों का पता लगाकर",
+    "explanation": "मोबाइल ऐप्स वित्तीय प्रबंधन (financial management) को बेहतर बनाते हैं क्योंकि वे आपको अपने **खर्चों का पता लगाने (tracking expenses)** में मदद करते हैं. आप देख सकते हैं कि आपका पैसा कहाँ जा रहा है और बेहतर वित्तीय निर्णय ले सकते हैं."
+  },
+  {
+    "question": "What is 1 meter equal to in centimeters? | 1 मीटर कितने सेंटीमीटर के बराबर है?",
+    "options": [
+      "10 cm",
+      "100 cm",
+      "1000 cm",
+      "110 cm"
+    ],
+    "answer": "100 cm",
+    "explanation": "यह एक सामान्य माप की इकाई (unit conversion) है. 1 मीटर (meter) में **100 सेंटीमीटर (centimeters)** होते हैं."
+  },
+  {
+    "question": "Calculate the loss if a product with a cost price of Rs. 700 is sold for Rs. 650. | यदि एक उत्पाद जिसकी लागत मूल्य Rs. 700 है, को Rs. 650 में बेचा जाता है, तो हानि क्या है?",
+    "options": [
+      "Rs. 40",
+      "Rs. 50",
+      "Rs. 60",
+      "Rs. 70"
+    ],
+    "answer": "Rs. 50",
+    "explanation": "हानि (Loss) की गणना (calculation) क्रय मूल्य (Cost Price) - विक्रय मूल्य (Selling Price) से होती है. हानि = Rs. 700 - Rs. 650 = Rs. 50."
+  },
+  {
+    "question": "What is a common method of saving money? | पैसे बचाने का एक सामान्य तरीका क्या है?",
+    "options": [
+      "Spending on luxury items | लक्जरी वस्तुओं पर खर्च करना",
+      "Keeping money in a savings account | बचत खाते में पैसा रखना",
+      "Taking loans | ऋण लेना",
+      "Investing in risky ventures | जोखिम भरे उद्यमों में निवेश करना"
+    ],
+    "answer": "Keeping money in a savings account | बचत खाते में पैसा रखना",
+    "explanation": "एक **बचत खाता (savings account)** विशेष रूप से उन निधियों को रखने के लिए डिज़ाइन किया गया है जो तत्काल खर्च के लिए अभिप्रेत नहीं हैं, अक्सर ब्याज कमाते हैं. यह पैसे बचाने की एक मूलभूत और सामान्य रणनीति है. अन्य विकल्पों में खर्च, ऋण या उच्च जोखिम शामिल हैं."
+  },
+  {
+    "question": "Identify the missing number in the sequence: 3, 6, __, 12, 15. | अनुक्रम में लुप्त संख्या की पहचान करें: 3, 6, __, 12, 15।",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "answer": "9",
+    "explanation": "यह एक ऐसी श्रृंखला (sequence) है जहाँ प्रत्येक संख्या में 3 जोड़ा जा रहा है. 3 + 3 = 6, 6 + 3 = **9**, 9 + 3 = 12, 12 + 3 = 15. तो, लुप्त संख्या **9** है."
+  },
+  {
+    "question": "What is the main goal of logical reasoning? | तार्किक तर्क का मुख्य उद्देश्य क्या है?",
+    "options": [
+      "To confuse the reader | पाठक को भ्रमित करना",
+      "To derive conclusions from given information | दी गई जानकारी से निष्कर्ष निकालना",
+      "To memorize facts | तथ्यों को याद रखना",
+      "To repeat information | जानकारी को दोहराना"
+    ],
+    "answer": "To derive conclusions from given information | दी गई जानकारी से निष्कर्ष निकालना",
+    "explanation": "तार्किक तर्क (logical reasoning) का मुख्य उद्देश्य दी गई जानकारी (given information) से **निष्कर्ष निकालना (derive conclusions)** है. इसका उद्देश्य पाठक को भ्रमित करना (confuse the reader), तथ्यों को याद रखना (memorize facts) या जानकारी दोहराना (repeat information) नहीं है."
+  },
+  {
+    "question": "What is the percentage of 25 in 100? | 100 में से 25 का प्रतिशत क्या है?",
+    "options": [
+      "0.15",
+      "0.02",
+      "0.25",
+      "0.03"
+    ],
+    "answer": "0.25",
+    "explanation": "किसी संख्या का प्रतिशत (percentage) निकालने के लिए, उस संख्या को कुल से भाग देकर 100 से गुणा करते हैं. $(25 / 100) \\times 100\% = 0.25 \\times 100\% = 25\%$. विकल्पों में दशमलव (decimal) में दिया गया है, तो $25\%$ का दशमलव रूप **0.25** है."
+  },
+  {
+    "question": "In a row of five people, P is to the left of Q, Q is to the left of R, and R is to the left of S. Who is at the far left? | पाँच लोगों की पंक्ति में, P, Q के बाईं ओर है, Q, R के बाईं ओर है, और R, S के बाईं ओर है। सबसे बाईं ओर कौन है?",
+    "options": [
+      "P",
+      "Q",
+      "R",
+      "S"
+    ],
+    "answer": "P",
+    "explanation": "पंक्ति को बाएं से दाएं ऐसे समझें: P, Q के बाईं ओर है: P Q; Q, R के बाईं ओर है: P Q R; R, S के बाईं ओर है: P Q R S. यदि पंक्ति में पांच लोग हैं (अंतिम व्यक्ति T मान लें), तो क्रम P Q R S T होगा. इसलिए, **P** सबसे बाईं ओर है."
+  },
+  {
+    "question": "If a product is originally priced at Rs. 800 and is sold with a 10% discount, what is the sale price? | यदि एक उत्पाद का मूल मूल्य Rs. 800 है और इसे 10% छूट पर बेचा जाता है, तो विक्रय मूल्य क्या है?",
+    "options": [
+      "Rs. 720",
+      "Rs. 730",
+      "Rs. 740",
+      "Rs. 750"
+    ],
+    "answer": "Rs. 720",
+    "explanation": "छूट (Discount) = Rs. 800 का 10% = $0.10 \\times 800 = \\text{Rs. } 80$. विक्रय मूल्य (Sale price) = मूल मूल्य (Original Price) - छूट = Rs. 800 - Rs. 80 = Rs. 720."
+  },
+  {
+    "question": "Calculate the area of a rectangle with length 7 cm and width 3 cm. | 7 cm लंबाई और 3 cm चौड़ाई वाले आयत का क्षेत्रफल ज्ञात करें।",
+    "options": [
+      "10 sq cm",
+      "14 sq cm",
+      "21 sq cm",
+      "28 sq cm"
+    ],
+    "answer": "21 sq cm",
+    "explanation": "आयत (rectangle) के क्षेत्रफल (area) का सूत्र है: लंबाई (length) $\\times$ चौड़ाई (width). क्षेत्रफल = $7 \\text{ cm} \\times 3 \\text{ cm} = 21 \\text{ sq cm}."
+  },
+  {
+    "question": "If a car travels 60 km in 1 hour, what is its speed in km per hour? | यदि एक कार 1 घंटे में 60 km की यात्रा करती है, तो उसकी गति कितनी है?",
+    "options": [
+      "50 km/hr",
+      "55 km/hr",
+      "60 km/hr",
+      "65 km/hr"
+    ],
+    "answer": "60 km/hr",
+    "explanation": "गति (Speed) की गणना दूरी (distance) को समय (time) से भाग देकर की जाती है. गति = $60 \\text{ km} / 1 \\text{ hour} = 60 \\text{ km/hr}."
+  },
+  {
+    "question": "What is the next number in the sequence 2, 4, 6, 8? | अनुक्रम 2, 4, 6, 8 में अगली संख्या क्या है?",
+    "options": [
+      "10",
+      "12",
+      "14",
+      "16"
+    ],
+    "answer": "10",
+    "explanation": "यह एक सामान्य संख्यात्मक श्रृंखला (numerical sequence) है जहाँ प्रत्येक संख्या में 2 जोड़ा जा रहा है. 8 के बाद अगली संख्या $8 + 2 = 10$ है."
+  },
+  {
+    "question": "What is the primary purpose of data analysis? | डेटा विश्लेषण का मुख्य उद्देश्य क्या है?",
+    "options": [
+      "To ignore data | डेटा को नजरअंदाज करना",
+      "To summarize and interpret data | डेटा का सारांश और व्याख्या करना",
+      "To complicate information | जानकारी को जटिल बनाना",
+      "To confuse the reader | पाठक को भ्रमित करना"
+    ],
+    "answer": "To summarize and interpret data | डेटा का सारांश और व्याख्या करना",
+    "explanation": "डेटा विश्लेषण (Data analysis) का मुख्य उद्देश्य डेटा को **सारांशित करना (summarize) और उसकी व्याख्या करना (interpret)** है, ताकि उससे उपयोगी जानकारी मिल सके और निर्णय लिए जा सकें. डेटा को अनदेखा करना या जानकारी को जटिल बनाना इसका उद्देश्य नहीं है."
+  },
+  {
+    "question": "Which dimension is measured in square meters? | कौन सा आयाम वर्ग मीटर में मापा जाता है?",
+    "options": [
+      "Length | लंबाई",
+      "Area | क्षेत्र",
+      "Volume | आयतन",
+      "Mass | द्रव्यमान"
+    ],
+    "answer": "Area | क्षेत्र",
+    "explanation": "वर्ग मीटर ($m^2$) **क्षेत्रफल (Area)** की इकाई है, जो किसी द्वि-आयामी सतह का माप होता है. लंबाई (length) को मीटर में, आयतन (volume) को घन मीटर में, और द्रव्यमान (mass) को किलोग्राम में मापा जाता है."
+  },
+  {
+    "question": "How many grams are there in 1 kilogram? | 1 किलोग्राम में कितने ग्राम होते हैं?",
+    "options": [
+      "100 grams",
+      "500 grams",
+      "1000 grams",
+      "1500 grams"
+    ],
+    "answer": "1000 grams",
+    "explanation": "The prefix \"kilo-\" means one thousand. Therefore, 1 kilogram = **1000 grams**."
+  },
+  {
+    "question": "Which graph is most effective for comparing quantities across different categories? | विभिन्न श्रेणियों में मात्राओं की तुलना करने के लिए कौन सा ग्राफ सबसे प्रभावी है?",
+    "options": [
+      "Bar graph | बार ग्राफ",
+      "Line graph | रेखा ग्राफ",
+      "Pie chart | पाई चार्ट",
+      "Scatter plot | स्कैटर प्लॉट"
+    ],
+    "answer": "Bar graph | बार ग्राफ",
+    "explanation": "विभिन्न श्रेणियों (categories) में मात्राओं की तुलना (comparing quantities) के लिए **Bar graph (बार ग्राफ)** सबसे प्रभावी होता है. यह प्रत्येक श्रेणी के लिए अलग-अलग बार का उपयोग करता है, जिससे तुलना करना आसान हो जाता है."
+  },
+  {
+    "question": "What unit is used to measure length? | लंबाई मापने के लिए कौन सी इकाई का उपयोग किया जाता है?",
+    "options": [
+      "Kilogram | किलोग्राम",
+      "Liter | लीटर",
+      "Meter | मीटर",
+      "Second | सेकंड"
+    ],
+    "answer": "Meter | मीटर",
+    "explanation": "लंबाई (length) को मापने के लिए मानक इकाई **मीटर (Meter)** है. किलोग्राम (Kilogram) द्रव्यमान के लिए, लीटर (Liter) आयतन के लिए, और सेकंड (Second) समय के लिए उपयोग होता है."
+  }
+];
+
+
+    let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = []; // true if answered, false if skipped/unanswered
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        initializeQuizOptions();
+    });
+
+    function initializeQuizOptions() {
+        const totalQuestions = fullQuizData.length;
+        if (totalQuestions > 25) {
+            document.getElementById('allQuestionsLabel').style.display = 'inline-block';
+            if (totalQuestions >= 50) {
+                document.getElementById('set26_50_label').style.display = 'inline-block';
+            } else {
+                document.getElementById('set26_X_label').style.display = 'inline-block';
+                // Update the text for '26-X' to reflect the actual number of questions
+                document.getElementById('set26_X_radio').value = `26-${totalQuestions}`;
+                document.getElementById('set26_X_label').querySelector('input').nextSibling.nodeValue = ` Questions 26-${totalQuestions} (Remaining)`;
+            }
+        }
+    }
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz(); // End quiz if time runs out
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet.startsWith("26-")) { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false); // false means not answered yet or skipped
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            document.getElementById('explanationBox').style.display = 'none'; // Hide explanation
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix (if it existed)
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        const explanationBox = document.getElementById('explanationBox');
+        explanationBox.style.display = 'none'; // Hide explanation when loading a new question
+        document.getElementById('result').innerText = ""; // Clear results when loading a question
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else { // If not yet answered, show selected state if any
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        // Show explanation if already answered
+        if (isCurrentQuestionAnswered && q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block"; // Hide skip if answered
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1 && questionAnsweredStatus.every(status => status !== false)) ? "inline-block" : "none"; // Show submit only on last question and if all questions attempted. Adjusted logic for showing submit button
+        // Simplification for submit button display for current setup:
+        document.getElementById('submitBtn').style.display = (currentQuestion === quizData.length - 1) ? "inline-block" : "none";
+
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Prevent selection if time's up or already answered
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true; // Mark as answered
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true; // Disable all buttons after selection
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct"); // Highlight correct answer
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect"); // Highlight user's incorrect choice
+            }
+            btn.classList.remove("selected"); // Remove selected class from all
+        });
+
+        // Display explanation after selection
+        const explanationBox = document.getElementById('explanationBox');
+        if (q.explanation) {
+            explanationBox.innerHTML = `<strong>Explanation (स्पष्टीकरण):</strong> ${q.explanation}`;
+            explanationBox.style.display = 'block';
+        }
+
+        updateQuestionTracker();
+        // Automatically move to next question if all questions are answered or if it's not the last question and timer is running
+        // Removed auto-next for better user control after seeing explanation
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return; // Cannot skip if time's up or already answered
+
+        selectedAnswers[currentQuestion] = null; // Explicitly mark as null for skipped
+        questionAnsweredStatus[currentQuestion] = false; // Keep as false for skipped/unanswered
+        updateQuestionTracker();
+        nextQuestion(); // Move to the next question
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) { // If answered (true)
+                indicator.classList.add("answered");
+                indicator.classList.remove("skipped"); // Ensure skipped is removed if answered later
+            } else if (selectedAnswers[index] === null) { // If explicitly skipped or not yet attempted
+                indicator.classList.add("skipped");
+                indicator.classList.remove("answered");
+            } else { // If an option was selected but not submitted (shouldn't happen with current selectOption logic)
+                indicator.classList.remove("answered");
+                indicator.classList.remove("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            } else {
+                indicator.classList.remove("active");
+            }
+
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : (selectedAnswers[index] === null ? 'skipped' : 'not answered')}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").style.display = 'none'; // Hide skip button
+        document.getElementById("submitBtn").disabled = true; // Disable submit after clicking
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+        let skippedCount = 0;
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else if (selectedAnswers[i] === null) {
+                skippedCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        const totalQuestions = quizData.length;
+        const score = (correctCount / totalQuestions) * 100;
+
+        let resultText = `Quiz Ended! You scored ${correctCount} out of ${totalQuestions} (${score.toFixed(2)}%).`;
+        if (skippedCount > 0) {
+            resultText += ` You skipped ${skippedCount} question(s).`;
+        }
+        document.getElementById("result").innerText = resultText;
+        document.getElementById("result").style.color = score >= 50 ? "#2f9e44" : "#f03e3e"; // Green for pass, red for fail
+
+        // Optionally, display incorrect answers details
+        if (incorrectQuestions.length > 0) {
+            let incorrectDetails = "<br><br><strong>Incorrect Answers (गलत उत्तर):</strong><br>";
+            incorrectQuestions.forEach((item, index) => {
+                incorrectDetails += `${index + 1}. Q: ${item.question}<br> Your Answer: ${item.yourAnswer}<br> Correct Answer: ${item.correctAnswer}<br><br>`;
+            });
+            // You might want to display this in a separate modal or expanded section
+            // For now, let's just log it to console or append to result if space allows
+            console.log(incorrectDetails);
+            // document.getElementById("result").innerHTML += incorrectDetails; // Uncomment to show on page
+        }
+    }
+</script>
+</body>
+</html>

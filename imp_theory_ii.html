@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            <label>
+                <input type="radio" name="numQuestions" value="1-25" checked> Questions 1-25
+            </label>
+            <label id="set26_50_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-50" id="set26_50_radio"> Questions 26-50
+            </label>
+            <label id="set26_X_label" style="display:none;">
+                <input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-X (Remaining)
+            </label>
+            <label id="allQuestionsLabel" style="display:none;">
+                <input type="radio" name="numQuestions" value="all" id="allQuestionsRadio"> Full Test (All Questions)
+            </label>
+        </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+     {
+    "question": "The datatype best suited to store currency values ________ | मुद्रा मल्ूयों को संग्रहीत करने के लिए डेटाटाइप सबसे उपयुक्त है",
+    "options": [
+      "INT",
+      "DECIMAL | डेसीमि",
+      "DOUBLE | डबल",
+      "FLOAT | फ्लोट"
+    ],
+    "answer": "DECIMAL | डेसीमि"
+  },
+  {
+    "question": "Which clause is used to specify a condition while retrieving data in MySQL? | MySQL में डेटा प्राप्त करते समय शतत को ननर्दतष्ट करने के लिए कौन सी क्िॉज़ उपयोग की जाती है?",
+    "options": [
+      "WHERE",
+      "FROM",
+      "HAVING",
+      "GROUP BY"
+    ],
+    "answer": "WHERE"
+  },
+  {
+    "question": "Which MySQL command is used to delete a database? | कौन सा MySQL कमांड एक डेटाबेस को हटाने के लिए उपयोग ककया जाता है?",
+    "options": [
+      "REMOVE DATABASE",
+      "DROP DATABASE",
+      "DELETE DATABASE",
+      "ERASE DATABASE"
+    ],
+    "answer": "DROP DATABASE"
+  },
+  {
+    "question": "Which MySQL command is used to create a new user? | कौन सा MySQL कमांड एक नया यूजर बनानेके लिए उपयोग ककया जाता है?",
+    "options": [
+      "CREATE USER",
+      "INSERT USER",
+      "ADD USER",
+      "NEW USER"
+    ],
+    "answer": "CREATE USER"
+  },
+  {
+    "question": "Which command is used to change the name of a table in MySQL? | MySQL में टेबि का नाम बदिने के लिए ककस कमांड का उपयोग ककया जाता है?",
+    "options": [
+      "CHANGE",
+      "RENAME",
+      "MODIFY",
+      "UPDATE"
+    ],
+    "answer": "RENAME"
+  },
+  {
+    "question": "In MySQL, which function is used to convert a string to uppercase? | MySQL में, कौन सा फं क्शन एक स्ट्रंग को अपरके स में बदिने के लिए उपयोग ककया जाता है?",
+    "options": [
+      "UPPER()",
+      "UPPERCASE()",
+      "UCASE()",
+      "CONVERT()"
+    ],
+    "answer": "UPPER()"
+  },
+  {
+    "question": "Which operation is allowed in a join view? | ज्वाइन व्यूमेंकौन सा ऑपरेशन अिाउड है?",
+    "options": [
+      "UPDATE",
+      "INSERT",
+      "DELETE",
+      "All of these | उपरोक्त सभी"
+    ],
+    "answer": "All of these | उपरोक्त सभी"
+  },
+  {
+    "question": "Which one of the following databases has PHP supported almost since the beginning? | ननम्नलिखित में से कौन सा डेटाबेस शुरू से ही PHP द्वारा समर्थतत है?",
+    "options": [
+      "Oracle Database | ओरेकल डाटाबेस",
+      "SQL",
+      "MySQL",
+      "SQL+"
+    ],
+    "answer": "MySQL"
+  },
+  {
+    "question": "In which state one gathers and list all the necessary fields for the database design project? | डेटाबेस डडजाईन प्रोजेक्ट के लिए ककस स्ट्थनत मेंकोई सभी आवश्यक तथ्यों को इकट्ठा और सूचीबद्ध करता है?",
+    "options": [
+      "Data Definition | डेटा पररभाषा",
+      "Data Refinement | डेटा शोधन",
+      "Establishing Relationship | ररलेशनशशप स्थापपत करना",
+      "None of these | इनमें से कोई नह ीं"
+    ],
+    "answer": "Data Definition | डेटा पररभाषा"
+  },
+  {
+    "question": "Which keyword is used to create a new table in MySQL? | नया टेबि बनाने के लिए MySQL में कौन सा कीवडत उपयोग ककया जाता है?",
+    "options": [
+      "CREATE",
+      "INSERT",
+      "UPDATE",
+      "ALTER"
+    ],
+    "answer": "CREATE"
+  },
+  {
+    "question": "What is the function of the MySQL command ʺUPDATEʺ? | MySQL कमांड ʺUPDATEʺ का क्या कायत होता है?",
+    "options": [
+      "Adds new records to a table | ककसी टेबल में नए ररकॉडड जोड़ता है",
+      "Deletes records from a table | ककसी टेबल से ररकॉडड हटाता है",
+      "Modifies existing records in a table | ककसी टेबि मेंमौजूदा ररकॉडत को संशोर्धत करता है",
+      "Retrieves data from a table | ककसी टेबल से डेटा पुनर्प्ाडप्त करता है"
+    ],
+    "answer": "Modifies existing records in a table | ककसी टेबि मेंमौजूदा ररकॉडत को संशोर्धत करता है"
+  },
+  {
+    "question": "What is the purpose of the MySQL command ʺTRUNCATEʺ? | MySQL कमांड ʺTRUNCATEʺ का उद्देश्य क्या है?",
+    "options": [
+      "Adds new records to a table | ककसी टेबल में नए ररकॉडड जोड़ता है",
+      "Deletes all records from a table | ककसी टेबि से ररकॉडत हटाता है",
+      "Modifies existing records in a table | ककसी टेबल में मौजूदा ररकॉडड को सींशोधधत करता है",
+      "Retrieves data from a table | ककसी टेबल से डेटा पुनर्प्ाडप्त करता है"
+    ],
+    "answer": "Deletes all records from a table | ककसी टेबि से ररकॉडत हटाता है"
+  },
+  {
+    "question": "A transaction is delimited by statements (or function calls) of the form __________ | एक रांजैक्शन को __________ फॉमत के ्टेटमेंट (या फं क्शन कॉि) द्वारा सीमांककत ककया जाता है",
+    "options": [
+      "Begin transaction and end transaction/ | बबर्गन रांजैक्शन और एंड रांजैक्शन",
+      "Start transaction and stop transaction | स्टाटड ट्ाींजैक्शन और स्टॉप ट्ाींजैक्शन",
+      "Get transaction and post transaction | गेट ट्ाींजैक्शन और पोस्ट ट्ाींजैक्शन",
+      "Read transaction and write transaction | र ड ट्ाींजैक्शन और राईट ट्ाींजैक्शन"
+    ],
+    "answer": "Begin transaction and end transaction/ | बबर्गन रांजैक्शन और एंड रांजैक्शन"
+  },
+  {
+    "question": "What is the purpose of the MySQL command ʺDESCʺ? | MySQL कमांड ʺDESCʺ का उद्देश्य क्या है?",
+    "options": [
+      "Displays the structure of a table | एक टेबि की संरचना को प्रदलशतत करता है",
+      "Deletes a table from the database | डेटाबेस से एक टेबल को हटाता है",
+      "Modifies existing records in a table | एक टेबल में मौजूदा ररकॉडड को सशीं ोधधत करता है",
+      "Retrieves data from a table | एक टेबल से डेटा पनु ः र्प्ाप्त करता है"
+    ],
+    "answer": "Displays the structure of a table | एक टेबि की संरचना को प्रदलशतत करता है"
+  },
+  {
+    "question": "Which of the following is not considered as an error in JavaScript? | ननम्नलिखित में से ककसे जावास्ट्िप्ट में त्रुर्ट नहीं माना जाता है?",
+    "options": [
+      "Syntax error | शसींटेक्स एरर",
+      "Missing semicolons | सेमीकोलन का नह ीं होना",
+      "Division by zero | शून्य से भाग",
+      "All of these | उपरोक्त सभी"
+    ],
+    "answer": "Division by zero | शून्य से भाग"
+  },
+  {
+    "question": "Which is not a built in aggregate function in SQL? | SQL में एग्रीगेट फं क्शन में क्या नहीं बनाते हैं ?",
+    "options": [
+      "avg",
+      "max",
+      "total",
+      "count"
+    ],
+    "answer": "total"
+  },
+  {
+    "question": "Which statement is used to insert new records into a MySQL table? | MySQL टेबि में नए ररकॉडत डािने के लिए कौन सा ्टेटमेंट उपयोग ककया जाता है?",
+    "options": [
+      "CREATE",
+      "INSERT",
+      "SELECT",
+      "DELETE"
+    ],
+    "answer": "INSERT"
+  },
+  {
+    "question": "Which command is used to delete records from a MySQL table? | MySQL टेबि से ररकॉडत हटाने के लिए ककस कमांड का उपयोग ककया जाता है?",
+    "options": [
+      "DELETE",
+      "DROP",
+      "REMOVE",
+      "TRUNCATE"
+    ],
+    "answer": "DELETE"
+  },
+  {
+    "question": "Stored procedure is a procedure where set of one or more SQL statements are ________ | ्टोडत प्रोसीजर एक ऐसी प्रकिया है स्टजसमें एक या अर्धक SQL ्टेटमेंट्स का सेट होता है: -",
+    "options": [
+      "interpreted | इींटरपर्प्टेड",
+      "compiled | कम्पाईल्ड",
+      "pre compiled | प्री - कम्पाईल्ड",
+      "none of these | इनमें से कोई नह ीं"
+    ],
+    "answer": "pre compiled | प्री - कम्पाईल्ड"
+  },
+  {
+    "question": "Which MySQL clause is used to sort the result set in ascending or descending order? | कौन सा MySQL क्िॉज पररणाम सेट को आरोही या अवरोही िम में सॉटत करने के लिए उपयोग ककया जाता है?",
+    "options": [
+      "ORDER BY",
+      "GROUP BY",
+      "HAVING",
+      "LIMIT"
+    ],
+    "answer": "ORDER BY"
+  },
+  {
+    "question": "Which MySQL function is used to find the highest value in a column? | कौन सा MySQL फं क्शन एक कॉिम में सबसे उच्चतम मान को िोजने के लिए उपयोग ककया जाता है?",
+    "options": [
+      "COUNT()",
+      "SUM()",
+      "AVG()",
+      "MAX()"
+    ],
+    "answer": "MAX()"
+  },
+  {
+    "question": "Which MySQL function is used to find the length of a string? | कौन सा MySQL फं क्शन एक स्ट्रंग की िंबाई िोजने के लिए उपयोग ककया जाता है?",
+    "options": [
+      "LENGTH()",
+      "CHAR_LENGTH()",
+      "LEN()",
+      "SIZE()"
+    ],
+    "answer": "CHAR_LENGTH()"
+  },
+  {
+    "question": "Which MySQL function is used to find the minimum value in a column? | कौन सा MySQL फं क्शन एक कॉिम मेंन्यूनतम मान िोजनेके लिए उपयोग ककया जाता है?",
+    "options": [
+      "COUNT()",
+      "SUM()",
+      "MIN()",
+      "AVG()"
+    ],
+    "answer": "MIN()"
+  },
+  {
+    "question": "Which MySQL data type would you use for storing a date? | तारीि को ्टोर करने के लिए आप MySQL में कौन से डेटा प्रकार का उपयोग करेंगे?",
+    "options": [
+      "DATE",
+      "VARCHAR",
+      "INT",
+      "BOOLEAN"
+    ],
+    "answer": "DATE"
+  },
+  {
+    "question": "Point out the wrong statement ________ | गित कथन को इंर्गत करें:",
+    "options": [
+      "Stored procedure can accepts input and output parameters | स्टोडड र्प्ोसीजर इनपुट और आउटपुट परैामीटर स्वीकार कर सकती है",
+      "Stored procedure can returns multiple values using input parameters | ्टोडत प्रोसीजर इनपुट मापदंडों का उपयोग करके कई मान िौटा सकती है",
+      "Using stored procedure, we can Select,Insert,Update,Delete data in database/ | स्टोडड र्प्ोसीजर का र्प्योग करके, हम डेटाबेस में डाटा को सेलेक्ट,इन्सटड,अपडेट,डडल ट कर सकते हैं",
+      "None of these | इनमें से कोई नह ीं"
+    ],
+    "answer": "Stored procedure can returns multiple values using input parameters | ्टोडत प्रोसीजर इनपुट मापदंडों का उपयोग करके कई मान िौटा सकती है"
+  }
+  ];
+
+let quizData = [];
+    let currentQuestion = 0;
+    let selectedAnswers = [];
+    let questionAnsweredStatus = [];
+    let totalTime = 50 * 60; // 50 minutes in seconds
+    let timerInterval;
+
+    function startTimer() {
+        updateTimer();
+        timerInterval = setInterval(() => {
+            totalTime--;
+            updateTimer();
+            if (totalTime <= 0) {
+                clearInterval(timerInterval);
+                endQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const minutes = Math.floor(totalTime / 60);
+        const seconds = totalTime % 60;
+        document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const selectedSet = document.querySelector('input[name="numQuestions"]:checked').value;
+        let startIndex = 0;
+        let endIndex = fullQuizData.length;
+
+        if (selectedSet === "1-25") {
+            startIndex = 0;
+            endIndex = Math.min(25, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-50") {
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = Math.min(50, fullQuizData.length);
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "26-X") { // This now means "26 to remaining"
+            startIndex = 25; // Index 25 is the 26th question
+            endIndex = fullQuizData.length; // Go to the end of available questions
+            quizData = fullQuizData.slice(startIndex, endIndex); // No shuffling for this set
+        } else if (selectedSet === "all") {
+            quizData = shuffleArray([...fullQuizData]); // Shuffle all questions
+        } else {
+            // Default case if no selection (e.g., auto-start for <= 25 questions)
+            quizData = [...fullQuizData]; // Use all available questions without shuffling
+        }
+
+
+        // Initialize arrays based on the selected number of questions
+        selectedAnswers = new Array(quizData.length).fill(null);
+        questionAnsweredStatus = new Array(quizData.length).fill(false);
+        currentQuestion = 0; // Reset to the first question for the chosen set
+
+        // Hide quantity selection and show quiz
+        document.getElementById('quantitySelection').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        document.getElementById('timer').style.display = 'block';
+
+        loadQuestion();
+        startTimer();
+    }
+
+    function loadQuestion() {
+        if (quizData.length === 0) {
+            document.getElementById('question').innerText = "No questions available for this set.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            updateQuestionTracker();
+            return;
+        }
+
+        const q = quizData[currentQuestion];
+        let questionText = q.question;
+        // Remove "Question XX: " or "Question XX:" prefix
+        questionText = questionText.replace(/^Question \d+:\s*/, '');
+        document.getElementById('question').innerText = `${currentQuestion + 1}. ${questionText}`;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+
+        const isCurrentQuestionAnswered = questionAnsweredStatus[currentQuestion];
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = option;
+            btn.setAttribute("role", "listitem");
+            btn.onclick = () => selectOption(option, btn);
+
+            if (isCurrentQuestionAnswered) {
+                btn.disabled = true;
+                if (option === q.answer) {
+                    btn.classList.add("correct");
+                } else if (option === selectedAnswers[currentQuestion]) {
+                    btn.classList.add("incorrect");
+                }
+            } else {
+                if (selectedAnswers[currentQuestion] === option) {
+                    btn.classList.add("selected");
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+        document.getElementById('nextBtn').disabled = currentQuestion === quizData.length - 1 || totalTime <= 0;
+        document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+        document.getElementById('skipBtn').disabled = totalTime <= 0;
+        document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+        updateQuestionTracker();
+    }
+
+    function selectOption(option, clickedButton) {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = option;
+        questionAnsweredStatus[currentQuestion] = true;
+
+        const q = quizData[currentQuestion];
+        const isCorrect = (option === q.answer);
+
+        const optionButtons = document.querySelectorAll('#options .option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText === q.answer) {
+                btn.classList.add("correct");
+            } else if (btn === clickedButton && !isCorrect) {
+                btn.classList.add("incorrect");
+            }
+            btn.classList.remove("selected");
+        });
+
+        updateQuestionTracker();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < quizData.length - 1) {
+            currentQuestion++;
+            loadQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function skipQuestion() {
+        if (totalTime <= 0 || questionAnsweredStatus[currentQuestion]) return;
+
+        selectedAnswers[currentQuestion] = null;
+        questionAnsweredStatus[currentQuestion] = false;
+        updateQuestionTracker();
+        nextQuestion();
+    }
+
+    function updateQuestionTracker() {
+        const tracker = document.getElementById("questionTracker");
+        tracker.innerHTML = "";
+        quizData.forEach((_, index) => {
+            const indicator = document.createElement("div");
+            indicator.classList.add("question-indicator");
+
+            if (questionAnsweredStatus[index]) {
+                indicator.classList.add("answered");
+            } else if (selectedAnswers[index] === null) {
+                indicator.classList.remove("answered");
+                indicator.classList.add("skipped");
+            }
+
+            if (index === currentQuestion) {
+                indicator.classList.add("active");
+            }
+            indicator.innerText = index + 1;
+            indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${questionAnsweredStatus[index] ? 'answered' : 'not answered'}`);
+            indicator.onclick = () => {
+                if (totalTime <= 0) return;
+                currentQuestion = index;
+                loadQuestion();
+            };
+            tracker.appendChild(indicator);
+        });
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+        document.getElementById("prevBtn").disabled = true;
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("skipBtn").disabled = true;
+        document.getElementById("submitBtn").disabled = true;
+
+        let correctCount = 0;
+        let incorrectQuestions = [];
+
+        quizData.forEach((q, i) => {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i] || "(No answer selected)",
+                    correctAnswer: q.answer
+                });
+            }
+        });
+
+        sessionStorage.setItem('quizScore', correctCount);
+        sessionStorage.setItem('quizTotal', quizData.length);
+        sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+        window.location.href = "results.html";
+    }
+
+    document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+    window.onload = function() {
+        const quantitySelectionDiv = document.getElementById('quantitySelection');
+        const quizDiv = document.getElementById('quiz');
+        const radioOptionsDiv = document.getElementById('radioOptions'); // New: Div to hold radio buttons
+        const set26_50_label = document.getElementById('set26_50_label'); // For 26-50
+        const set26_X_label = document.getElementById('set26_X_label');   // For 26-Remaining
+        const allQuestionsLabel = document.getElementById('allQuestionsLabel');
+
+        const totalAvailableQuestions = fullQuizData.length;
+
+        if (totalAvailableQuestions <= 25 && totalAvailableQuestions > 0) {
+            // Scenario 1: Total questions are 25 or less (but more than 0)
+            quantitySelectionDiv.style.display = 'none'; // Hide the selection
+            quizDiv.style.display = 'block'; // Show the quiz directly
+            document.getElementById('timer').style.display = 'block';
+
+            quizData = [...fullQuizData]; // Use all available questions
+            selectedAnswers = new Array(quizData.length).fill(null);
+            questionAnsweredStatus = new Array(quizData.length).fill(false);
+            loadQuestion();
+            startTimer();
+
+        } else if (totalAvailableQuestions > 25) {
+            // Scenario 2: Total questions are more than 25
+            quantitySelectionDiv.style.display = 'block'; // Show the selection
+            quizDiv.style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+
+            // Show and set up "Questions 1-25" (already in HTML, just ensure checked)
+            document.querySelector('input[name="numQuestions"][value="1-25"]').checked = true;
+
+            // Handle "Questions 26-50"
+            if (totalAvailableQuestions >= 50) {
+                set26_50_label.style.display = 'inline-block';
+                document.getElementById('set26_50_radio').disabled = false;
+            } else {
+                set26_50_label.style.display = 'none';
+            }
+
+            // Handle "Questions 26-X (Remaining)" - always available if > 25
+            set26_X_label.style.display = 'inline-block';
+            const set26_X_radio = document.getElementById('set26_X_radio');
+            set26_X_radio.value = `26-${totalAvailableQuestions}`; // Update value
+            set26_X_label.innerHTML = `<input type="radio" name="numQuestions" value="26-X" id="set26_X_radio"> Questions 26-${totalAvailableQuestions} (Remaining)`;
+            document.getElementById('set26_X_radio').disabled = false;
+
+
+            // Show "Full Test (All Questions)" option
+            allQuestionsLabel.style.display = 'block';
+            document.getElementById('allQuestionsRadio').disabled = false;
+
+        } else {
+            // Scenario 3: No questions at all
+            quantitySelectionDiv.style.display = 'none';
+            quizDiv.style.display = 'block';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('question').innerText = "No questions available in the quiz data.";
+            document.getElementById('options').innerHTML = "";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('skipBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    };
+</script>
+</body>
+</html>

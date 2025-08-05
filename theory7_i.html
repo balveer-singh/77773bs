@@ -1,0 +1,2530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+        margin: 0; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 30px 40px;
+        box-sizing: border-box;
+        margin-top: 30px;
+    }
+    .timer {
+        font-size: 18px;
+        color: #444;
+        text-align: right;
+        margin-bottom: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        user-select: none;
+    }
+    .question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 20px;
+        min-height: 80px;
+        line-height: 1.3;
+    }
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .option-btn {
+        background-color: #f5f7fa;
+        border: 2px solid #d1d9e6;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        user-select: none;
+    }
+    .option-btn:hover:not(:disabled) {
+        background-color: #e0e7ff;
+        border-color: #5964ff;
+        color: #2a2e8f;
+    }
+    .option-btn.selected {
+        background-color: #5964ff;
+        border-color: #364fc7;
+        color: white;
+        font-weight: 600;
+    }
+    .option-btn:disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+    /* New styles for feedback */
+    .option-btn.correct {
+        background-color: #e6ffed; /* Light green */
+        border-color: #2f9e44; /* Green */
+        color: #2f9e44;
+        font-weight: 600;
+    }
+    .option-btn.incorrect {
+        background-color: #ffe3e3; /* Light red */
+        border-color: #f03e3e; /* Red */
+        color: #c92a2a;
+        font-weight: 600;
+    }
+    .navigation {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .navigation button {
+        flex: 1;
+        padding: 14px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #5964ff;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(89,100,255,0.5);
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+    .navigation button:hover:not(:disabled) {
+        background-color: #2a2e8f;
+        box-shadow: 0 6px 18px rgba(42,46,143,0.7);
+    }
+    .navigation button:disabled {
+        background-color: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .result {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #364fc7;
+        margin-top: 20px;
+        text-align: center;
+        user-select: none;
+    }
+    .question-tracker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+    .question-indicator {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: white;
+        color: black;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-indicator.answered {
+        background-color: green;
+        color: white;
+        border: 2px solid darkgreen;
+    }
+    .question-indicator.skipped {
+        background-color: #f7c948;
+        color: black;
+        border: 2px solid #f7c948;
+    }
+    .question-indicator.active {
+        border: 3px solid blue;
+    }
+    /* Styles for the question quantity selection */
+    .question-quantity-selection {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .question-quantity-selection h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    .question-quantity-selection label {
+        margin: 0 15px;
+        font-size: 1.1rem;
+        color: #555;
+        cursor: pointer;
+        display: inline-block; /* To allow spacing */
+        margin-bottom: 10px; /* Space out rows if they wrap */
+    }
+    .start-quiz-btn {
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        background-color: #28a745; /* Green color */
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(40,167,69,0.5);
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
+    .start-quiz-btn:hover {
+        background-color: #218838;
+        box-shadow: 0 6px 18px rgba(33,136,56,0.7);
+    }
+    .start-quiz-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+
+    @media (max-width: 480px) {
+        .quiz-container {
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 1.25rem;
+            min-height: 60px;
+        }
+        .option-btn {
+            font-size: 1rem;
+            padding: 10px 16px;
+        }
+        .navigation button {
+            font-size: 1rem;
+            padding: 12px 0;
+        }
+        .timer {
+            font-size: 16px;
+        }
+        .question-quantity-selection {
+            padding: 15px;
+        }
+        .question-quantity-selection h3 {
+            font-size: 1.1rem;
+        }
+        .question-quantity-selection label {
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .start-quiz-btn {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-container" role="main" aria-label="Quiz container">
+    <div class="timer" id="timer" aria-live="polite" style="display:none;">Time Remaining: 50:00</div>
+    <div class="question-tracker" id="questionTracker"></div>
+
+    <div id="quantitySelection" class="question-quantity-selection">
+        <h3>Choose your question set for the test:</h3>
+        <div id="radioOptions">
+            </div>
+        <button class="start-quiz-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quiz" style="display:none;">
+        <div class="question" id="question" aria-live="polite">Question text will appear here</div>
+        <div class="options" id="options" role="list"></div>
+        <div class="navigation" role="navigation" aria-label="Quiz navigation">
+            <button id="prevBtn" onclick="prevQuestion()" aria-label="Previous Question">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()" aria-label="Next Question">Next</button>
+            <button id="skipBtn" aria-label="Skip Question">Skip</button>
+            <button id="submitBtn" onclick="endQuiz()" style="display:none;" aria-label="Submit Quiz">Submit</button>
+        </div>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    const fullQuizData = [
+  {
+    question: `Who is the creator of Python programming language?\n
+    Python programming language का creator कौन है?`,
+    options: ["Dennis Ritchie", "James Gosling", "Guido van Rossum", "Bjarne Stroustrup"],
+    answer: "Guido van Rossum"
+  },
+  {
+    question: `In which year was Python first released?\n
+    Python पहली बार किस साल release हुआ था?`,
+    options: ["1989", "1991", "1995", "2000"],
+    answer: "1991"
+  },
+  {
+    question: `Python is a ______ programming language.\n
+    Python किस प्रकार की programming language है?`,
+    options: ["low-level", "high-level", "machine-level", "none of the above"],
+    answer: "high-level"
+  },
+  {
+    question: `Where did Guido van Rossum begin the work on Python?\n
+    Guido van Rossum ने Python पर काम कहाँ शुरू किया था?`,
+    options: ["MIT", "Google", "Centrum Wiskunde & Informatica (CWI), Netherlands", "Microsoft"],
+    answer: "Centrum Wiskunde & Informatica (CWI), Netherlands"
+  },
+  {
+    question: `Python was influenced by which programming language?\n
+    Python किस programming language से प्रभावित था?`,
+    options: ["Java", "C++", "ABC", "Pascal"],
+    answer: "ABC"
+  },
+  {
+    question: `Python's name was inspired by which TV show?\n
+    Python का नाम किस TV show से प्रेरित है?`,
+    options: ["Mr. Bean", "The IT Crowd", "Monty Python's Flying Circus", "The Office"],
+    answer: "Monty Python's Flying Circus"
+  },
+  {
+    question: `What was one of the main goals of Python's design?\n
+    Python के design का मुख्य उद्देश्य क्या था?`,
+    options: ["Speed", "Code readability", "Compilation time", "Low-level hardware access"],
+    answer: "Code readability"
+  },
+  {
+    question: `Which of the following is NOT a use of Python?\n
+    निम्नलिखित में से Python का कौन सा उपयोग नहीं है?`,
+    options: ["Web development", "GUI applications", "Game development", "Operating System development"],
+    answer: "Operating System development"
+  },
+  {
+    question: `Guido van Rossum previously worked at which of the following companies?\n
+    Guido van Rossum पहले निम्नलिखित में से किस कंपनी में काम करते थे?`,
+    options: ["Facebook", "Amazon", "Google", "Apple"],
+    answer: "Google"
+  },
+  {
+    question: `Why did Guido van Rossum start working on Python?\n
+    Guido van Rossum ने Python पर काम क्यों शुरू किया?`,
+    options: ["For a research paper", "As a job requirement", "As a Christmas hobby project", "For a university thesis"],
+    answer: "As a Christmas hobby project"
+  },
+    {
+    question: `Which of the following is a feature of Python?\n
+    निम्नलिखित में से Python की कौन सी विशेषता है?`,
+    options: ["Easy to learn", "Object-oriented", "Interpreter-based", "All of the above"],
+    answer: "All of the above"
+  },
+  {
+    question: `What principle does Python's interactive mode follow?\n
+    Python का interactive mode कौन सा principle follow करता है?`,
+    options: ["FIFO", "LIFO", "REPL (Read-Evaluate-Print-Loop)", "Write-Compile-Execute"],
+    answer: "REPL (Read-Evaluate-Print-Loop)"
+  },
+  {
+    question: `Which Python library is commonly used for building GUI applications?\n
+    GUI applications बनाने के लिए कौन सी Python लाइब्रेरी सामान्यतः उपयोग होती है?`,
+    options: ["NumPy", "TKinter", "Pandas", "Matplotlib"],
+    answer: "TKinter"
+  },
+  {
+    question: `What does “cross-platform” mean in Python?\n
+    Python में "cross-platform" का क्या मतलब है?`,
+    options: [
+      "Python works only on Windows",
+      "Python doesn’t support Linux",
+      "Python can run on multiple OS platforms",
+      "Python supports only GUI programs"
+    ],
+    answer: "Python can run on multiple OS platforms"
+  },
+  {
+    question: `Which of the following is a valid Python implementation?\n
+    निम्नलिखित में से कौन सा Python का valid implementation है?`,
+    options: ["Jython", "CPython", "IPython", "All of the above"],
+    answer: "All of the above"
+  },
+  {
+    question: `Which website provides the official Python installer?\n
+    आधिकारिक Python installer कौन सी वेबसाइट प्रदान करती है?`,
+    options: ["www.python.com", "www.pythoncode.org", "www.python.org", "www.installpython.com"],
+    answer: "www.python.org"
+  },
+  {
+    question: `To automatically set up path during installation, what must you do?\n
+    Installation के दौरान path automatic setup करने के लिए क्या करना चाहिए?`,
+    options: [
+      "Install manually",
+      `Click "Add Python X.X to PATH"`,
+      "Open CMD",
+      "Download from GitHub"
+    ],
+    answer: `Click "Add Python X.X to PATH"`
+  },
+  {
+    question: `Python files are saved with which extension?\n
+    Python files किस extension के साथ save होते हैं?`,
+    options: [".pt", ".python", ".py", ".pyt"],
+    answer: ".py"
+  },
+  {
+    question: `How many modes does Python support for writing code?\n
+    Python code लिखने के लिए कितने modes support करता है?`,
+    options: ["1", "2", "3", "4"],
+    answer: "2"
+  },
+  {
+    question: `Which symbol is used for single-line comments in Python?\n
+    Python में single-line comments के लिए कौन सा symbol उपयोग होता है?`,
+    options: ["//", "/* */", "#", "<!-- -->"],
+    answer: "#"
+  },
+  {
+    question: `What is a valid way to write multi-line comments in Python?\n
+    Python में multi-line comments लिखने का valid तरीका क्या है?`,
+    options: [
+      "Use triple quotes ''' '''",
+      'Use triple quotes """ """',
+      "Use multiple # symbols",
+      "All of the above"
+    ],
+    answer: "All of the above"
+  },
+  {
+    question: `Which of the following is a valid variable name in Python?\n
+    Python में निम्नलिखित में से कौन सा variable name valid है?`,
+    options: ["1name", "student-name", "student_name", "student@name"],
+    answer: "student_name"
+  },
+  {
+    question: `What is the assignment operator in Python?\n
+    Python में assignment operator कौन सा है?`,
+    options: [":=", "==", "=>", "="],
+    answer: "="
+  },
+  {
+    question: `Which naming convention is commonly used in Python?\n
+    Python में सबसे अधिक उपयोग की जाने वाली naming convention कौन सी है?`,
+    options: ["PascalCase", "camelCase", "lowercase_with_underscores", "ALL_CAPS"],
+    answer: "lowercase_with_underscores"
+  },
+  {
+    question: `Which of these keywords cannot be used as variable names?\n
+    इनमें से कौन सा keyword variable name के रूप में उपयोग नहीं किया जा सकता?`,
+    options: ["none", "print", "True", "false"],
+    answer: "True"
+  },
+   {
+    question: `What is the purpose of using print() while working with variables?\n
+    Variables के साथ काम करते समय print() का उद्देश्य क्या है?`,
+    options: [
+      "To modify variable",
+      "To assign new value",
+      "To debug and trace variable values",
+      "To delete variable"
+    ],
+    answer: "To debug and trace variable values"
+  },
+  {
+    question: `Which of the following is a mutable data type in Python?\n
+    Python में निम्नलिखित में से कौन सा डेटा टाइप mutable है?`,
+    options: ["Tuple", "List", "String", "Integer"],
+    answer: "List"
+  },
+  {
+    question: `What will be the output of: type(3.14) in Python?\n
+    Python में type(3.14) का output क्या होगा?`,
+    options: ["int", "float", "double", "decimal"],
+    answer: "float"
+  },
+  {
+    question: `Which of the following is an immutable type in Python?\n
+    Python में निम्नलिखित में से कौन सा immutable type है?`,
+    options: ["List", "Set", "Dictionary", "String"],
+    answer: "String"
+  },
+  {
+    question: `How do you define a dictionary in Python?\n
+    Python में dictionary कैसे define करते हैं?`,
+    options: [
+      "Using square brackets []",
+      "Using parenthesis ()",
+      "Using curly braces {} with key:value pairs",
+      "Using angle brackets <>"
+    ],
+    answer: "Using curly braces {} with key:value pairs"
+  },
+  {
+    question: `Which data type can hold a sequence of characters in Python?\n
+    Python में कौन सा डेटा टाइप characters का sequence रख सकता है?`,
+    options: ["Tuple", "List", "String", "Integer"],
+    answer: "String"
+  },
+  {
+    question: `What does the None keyword represent in Python?\n
+    Python में None keyword किसका प्रतिनिधित्व करता है?`,
+    options: ["Zero", "Empty string", "Null object", "Boolean False"],
+    answer: "Null object"
+  },
+  {
+    question: `Which of the following is not a valid Python Boolean value?\n
+    Python में निम्नलिखित में से कौन सा Boolean value valid नहीं है?`,
+    options: ["True", "False", "true", "Both A and B"],
+    answer: "true"
+  },
+  {
+    question: `What is the result of: type({1, 2, 3}) in Python?\n
+    Python में type({1, 2, 3}) का परिणाम क्या होगा?`,
+    options: ["dict", "list", "set", "tuple"],
+    answer: "set"
+  },
+  {
+    question: `What is the difference between set and frozenset in Python?\n
+    Python में set और frozenset में क्या अंतर है?`,
+    options: [
+      "set is ordered, frozenset is unordered",
+      "set is immutable, frozenset is mutable",
+      "set is mutable, frozenset is immutable",
+      "Both are the same"
+    ],
+    answer: "set is mutable, frozenset is immutable"
+  },
+  {
+    question: `Which of the following Python types allows duplicate values?\n
+    Python में निम्नलिखित में से कौन सा डेटा टाइप duplicate values allow करता है?`,
+    options: ["set", "frozenset", "list", "All of the above"],
+    answer: "list"
+  },
+  {
+    question: `What will be the result of: x = str(5)?\n
+    x = str(5) का परिणाम क्या होगा?`,
+    options: [
+      "x becomes integer 5",
+      "x becomes float 5.0",
+      "x becomes string '5'",
+      "Syntax error"
+    ],
+    answer: "x becomes string '5'"
+  },
+  {
+    question: `What is the output of the following code?\nprint(type("Hello"))\n
+    निम्नलिखित कोड का आउटपुट क्या होगा?\nprint(type("Hello"))`,
+    options: [
+      "<class 'char'>",
+      "<class 'character'>",
+      "<class 'string'>",
+      "<class 'str'>"
+    ],
+    answer: "<class 'str'>"
+  },
+  {
+    question: `Which of the following can be used to create a string in Python?\n
+    Python में string बनाने के लिए निम्नलिखित में से कौन सा उपयोग किया जा सकता है?`,
+    options: [
+      "Single quotes ' '",
+      "Double quotes \" \"",
+      "Triple quotes \"\"\" \"\"\"",
+      "All of the above"
+    ],
+    answer: "All of the above"
+  },
+  {
+    question: `What will be the output of: print(bool(""))?\n
+    print(bool(\"\")) का output क्या होगा?`,
+    options: ["True", "False", "Error", "None"],
+    answer: "False"
+  },
+  {
+    question: `What will the following statement return: bool("Python")?\n
+    निम्नलिखित statement का परिणाम क्या होगा: bool(\"Python\")?`,
+    options: ["False", "Error", "True", "None"],
+    answer: "True"
+  },
+  {
+    question: `What is the correct way to cast an integer 7 to a float in Python?\n
+    Python में integer 7 को float में cast करने का सही तरीका क्या है?`,
+    options: ["float = 7", "float(7.0)", "float(7)", "cast.float(7)"],
+    answer: "float(7)"
+  },
+  {
+    question: `What is the output of:\na = 10\nb = 20\nprint(a > b)\n
+    निम्नलिखित कोड का आउटपुट क्या होगा?\na = 10\nb = 20\nprint(a > b)`,
+    options: ["True", "False", "10", "20"],
+    answer: "False"
+  },
+  {
+    question: `Which of the following is a correct Boolean literal in Python?\n
+    Python में निम्नलिखित में से सही Boolean literal कौन सा है?`,
+    options: ["true", "FALSE", "True", "\"False\""],
+    answer: "True"
+  },
+  {
+    question: `What will be printed by this code?\na = 5\nb = \"5\"\nprint(type(a))\nprint(type(b))\n
+    इस कोड का आउटपुट क्या होगा?\na = 5\nb = \"5\"\nprint(type(a))\nprint(type(b))`,
+    options: ["int and float", "str and str", "int and str", "str and int"],
+    answer: "int and str"
+  },
+  {
+    question: `What will be the result of the expression: bool(0)?\n
+    bool(0) expression का परिणाम क्या होगा?`,
+    options: ["True", "False", "None", "Error"],
+    answer: "False"
+  },
+  {
+    question: `What type of operator is used in this expression: result = 10 + 5?\n
+    इस expression में कौन सा operator उपयोग किया गया है: result = 10 + 5?`,
+    options: [
+      "Logical Operator",
+      "Assignment Operator",
+      "Arithmetic Operator",
+      "Comparison Operator"
+    ],
+    answer: "Arithmetic Operator"
+  },
+  {
+    question: `Which of the following is a logical operator in Python?\n
+    Python में निम्नलिखित में से कौन सा logical operator है?`,
+    options: ["&", "or", "==", "+="],
+    answer: "or"
+  },
+  {
+    question: `What will be the result of:\na = 5\nb = 3\nprint(a > b and b < 2)\n
+    निम्नलिखित का परिणाम क्या होगा?\na = 5\nb = 3\nprint(a > b and b < 2)`,
+    options: ["True", "False", "Error", "None"],
+    answer: "False"
+  },
+  {
+    question: `Which of the following is an identity operator in Python?\n
+    Python में निम्नलिखित में से कौन सा identity operator है?`,
+    options: ["in", "==", "is", "or"],
+    answer: "is"
+  },
+  {
+    question: `What does this statement check: x is not y?\n
+    यह statement क्या चेक करता है: x is not y?`,
+    options: [
+      "Values are different",
+      "Data types are different",
+      "Memory locations are different",
+      "None of the above"
+    ],
+    answer: "Memory locations are different"
+  },
+   {
+    question: `What will be the output of the following code?\nx = 7\ny = 7\nprint(x is y)\n
+    निम्नलिखित कोड का आउटपुट क्या होगा?\nx = 7\ny = 7\nprint(x is y)`,
+    options: ["False", "True", "Error", "7"],
+    answer: "True"
+  },
+  {
+    question: `Which operator will you use to check if a value is part of a sequence?\n
+    किसी sequence में मान मौजूद है या नहीं, यह जांचने के लिए आप कौन सा operator उपयोग करेंगे?`,
+    options: ["is", "not", "==", "in"],
+    answer: "in"
+  },
+  {
+    question: `What is the output of this code?\nvar = "TotalSach"\nprint("s" in var)\n
+    इस कोड का आउटपुट क्या होगा?\nvar = "TotalSach"\nprint("s" in var)`,
+    options: ["True", "False", "Error", "None"],
+    answer: "True"
+  },
+  {
+    question: `What will be the result of: 5 & 3?\n
+    5 & 3 expression का परिणाम क्या होगा?\n(Explanation: 5 is 101 and 3 is 011, so bitwise AND = 001 = 1)`,
+    options: ["15", "1", "2", "0"],
+    answer: "1"
+  },
+  {
+    question: `Which of the following is an assignment operator in Python?\n
+    Python में निम्नलिखित में से कौन सा assignment operator है?`,
+    options: ["==", ":=", "=", "==="],
+    answer: "="
+  },
+  {
+    question: `What is the purpose of conditional statements in Python?\n
+    Python में conditional statements का उद्देश्य क्या है?`,
+    options: [
+      "To define functions",
+      "To import modules",
+      "To control the flow of execution",
+      "To create loops"
+    ],
+    answer: "To control the flow of execution"
+  },
+  {
+    question: `What will be the output of the following code?\nx = 10\nif x < 5:\n    print("Less than 5")\nelse:\n    print("5 or more")\n
+    इस कोड का आउटपुट क्या होगा?\nx = 10\nif x < 5:\n    print("Less than 5")\nelse:\n    print("5 or more")`,
+    options: ["Less than 5", "5 or more", "Error", "None"],
+    answer: "5 or more"
+  },
+  {
+    question: `Which of the following is the correct syntax for an if statement in Python?\n
+    Python में if statement का सही syntax कौन सा है?`,
+    options: [
+      "if (x > 10) then:",
+      "if x > 10:",
+      "if x > 10 then",
+      "if x > 10 {}"
+    ],
+    answer: "if x > 10:"
+  },
+  {
+    question: `Which block will be executed in the following code?\ni = 20\nif i < 15:\n    print("i is smaller than 15")\nelse:\n    print("i is greater than 15")\n
+    निम्नलिखित कोड में कौन सा block execute होगा?\ni = 20\nif i < 15:\n    print("i is smaller than 15")\nelse:\n    print("i is greater than 15")`,
+    options: [
+      "i is smaller than 15",
+      "i is greater than 15",
+      "Error",
+      "Nothing will be printed"
+    ],
+    answer: "i is greater than 15"
+  },
+  {
+    question: `What is the output of this nested-if code?\ni = 10\nif i == 10:\n    if i < 15:\n        print("i is smaller than 15")\n    if i < 12:\n        print("i is smaller than 12 too")\n    else:\n        print("i is greater than 15")\n
+    इस nested-if कोड का आउटपुट क्या होगा?\ni = 10\nif i == 10:\n    if i < 15:\n        print("i is smaller than 15")\n    if i < 12:\n        print("i is smaller than 12 too")\n    else:\n        print("i is greater than 15")`,
+    options: [
+      "i is smaller than 15",
+      "i is smaller than 12 too",
+      "Both A and B",
+      "Error"
+    ],
+    answer: "Both A and B"
+  },
+  {
+    question: `Which structure allows decision-making among multiple conditions in Python?\n
+    Python में कौन सा structure कई conditions के बीच निर्णय लेने की अनुमति देता है?`,
+    options: [
+      "if-else",
+      "nested-if",
+      "while loop",
+      "if-elif-else"
+    ],
+    answer: "if-elif-else"
+  },
+   {
+    question: `In if-elif-else ladder, what happens if the first if condition is true?\n
+    if-elif-else संरचना में, अगर पहली if शर्त true हो तो क्या होता है?`,
+    options: [
+      "All other elif conditions are checked",
+      "Only else is executed",
+      "Only if block is executed",
+      "All blocks are executed"
+    ],
+    answer: "Only if block is executed"
+  },
+  {
+    question: `What will be the output of this program?\ni = 20\nif i == 10:\n    print("i is 10")\nelif i == 15:\n    print("i is 15")\nelif i == 20:\n    print("i is 20")\nelse:\n    print("i is not present")\n
+    इस प्रोग्राम का आउटपुट क्या होगा?\ni = 20\nif i == 10:\n    print("i is 10")\nelif i == 15:\n    print("i is 15")\nelif i == 20:\n    print("i is 20")\nelse:\n    print("i is not present")`,
+    options: ["i is 10", "i is 15", "i is 20", "i is not present"],
+    answer: "i is 20"
+  },
+  {
+    question: `What keyword is used when none of the if or elif conditions are true?\n
+    जब if या elif की कोई शर्त true नहीं होती है तो कौन सा keyword उपयोग होता है?`,
+    options: ["switch", "else", "then", "default"],
+    answer: "else"
+  },
+  {
+    question: `Which of the following will be executed when the if condition is false and there's no else block?\nx = 5\nif x > 10:\n    print("Greater than 10")\n
+    यदि if condition false हो और else block ना हो, तो निम्नलिखित में से क्या execute होगा?\nx = 5\nif x > 10:\n    print("Greater than 10")`,
+    options: ["Nothing", "Syntax error", "Greater than 10", "Zero"],
+    answer: "Nothing"
+  },
+  {
+    question: `Which of the following is not a type of loop in Python?\n
+    Python में निम्नलिखित में से कौन सा loop प्रकार नहीं है?`,
+    options: ["for", "foreach", "while", "nested loop"],
+    answer: "foreach"
+  },
+  {
+    question: `What is the purpose of a loop in Python?\n
+    Python में loop का उद्देश्य क्या है?`,
+    options: [
+      "To define variables",
+      "To import libraries",
+      "To repeat execution of code",
+      "To create classes"
+    ],
+    answer: "To repeat execution of code"
+  },
+  {
+    question: `In a while loop, when is the condition checked?\n
+    while loop में condition कब चेक होती है?`,
+    options: [
+      "After executing the loop body",
+      "Before executing the loop body",
+      "Only once",
+      "Randomly"
+    ],
+    answer: "Before executing the loop body"
+  },
+  {
+    question: `How many times will this loop execute?\ncount = 1\nwhile count <= 3:\n    print(count)\n    count += 1\n
+    यह loop कितनी बार execute होगा?\ncount = 1\nwhile count <= 3:\n    print(count)\n    count += 1`,
+    options: ["1", "2", "3", "Infinite"],
+    answer: "3"
+  },
+  {
+    question: `What is the output of the following code?\nfor i in [1, 2, 3]:\n    print(i * 2)\n
+    निम्नलिखित कोड का आउटपुट क्या होगा?\nfor i in [1, 2, 3]:\n    print(i * 2)`,
+    options: ["1 2 3", "2 4 6", "2 3 4", "Error"],
+    answer: "2 4 6"
+  },
+  {
+    question: `What type of loop is this an example of?\nfor x in range(5):\n    print(x)\n
+    यह किस प्रकार का loop है?\nfor x in range(5):\n    print(x)`,
+    options: ["while loop", "do-while loop", "for loop", "infinite loop"],
+    answer: "for loop"
+  },
+  {
+    question: `What is a nested loop?\n
+    nested loop क्या होता है?`,
+    options: [
+      "A loop with break statement",
+      "A loop inside a list",
+      "A loop inside another loop",
+      "A loop that never ends"
+    ],
+    answer: "A loop inside another loop"
+  },
+  {
+    question: `Which control statement terminates the loop execution?\n
+    कौन सा control statement loop execution को terminate करता है?`,
+    options: ["continue", "break", "pass", "return"],
+    answer: "break"
+  },
+    {
+    question: `What does the continue statement do in Python?\n
+    Python में continue स्टेटमेंट क्या करता है?`,
+    options: [
+      "Stops the loop entirely",
+      "Skips the current iteration",
+      "Exits the program",
+      "Repeats the loop from beginning"
+    ],
+    answer: "Skips the current iteration"
+  },
+  {
+    question: `Which statement is used when no action is to be taken, but a statement is syntactically required?\n
+    जब कोई कार्रवाई नहीं करनी होती लेकिन सिंटैक्टिकली स्टेटमेंट चाहिए, तो कौन सा उपयोग होता है?`,
+    options: ["break", "continue", "skip", "pass"],
+    answer: "pass"
+  },
+  {
+    question: `Which of the following is the correct syntax for a for loop in Python?\n
+    Python में for loop का सही सिंटैक्स कौन सा है?`,
+    options: [
+      "for i to range(5):",
+      "for (i = 0; i < 5; i++)",
+      "for i in range(5):",
+      "foreach i in range(5):"
+    ],
+    answer: "for i in range(5):"
+  },
+  {
+    question: `How is a sequence such as a list or tuple accessed in a loop?\n
+    लूप में लिस्ट या ट्यूपल जैसी sequence को कैसे access किया जाता है?`,
+    options: [
+      "Using for-in loop",
+      "Using while loop only",
+      "Using switch-case",
+      "Using if statement"
+    ],
+    answer: "Using for-in loop"
+  },
+  {
+    question: `Which operator is used to check the identity of two objects in Python?\n
+    Python में दो ऑब्जेक्ट्स की पहचान जांचने के लिए कौन सा ऑपरेटर उपयोग होता है?`,
+    options: ["==", "is", "in", "="],
+    answer: "is"
+  },
+  {
+    question: `What will be the output of: print(5 // 2)?\n
+    print(5 // 2) का आउटपुट क्या होगा?`,
+    options: ["2.5", "2", "3", "Error"],
+    answer: "2"
+  },
+  {
+    question: `Which operator is used to assign a value to a variable?\n
+    किसी वेरिएबल को मान देने के लिए कौन सा ऑपरेटर उपयोग होता है?`,
+    options: ["==", "=", ":=", "!="],
+    answer: "="
+  },
+  {
+    question: `Which statement correctly represents an if-else structure in Python?\n
+    Python में if-else संरचना का सही स्वरूप कौन सा है?`,
+    options: [
+      `if condition:\n    statement1\nelse:\n    statement2`,
+      `if condition\n    statement1\nelse\n    statement2`,
+      `if condition then statement1 else statement2`,
+      `None of these`
+    ],
+    answer: `if condition:\n    statement1\nelse:\n    statement2`
+  },
+  {
+    question: `What will be printed by the following code?\ni = 10\nif i > 5:\n    print("Greater")\nelse:\n    print("Smaller")\n
+    निम्नलिखित कोड का आउटपुट क्या होगा?\ni = 10\nif i > 5:\n    print("Greater")\nelse:\n    print("Smaller")`,
+    options: ["Greater", "Smaller", "Nothing", "Error"],
+    answer: "Greater"
+  },
+  {
+    question: `What does the continue statement do in a loop?\n
+    लूप में continue स्टेटमेंट क्या करता है?`,
+    options: [
+      "Exits the loop completely",
+      "Skips the current iteration and moves to the next iteration",
+      "Pauses the loop",
+      "Restarts the loop from the beginning"
+    ],
+    answer: "Skips the current iteration and moves to the next iteration"
+  },
+  {
+    question: `What is the output of this code?\nfor i in range(3):\n    if i == 1:\n        break\n    print(i)\n
+    इस कोड का आउटपुट क्या होगा?\nfor i in range(3):\n    if i == 1:\n        break\n    print(i)`,
+    options: ["0 1 2", "0 1", "0", "No output"],
+    answer: "0"
+  },
+  {
+    question: `Which of the following loops is guaranteed to execute at least once?\n
+    निम्नलिखित में से कौन सा लूप कम से कम एक बार जरूर execute होता है?`,
+    options: [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "None of the above"
+    ],
+    answer: "None of the above"
+  },
+    {
+    question: `Which of the following is NOT a valid way to create a string in Python?\n
+    Python में स्ट्रिंग बनाने का कौन-सा तरीका सही नहीं है?`,
+    options: ["'Hello'", `"Hello"`, `'''Hello'''`, "#Hello"],
+    answer: "#Hello"
+  },
+  {
+    question: `What will be the output of this code?\ns = "Python"\nprint(s[1:4])\n
+    इस कोड का आउटपुट क्या होगा?\ns = "Python"\nprint(s[1:4])`,
+    options: ["Pyt", "yth", "yth", "yth"],
+    answer: "yth"
+  },
+  {
+    question: `Which of the following statements is TRUE about Python lists?\n
+    Python लिस्ट्स के बारे में कौन-सी बात सही है?`,
+    options: [
+      "Lists are immutable",
+      "Lists are ordered and changeable",
+      "Lists cannot contain duplicate values",
+      "Lists use curly braces {}"
+    ],
+    answer: "Lists are ordered and changeable"
+  },
+  {
+    question: `How do you add an item to the end of a list mylist?\n
+    mylist में एक आइटम अंत में जोड़ने के लिए क्या करें?`,
+    options: [
+      "mylist.add(item)",
+      "mylist.append(item)",
+      "mylist.insert(item)",
+      "mylist.addEnd(item)"
+    ],
+    answer: "mylist.append(item)"
+  },
+  {
+    question: `Which of the following is TRUE about tuples in Python?\n
+    Python में ट्यूपल्स के बारे में कौन-सी बात सही है?`,
+    options: [
+      "Tuples are mutable",
+      "Tuples are unordered",
+      "Tuples are immutable and ordered",
+      "Tuples allow duplicate values but are mutable"
+    ],
+    answer: "Tuples are immutable and ordered"
+  },
+  {
+    question: `Which property does NOT apply to Python sets?\n
+    Python सेट्स के बारे में कौन-सी बात सही नहीं है?`,
+    options: [
+      "Sets are unordered",
+      "Sets allow duplicate items",
+      "Sets are mutable but their items are unchangeable",
+      "Sets are defined with curly braces {}"
+    ],
+    answer: "Sets allow duplicate items"
+  },
+  {
+    question: `What will be the output of this code?\ns = {"apple", "banana", "apple"}\nprint(len(s))\n
+    इस कोड का आउटपुट क्या होगा?\ns = {"apple", "banana", "apple"}\nprint(len(s))`,
+    options: ["3", "2", "1", "Error"],
+    answer: "2"
+  },
+  {
+    question: `Python में डिक्शनरी किस फॉर्मेट में डेटा संग्रहित करती है?\n
+    Python stores data in dictionaries in which format?`,
+    options: ["List", "Tuple", "key:value pair", "set"],
+    answer: "key:value pair"
+  },
+  {
+    question: `निम्नलिखित में से कौन-सा डिक्शनरी बनाने का सही तरीका है?\n
+    Which is the correct way to create a dictionary?`,
+    options: [
+      `mydict = ( "brand": "Ford", "year": 1964 )`,
+      `mydict = [ "brand": "Ford", "year": 1964 ]`,
+      `mydict = { "brand": "Ford", "year": 1964 }`,
+      `mydict = < "brand": "Ford", "year": 1964 >`
+    ],
+    answer: `mydict = { "brand": "Ford", "year": 1964 }`
+  },
+  {
+    question: `Python 3.7 के बाद डिक्शनरी का कौन-सा गुण जोड़ा गया?\n
+    Which feature was added to dictionaries in Python 3.7?`,
+    options: ["Immutable", "Indexed", "Ordered", "Static"],
+    answer: "Ordered"
+  },
+  {
+    question: `डिक्शनरी में डुप्लिकेट keys का क्या होता है?\n
+    What happens when duplicate keys are present in a dictionary?`,
+    options: [
+      "Error आता है",
+      "डुप्लिकेट key को allow करता है",
+      "आखिरी key:value को ही रखता है",
+      "पहले वाले को रखता है"
+    ],
+    answer: "आखिरी key:value को ही रखता है"
+  },
+  {
+    question: `print(thisdict["model"]) क्या करता है?\n
+    What does print(thisdict["model"]) do?`,
+    options: [
+      "डिक्शनरी को डिलीट करता है",
+      `"model" key का value प्रिंट करता है`,
+      "डिक्शनरी का साइज दिखाता है",
+      "Error देता है"
+    ],
+    answer: `"model" key का value प्रिंट करता है`
+  },
+  {
+    question: `डिक्शनरी में नया आइटम जोड़ने के लिए कौन-सा सिंटैक्स सही है?\n
+    Which syntax is correct to add a new item to a dictionary?`,
+    options: [
+      `thisdict.append("color", "red")`,
+      `thisdict["color"] = "red"`,
+      `thisdict.add("color": "red")`,
+      `thisdict.insert("color", "red")`
+    ],
+    answer: `thisdict["color"] = "red"`
+  },
+  {
+    question: `डिक्शनरी से किसी key:value pair को हटाने के लिए कौन-सा method इस्तेमाल होता है?\n
+    Which method is used to remove a key:value pair from a dictionary?`,
+    options: ["remove()", "discard()", "pop()", "delete()"],
+    answer: "pop()"
+  },
+  {
+    question: `डिक्शनरी में सभी keys को प्राप्त करने के लिए कौन-सा method उपयोग किया जाता है?\n
+    Which method is used to get all keys from a dictionary?`,
+    options: ["keys()", "get()", "items()", "values()"],
+    answer: "keys()"
+  },
+  {
+    question: `किसी key की value को safely प्राप्त करने के लिए कौन-सा method इस्तेमाल किया जाता है?\n
+    Which method is used to safely get the value of a key?`,
+    options: ["value()", "items()", "get()", "fetch()"],
+    answer: "get()"
+  },
+  {
+    question: `डिक्शनरी को पूरी तरह खाली करने के लिए कौन-सा method प्रयोग करते हैं?\n
+    Which method is used to clear all items in a dictionary?`,
+    options: ["clear()", "delete()", "removeall()", "empty()"],
+    answer: "clear()"
+  },
+  {
+    question: `Python में array की तरह किस डेटा टाइप का उपयोग किया जाता है?\n
+    Which data type is used like an array in Python?`,
+    options: ["Set", "Dictionary", "List", "Tuple"],
+    answer: "List"
+  },
+  {
+    question: `निम्नलिखित में से कौन सही array (list) निर्माण है?\n
+    Which is the correct way to create a list?`,
+    options: [
+      `cars = {"Ford", "BMW"}`,
+      `cars = ("Ford", "BMW")`,
+      `cars = ["Ford", "BMW"]`,
+      `cars = <"Ford", "BMW">`
+    ],
+    answer: `cars = ["Ford", "BMW"]`
+  },
+  {
+    question: `cars[0] का अर्थ है:\n
+    What does cars[0] mean?`,
+    options: [
+      "लिस्ट का अंतिम आइटम",
+      "पहला आइटम",
+      "एक नया आइटम",
+      "None"
+    ],
+    answer: "पहला आइटम"
+  },
+  {
+    question: `cars.append("Honda") क्या करता है?\n
+    What does cars.append("Honda") do?`,
+    options: [
+      `"Honda" को लिस्ट के बीच में जोड़ता है`,
+      `"Honda" को डिलीट करता है`,
+      `"Honda" को लिस्ट के अंत में जोड़ता है`,
+      "Error देता है"
+    ],
+    answer: `"Honda" को लिस्ट के अंत में जोड़ता है`
+  },
+  {
+    question: `cars.pop(1) से क्या होगा?\n
+    What happens when cars.pop(1) is called?`,
+    options: [
+      "पहला आइटम हटेगा",
+      "दूसरा आइटम हटेगा",
+      "आखिरी आइटम हटेगा",
+      "सभी आइटम हटेंगे"
+    ],
+    answer: "दूसरा आइटम हटेगा"
+  },
+  {
+    question: `लिस्ट की लंबाई जानने के लिए कौन-सा फ़ंक्शन प्रयोग किया जाता है?\n
+    Which function is used to find the length of a list?`,
+    options: ["count()", "size()", "len()", "length()"],
+    answer: "len()"
+  },
+  {
+    question: `list को modify करने के लिए कौन-सी विशेषता सही है?\n
+    Which property applies to lists to modify them?`,
+    options: ["Immutable", "Mutable", "Unordered", "Indexed"],
+    answer: "Mutable"
+  },
+  {
+    question: `What is an iterator in Python?\n
+    Python में iterator क्या है?`,
+    options: [
+      "A function",
+      "An object with __iter__() and __next__() methods",
+      "A list",
+      "A loop"
+    ],
+    answer: "An object with __iter__() and __next__() methods"
+  },
+  {
+    question: `Which method returns the next item from the iterator?\n
+    Iterator से अगला आइटम प्राप्त करने वाला method कौन-सा है?`,
+    options: ["__iter__()", "__next__()", "nextitem()", "next()"],
+    answer: "__next__()"
+  },
+  {
+    question: `What will iter("banana") return?\n
+    iter("banana") क्या लौटाएगा?`,
+    options: [
+      "A string",
+      "A list of characters",
+      "An iterator object",
+      "Error"
+    ],
+    answer: "An iterator object"
+  },
+   {
+    question: `Which keyword is used to import a module in Python?\n
+    Python में किसी module को import करने के लिए कौन-सा keyword इस्तेमाल होता है?`,
+    options: ["include", "require", "import", "using"],
+    answer: "import"
+  },
+  {
+    question: `What will 'import math' allow you to do?\n
+    'import math' करने से आप क्या कर पाएंगे?`,
+    options: [
+      "Use all Python functions",
+      "Use mathematical operators only",
+      "Use math functions like sqrt(), sin()",
+      "Nothing, it only creates a variable"
+    ],
+    answer: "Use math functions like sqrt(), sin()"
+  },
+  {
+    question: `How can you import only the sqrt() function from math module?\n
+    math module से केवल sqrt() function को कैसे import करते हैं?`,
+    options: [
+      "from math import sqrt",
+      "include math.sqrt",
+      "require math.sqrt()",
+      "from math.sqrt import *"
+    ],
+    answer: "from math import sqrt"
+  },
+  {
+    question: `Which module is used to work with dates and times in Python?\n
+    Python में तारीख़ और समय के साथ काम करने के लिए कौन-सा module उपयोग होता है?`,
+    options: ["calendar", "datetime", "time", "date"],
+    answer: "datetime"
+  },
+  {
+    question: `What does datetime.datetime.now() return?\n
+    datetime.datetime.now() क्या लौटाता है?`,
+    options: [
+      "Current date only",
+      "Current time only",
+      "Current date and time",
+      "Time since epoch"
+    ],
+    answer: "Current date and time"
+  },
+  {
+    question: `What does time.time() return?\n
+    time.time() क्या लौटाता है?`,
+    options: [
+      "Current hour",
+      "Seconds since Unix epoch",
+      "A time object",
+      "Current date"
+    ],
+    answer: "Seconds since Unix epoch"
+  },
+  {
+    question: `Which of the following is used to find the square root using math module?\n
+    math module में square root निकालने के लिए कौन-सा function है?`,
+    options: ["math.pow()", "math.square()", "math.sqrt()", "math.root()"],
+    answer: "math.sqrt()"
+  },
+  {
+    question: `What is the output of math.factorial(5)?\n
+    math.factorial(5) का आउटपुट क्या होगा?`,
+    options: ["15", "120", "60", "24"],
+    answer: "120"
+  },
+  {
+    question: `What does math.e return?\n
+    math.e क्या लौटाता है?`,
+    options: [
+      "Value of pi",
+      "Euler's number",
+      "2.0",
+      "Error"
+    ],
+    answer: "Euler's number"
+  },
+  {
+    question: `Which function is used for user input in Python 3?\n
+    Python 3 में यूजर से इनपुट लेने के लिए कौन-सा function उपयोग होता है?`,
+    options: ["input()", "raw_input()", "scanf()", "gets()"],
+    answer: "input()"
+  },
+  {
+    question: `What is the data type of input taken from input() function?\n
+    input() function से लिया गया इनपुट किस डेटा टाइप का होता है?`,
+    options: ["Integer", "Float", "String", "Boolean"],
+    answer: "String"
+  },
+  {
+    question: `How can you convert a user input into an integer?\n
+    यूजर का इनपुट integer में कैसे बदलें?`,
+    options: [
+      "int(input())",
+      "input.int()",
+      "toInt(input)",
+      "input.convert(int)"
+    ],
+    answer: "int(input())"
+  },
+    {
+    question: `What does the input() function in Python do?\nPython में input() फंक्शन क्या करता है?`,
+    options: [
+      "Executes code / कोड चलाता है",
+      "Takes input from the user as a string / यूजर से स्ट्रिंग इनपुट लेता है",
+      "Displays output / आउटपुट दिखाता है",
+      "Converts values to integer / वैल्यू को integer में बदलता है"
+    ],
+    answer: "Takes input from the user as a string / यूजर से स्ट्रिंग इनपुट लेता है"
+  },
+  {
+    question: `What is the default data type returned by input()?\ninput() से डिफॉल्ट कौन-सा डेटा टाइप वापस आता है?`,
+    options: [
+      "int",
+      "float",
+      "str",
+      "bool"
+    ],
+    answer: "str"
+  },
+  {
+    question: `How can you convert user input to an integer?\nयूजर का इनपुट integer में कैसे बदलें?`,
+    options: [
+      "input.int()",
+      "toInt(input())",
+      "int(input())",
+      "input(convert=int)"
+    ],
+    answer: "int(input())"
+  },
+  {
+    question: `Which function can be used to take multiple inputs of the same type?\nएक ही प्रकार के multiple inputs लेने के लिए कौन-सा फंक्शन यूज़ किया जाता है?`,
+    options: [
+      "map()",
+      "list()",
+      "tuple()",
+      "split()"
+    ],
+    answer: "map()"
+  },
+  {
+    question: `What will be the output of the following code?\na, b = map(int, input("Enter numbers: ").split())\nprint(a + b)\nIf user enters: 10 20\nनीचे दिए गए कोड का आउटपुट क्या होगा?`,
+    options: [
+      "1020",
+      "30",
+      "10 20",
+      "Error"
+    ],
+    answer: "30"
+  },
+
+  // Python Output
+  {
+    question: `Which function is used to display output in Python?\nPython में आउटपुट दिखाने के लिए कौन-सा फंक्शन इस्तेमाल होता है?`,
+    options: [
+      "input()",
+      "read()",
+      "output()",
+      "print()"
+    ],
+    answer: "print()"
+  },
+  {
+    question: `What is the default separator between multiple values in print() function?\nprint() में multiple values के बीच डिफॉल्ट separator क्या होता है?`,
+    options: [
+      "Comma ,",
+      "Underscore _",
+      "Empty string ''",
+      "Space ' '"
+    ],
+    answer: "Space ' '"
+  },
+  {
+    question: `What is the purpose of sep parameter in print()?\nprint() के sep पैरामीटर का क्या काम है?`,
+    options: [
+      "To add space between characters / अक्षरों के बीच स्पेस जोड़ना",
+      "To change output location / आउटपुट की जगह बदलना",
+      "To specify how values are separated / यह बताना कि वैल्यूज कैसे अलग हों",
+      "To flush output / आउटपुट को फ्लश करना"
+    ],
+    answer: "To specify how values are separated / यह बताना कि वैल्यूज कैसे अलग हों"
+  },
+  {
+    question: `Which parameter in print() changes what is printed at the end?\nprint() में कौन-सा पैरामीटर आउटपुट के अंत को बदलता है?`,
+    options: [
+      "sep",
+      "end",
+      "file",
+      "flush"
+    ],
+    answer: "end"
+  },
+  {
+    question: `What is the output of the following code?\nprint("NSTI", end="@")\nprint("J", "S", "A", sep="#")\nनीचे दिए गए कोड का आउटपुट क्या होगा?`,
+    options: [
+      "NSTI J#S#A",
+      "NSTI@J#S#A",
+      "NSTI@J S A",
+      "Error"
+    ],
+    answer: "NSTI@J#S#A"
+  },
+
+  // Formatted String Literals (f-strings)
+  {
+    question: `What does the f before a string indicate in Python?\nPython में string के पहले f का मतलब क्या होता है?`,
+    options: [
+      "It's a float string / फ्लोट स्ट्रिंग है",
+      "It's a formatted string literal / फॉर्मेटेड स्ट्रिंग लिटरल है",
+      "It's a function string / फंक्शन स्ट्रिंग है",
+      "It's a file string / फाइल स्ट्रिंग है"
+    ],
+    answer: "It's a formatted string literal / फॉर्मेटेड स्ट्रिंग लिटरल है"
+  },
+  {
+    question: `Choose the correct way to use an f-string.\nf-string को सही तरीके से कैसे इस्तेमाल करें?`,
+    options: [
+      "f'Hello {name}'",
+      "f(\"Hello\", name)",
+      "'Hello {name}'f",
+      "format(f'Hello {name}')"
+    ],
+    answer: "f'Hello {name}'"
+  },
+  {
+    question: `What is the output of this code?\nname = "Nsti"\nprint(f'Hello {name}! How are you?')\nइस कोड का आउटपुट क्या होगा?`,
+    options: [
+      "Hello name! How are you?",
+      "Hello {name}! How are you?",
+      "Hello Nsti! How are you?",
+      "Error"
+    ],
+    answer: "Hello Nsti! How are you?"
+  },
+
+  // Basics of Functions
+  {
+    question: `What keyword is used to define a function in Python?\nPython में function को define करने के लिए कौन-सा keyword यूज़ होता है?`,
+    options: [
+      "function",
+      "define",
+      "def",
+      "func"
+    ],
+    answer: "def"
+  },
+  {
+    question: `What is the main purpose of using functions in Python?\nPython में functions का मुख्य उद्देश्य क्या है?`,
+    options: [
+      "Increase memory usage / मेमोरी बढ़ाना",
+      "Avoid loops / लूप से बचना",
+      "Organize code and reuse logic / कोड को व्यवस्थित करना और पुनः उपयोग करना",
+      "Reduce the number of files / फाइलों की संख्या कम करना"
+    ],
+    answer: "Organize code and reuse logic / कोड को व्यवस्थित करना और पुनः उपयोग करना"
+  },
+  {
+    question: `What will be the output of the following code?\ndef greet():\n    print("Hello, world!")\ngreet()\nनीचे दिए गए कोड का आउटपुट क्या होगा?`,
+    options: [
+      "Nothing / कुछ नहीं",
+      "greet",
+      "Hello, world!",
+      "Error / त्रुटि"
+    ],
+    answer: "Hello, world!"
+  },
+
+  // Function Arguments
+  {
+    question: `Which of the following is NOT a type of argument in Python?\nPython में निम्नलिखित में से कौन-सा argument टाइप नहीं है?`,
+    options: [
+      "Positional",
+      "Keyword",
+      "Indexed",
+      "Variable-Length"
+    ],
+    answer: "Indexed"
+  },
+    {
+    question: `In a function call, how are positional arguments matched?\nफंक्शन कॉल में positional arguments कैसे मैच होते हैं?`,
+    options: [
+      "By name / नाम से",
+      "By type / टाइप से",
+      "By order of appearance / दिखने के क्रम से",
+      "Randomly / यादृच्छिक रूप से"
+    ],
+    answer: "By order of appearance / दिखने के क्रम से"
+  },
+  {
+    question: `What will be the output of this code?\ndef greet(name, greeting=\"Hello\"):\n    print(f\"{greeting}, {name}!\")\ngreet(\"Alice\")\nइस कोड का आउटपुट क्या होगा?`,
+    options: [
+      "Hello, Alice!",
+      "Alice, Hello!",
+      "greeting, name!",
+      "Error / त्रुटि"
+    ],
+    answer: "Hello, Alice!"
+  },
+  {
+    question: `Choose the correct way to call the function using keyword arguments:\ndef greet(name, greeting):\n    print(f\"{greeting}, {name}!\")\nकिसे सही तरीके से keyword arguments के साथ कॉल करें?`,
+    options: [
+      "greet(\"Hello\", \"John\")",
+      "greet(name=\"John\", greeting=\"Hello\")",
+      "greet(greeting=\"Hello\", name=\"John\")",
+      "Both b and c / दोनों b और c"
+    ],
+    answer: "Both b and c / दोनों b और c"
+  },
+
+  // Default and Variable-Length Arguments
+  {
+    question: `What is the purpose of *args in a function definition?\nफंक्शन डिफिनिशन में *args का क्या मतलब है?`,
+    options: [
+      "Accept keyword arguments / कीवर्ड आर्गुमेंट स्वीकार करना",
+      "Accept default values / डिफॉल्ट वैल्यूज़ लेना",
+      "Accept a variable number of positional arguments / बदलते नंबर के positional arguments लेना",
+      "Accept a single string / एकल स्ट्रिंग लेना"
+    ],
+    answer: "Accept a variable number of positional arguments / बदलते नंबर के positional arguments लेना"
+  },
+  {
+    question: `What is the purpose of **kwargs in a function?\nफंक्शन में **kwargs का उद्देश्य क्या है?`,
+    options: [
+      "Accept multiple string arguments / कई स्ट्रिंग आर्गुमेंट लेना",
+      "Accept variable number of keyword arguments / बदलते नंबर के कीवर्ड आर्गुमेंट लेना",
+      "Accept all integers / सभी integer लेना",
+      "Accept None as input / None लेना"
+    ],
+    answer: "Accept variable number of keyword arguments / बदलते नंबर के कीवर्ड आर्गुमेंट लेना"
+  },
+
+  // Return Values
+  {
+    question: `Which keyword is used to return a value from a function in Python?\nPython में फंक्शन से वैल्यू वापस करने के लिए कौन-सा keyword है?`,
+    options: [
+      "return",
+      "output",
+      "yield",
+      "send"
+    ],
+    answer: "return"
+  },
+  {
+    question: `What will the following code output?\ndef add(x, y):\n    return x + y\nprint(add(3, 5))\nनीचे दिए गए कोड का आउटपुट क्या होगा?`,
+    options: [
+      "8",
+      "35",
+      "x + y",
+      "Error / त्रुटि"
+    ],
+    answer: "8"
+  },
+  {
+    question: `What does a Python function return if there is no return statement?\nअगर फंक्शन में कोई return स्टेटमेंट नहीं है तो वह क्या वापस करता है?`,
+    options: [
+      "0",
+      "Empty string / खाली स्ट्रिंग",
+      "None",
+      "False"
+    ],
+    answer: "None"
+  },
+  {
+    question: `What is a module in Python?\nPython में module क्या है?`,
+    options: [
+      "A function / एक फंक्शन",
+      "A Python package / एक पैकेज",
+      "A file containing Python code, such as functions, classes, and variables / Python कोड वाली फाइल जैसे फंक्शन, क्लास, वैरिएबल",
+      "A built-in keyword / एक बिल्ट-इन कीवर्ड"
+    ],
+    answer: "A file containing Python code, such as functions, classes, and variables / Python कोड वाली फाइल जैसे फंक्शन, क्लास, वैरिएबल"
+  },
+  {
+    question: `What is the file extension for a Python module?\nPython module की फाइल एक्सटेंशन क्या होती है?`,
+    options: [
+      ".mod",
+      ".py",
+      ".txt",
+      ".exe"
+    ],
+    answer: ".py"
+  },
+  {
+    question: `What is the purpose of using modules in Python?\nPython में modules क्यों यूज़ करते हैं?`,
+    options: [
+      "To speed up program execution / प्रोग्राम को तेज चलाने के लिए",
+      "To organize and reuse code / कोड को व्यवस्थित करने और पुनः उपयोग के लिए",
+      "To make the program error-free / प्रोग्राम को error-free बनाने के लिए",
+      "To make variables global / वेरिएबल्स को global बनाने के लिए"
+    ],
+    answer: "To organize and reuse code / कोड को व्यवस्थित करने और पुनः उपयोग के लिए"
+  },
+  {
+    question: `Which keyword is used to include a module in another Python script?\nकिस कीवर्ड का उपयोग Python में किसी अन्य स्क्रिप्ट में module शामिल करने के लिए किया जाता है?`,
+    options: [
+      "include",
+      "require",
+      "use",
+      "import"
+    ],
+    answer: "import"
+  },
+  {
+    question: `What will be the output of the following code?\nimport math\nprint(math.sqrt(16))\nनीचे दिए गए कोड का आउटपुट क्या होगा?`,
+    options: [
+      "4",
+      "8",
+      "16",
+      "Error / त्रुटि"
+    ],
+    answer: "4"
+  },
+  {
+    question: `What is the correct way to import only the sqrt function from the math module?\nmath module से सिर्फ sqrt फंक्शन कैसे इम्पोर्ट करें?`,
+    options: [
+      "import math.sqrt",
+      "from math import sqrt",
+      "import sqrt from math",
+      "include math.sqrt"
+    ],
+    answer: "from math import sqrt"
+  },
+
+  // Using Module Contents
+  {
+    question: `Given a module module.py with a function add(a, b), how do you call add in another file after importing the module?\nmodule.py में add(a, b) फंक्शन है, इम्पोर्ट करने के बाद दूसरे फाइल में इसे कैसे कॉल करें?`,
+    options: [
+      "add(2, 3)",
+      "module::add(2, 3)",
+      "module.add(2, 3)",
+      "module>add(2, 3)"
+    ],
+    answer: "module.add(2, 3)"
+  },
+  {
+    question: `If you only want to import specific items from a module, which syntax is correct?\nअगर module से कुछ specific आइटम्स इम्पोर्ट करने हों तो कौन सा सिंटैक्स सही है?`,
+    options: [
+      "import module.items",
+      "from module import item1, item2",
+      "import item1, item2 from module",
+      "using module(item1, item2)"
+    ],
+    answer: "from module import item1, item2"
+  },
+
+  // Special Module and Advanced Usage
+  {
+    question: `What is the purpose of the __init__.py file in a Python package?\nPython पैकेज में __init__.py फाइल का क्या उद्देश्य है?`,
+    options: [
+      "To start the Python interpreter / Python interpreter शुरू करना",
+      "To define classes in the package / पैकेज में क्लासेज़ डिफाइन करना",
+      "To initialize the package and make it recognizable as a Python package / पैकेज को initialize करना और इसे Python पैकेज बनाना",
+      "To store metadata of the module / मॉड्यूल का metadata स्टोर करना"
+    ],
+    answer: "To initialize the package and make it recognizable as a Python package / पैकेज को initialize करना और इसे Python पैकेज बनाना"
+  },
+  {
+    question: `What happens if you import a module multiple times in the same program?\nअगर एक ही प्रोग्राम में एक module को कई बार import किया जाए तो क्या होता है?`,
+    options: [
+      "It causes an error / त्रुटि होती है",
+      "The module is reloaded every time / हर बार module reload होता है",
+      "The module is imported only once / module केवल एक बार import होता है",
+      "The program will stop / प्रोग्राम रुक जाएगा"
+    ],
+    answer: "The module is imported only once / module केवल एक बार import होता है"
+  },
+
+  // Exception Handling Basics
+  {
+    question: `What is the purpose of exception handling in Python?\nPython में exception handling का उद्देश्य क्या है?`,
+    options: [
+      "To terminate the program on error / प्रोग्राम को त्रुटि पर बंद करना",
+      "To find syntax errors / syntax errors ढूंढना",
+      "To gracefully handle runtime errors / runtime errors को gracefully हैंडल करना",
+      "To increase code speed / कोड की गति बढ़ाना"
+    ],
+    answer: "To gracefully handle runtime errors / runtime errors को gracefully हैंडल करना"
+  },
+  {
+    question: `Which keyword is used to catch and handle an exception?\nकौन सा कीवर्ड exception पकड़ने और हैंडल करने के लिए प्रयोग होता है?`,
+    options: [
+      "throw",
+      "try",
+      "except",
+      "catch"
+    ],
+    answer: "except"
+  },
+  {
+    question: `Which block is always executed regardless of whether an exception is raised or not?\nकौन सा ब्लॉक exception के होने या न होने पर भी हमेशा execute होता है?`,
+    options: [
+      "try",
+      "except",
+      "else",
+      "finally"
+    ],
+    answer: "finally"
+  },
+  {
+    question: `What will the following code output if the user enters 0?\ntry:\n    x = int(input(\"Enter a number: \"))\n    print(10 / x)\nexcept ZeroDivisionError:\n    print(\"Error: Cannot divide by zero.\")\nअगर user 0 इनपुट करता है तो क्या होगा?`,
+    options: [
+      "10",
+      "0",
+      "Error: Cannot divide by zero.",
+      "No output / कोई आउटपुट नहीं"
+    ],
+    answer: "Error: Cannot divide by zero."
+  },
+
+  // Advanced Exception Usage
+  {
+    question: `What is the role of the else block in exception handling?\nexception handling में else ब्लॉक का क्या रोल है?`,
+    options: [
+      "It runs if an exception occurs / यह तब चलता है जब exception हो",
+      "It runs only if an exception is raised / यह तभी चलता है जब exception raise हो",
+      "It runs only if no exceptions are raised / यह तब चलता है जब कोई exception न हो",
+      "It handles all exceptions / यह सभी exceptions को हैंडल करता है"
+    ],
+    answer: "It runs only if no exceptions are raised / यह तब चलता है जब कोई exception न हो"
+  },
+  {
+    question: `Which of the following is the correct order of blocks in exception handling?\nexception handling में blocks का सही क्रम क्या है?`,
+    options: [
+      "try → else → except → finally",
+      "try → except → else → finally",
+      "try → finally → except → else",
+      "try → except → finally → else"
+    ],
+    answer: "try → except → else → finally"
+  },
+  {
+    question: `What type of exception does the following code handle?\nexcept ValueError:\n    print(\"Invalid number!\")\nयह code किस प्रकार की exception को हैंडल करता है?`,
+    options: [
+      "Division by zero / 0 से भाग",
+      "Invalid input conversion to integer or float / integer या float में invalid conversion",
+      "File not found / फाइल नहीं मिली",
+      "List index out of range / लिस्ट इंडेक्स बाहर"
+    ],
+    answer: "Invalid input conversion to integer or float / integer या float में invalid conversion"
+  },
+
+  // Generic Exception Handling & Best Practices
+  {
+    question: `What happens if no exception occurs in the try block and an else block is present?\nअगर try ब्लॉक में कोई exception नहीं होता और else ब्लॉक मौजूद है तो क्या होता है?`,
+    options: [
+      "else block is skipped / else ब्लॉक skip हो जाता है",
+      "except block is executed / except ब्लॉक execute होता है",
+      "else block is executed / else ब्लॉक execute होता है",
+      "finally block is skipped / finally ब्लॉक skip हो जाता है"
+    ],
+    answer: "else block is executed / else ब्लॉक execute होता है"
+  },
+  {
+    question: `Which of the following is a generic way to catch any exception?\nनिम्न में से कौन सा तरीका किसी भी exception को पकड़ने का generic तरीका है?`,
+    options: [
+      "except:",
+      "except All:",
+      "catch Exception:",
+      "handle Exception:"
+    ],
+    answer: "except:"
+  },
+   {
+    question: `Why is the finally block useful?\nfinally ब्लॉक क्यों उपयोगी होता है?`,
+    options: [
+      "It helps raise new exceptions / यह नई exceptions को raise करने में मदद करता है",
+      "It terminates the program / यह प्रोग्राम को समाप्त करता है",
+      "It runs regardless of whether an error occurs or not, often used for cleanup / यह error हो या न हो, हमेशा चलता है, cleanup के लिए उपयोगी",
+      "It stores error logs / यह error logs को स्टोर करता है"
+    ],
+    answer: "It runs regardless of whether an error occurs or not, often used for cleanup / यह error हो या न हो, हमेशा चलता है, cleanup के लिए उपयोगी"
+  },
+
+  // Built-in functions - basics
+  {
+    question: `Which built-in function is used to take input from the user in Python?\nPython में user से input लेने के लिए कौन सा built-in function इस्तेमाल होता है?`,
+    options: [
+      "get()",
+      "input()",
+      "read()",
+      "scan()"
+    ],
+    answer: "input()"
+  },
+  {
+    question: `What does the len() function return?\nlen() फंक्शन क्या रिटर्न करता है?`,
+    options: [
+      "Last index of a list / लिस्ट का आखिरी इंडेक्स",
+      "Maximum value in a list / लिस्ट में अधिकतम मान",
+      "Number of items in an object / ऑब्जेक्ट में items की संख्या",
+      "Memory size of the list / लिस्ट का मेमोरी साइज"
+    ],
+    answer: "Number of items in an object / ऑब्जेक्ट में items की संख्या"
+  },
+  {
+    question: `Which function is used to check the type of a variable in Python?\nPython में variable का type पता लगाने के लिए कौन सा function इस्तेमाल होता है?`,
+    options: [
+      "var()",
+      "typeof()",
+      "checktype()",
+      "type()"
+    ],
+    answer: "type()"
+  },
+  {
+    question: `Which function converts a value to an integer in Python?\nPython में किसी value को integer में convert करने के लिए कौन सा function है?`,
+    options: [
+      "float()",
+      "str()",
+      "int()",
+      "num()"
+    ],
+    answer: "int()"
+  },
+  {
+    question: `Which function generates a sequence of numbers in Python?\nPython में संख्या की एक श्रृंखला उत्पन्न करने वाला function कौन सा है?`,
+    options: [
+      "sequence()",
+      "generate()",
+      "range()",
+      "list()"
+    ],
+    answer: "range()"
+  },
+
+  // Mathematical & Data Functions
+  {
+    question: `Which function returns the absolute value of a number?\nकौन सा function संख्या का absolute value देता है?`,
+    options: [
+      "abs()",
+      "round()",
+      "int()",
+      "sum()"
+    ],
+    answer: "abs()"
+  },
+  {
+    question: `What does sum([1, 2, 3]) return?\nsum([1, 2, 3]) क्या रिटर्न करता है?`,
+    options: [
+      "5",
+      "6",
+      "123",
+      "Error / त्रुटि"
+    ],
+    answer: "6"
+  },
+  {
+    question: `Which function returns the highest value in a sequence?\nकौन सा function एक अनुक्रम में सबसे बड़ी मान रिटर्न करता है?`,
+    options: [
+      "high()",
+      "top()",
+      "max()",
+      "large()"
+    ],
+    answer: "max()"
+  },
+  {
+    question: `What is the purpose of the round() function?\nround() function का उद्देश्य क्या है?`,
+    options: [
+      "Round a number down / संख्या को नीचे round करना",
+      "Round a number to the nearest integer / संख्या को निकटतम पूर्णांक तक round करना",
+      "Round a number to 2 decimal places only / संख्या को केवल 2 दशमलव स्थानों तक round करना",
+      "It randomly picks a number / यह कोई संख्या यादृच्छिक रूप से चुनता है"
+    ],
+    answer: "Round a number to the nearest integer / संख्या को निकटतम पूर्णांक तक round करना"
+  },
+
+  // Advanced Built-in Functions
+  {
+    question: `Which function returns both index and value when looping through a sequence?\nकौन सा function लूप करते समय index और value दोनों देता है?`,
+    options: [
+      "index()",
+      "map()",
+      "enumerate()",
+      "count()"
+    ],
+    answer: "enumerate()"
+  },
+  {
+    question: `Which built-in function is used to sort a list in Python?\nPython में लिस्ट को sort करने के लिए कौन सा built-in function उपयोग होता है?`,
+    options: [
+      "order()",
+      "arrange()",
+      "sortlist()",
+      "sorted()"
+    ],
+    answer: "sorted()"
+  },
+  {
+    question: `What does the zip() function do?\nzip() function क्या करता है?`,
+    options: [
+      "Compresses files / फाइलों को compress करता है",
+      "Pairs elements from multiple iterables / कई iterable से तत्वों को जोड़ी बनाता है",
+      "Splits a list / लिस्ट को विभाजित करता है",
+      "Finds duplicates / duplicate ढूंढता है"
+    ],
+    answer: "Pairs elements from multiple iterables / कई iterable से तत्वों को जोड़ी बनाता है"
+  },
+  {
+    question: `Which function applies a function to each item in an iterable?\nकौन सा function iterable के हर item पर किसी function को लागू करता है?`,
+    options: [
+      "filter()",
+      "map()",
+      "all()",
+      "type()"
+    ],
+    answer: "map()"
+  },
+  {
+    question: `Which function is used to evaluate a string expression as Python code?\nकौन सा function string expression को Python कोड की तरह evaluate करता है?`,
+    options: [
+      "eval()",
+      "exec()",
+      "interpret()",
+      "run()"
+    ],
+    answer: "eval()"
+  },
+  {
+    question: `Which function returns True only if all elements in an iterable are true?\nकौन सा function तब True देता है जब iterable के सभी elements True हों?`,
+    options: [
+      "any()",
+      "all()",
+      "truthy()",
+      "valid()"
+    ],
+    answer: "all()"
+  },
+
+  // File Handling Basics
+  {
+    question: `Which function is used to open a file in Python?\nPython में फ़ाइल खोलने के लिए कौन सा function उपयोग होता है?`,
+    options: [
+      "openfile()",
+      "file.open()",
+      "open()",
+      "startfile()"
+    ],
+    answer: "open()"
+  },
+  {
+    question: `What does the 'r' mode in the open() function do?\nopen() function में 'r' mode क्या करता है?`,
+    options: [
+      "Writes to a file / फ़ाइल में लिखता है",
+      "Reads a file / फ़ाइल पढ़ता है",
+      "Appends to a file / फ़ाइल में जोड़ता है",
+      "Creates a new file / नई फ़ाइल बनाता है"
+    ],
+    answer: "Reads a file / फ़ाइल पढ़ता है"
+  },
+  {
+    question: `Which method is used to read the entire content of a file?\nफ़ाइल की पूरी सामग्री पढ़ने के लिए कौन सा method उपयोग होता है?`,
+    options: [
+      "read()",
+      "readline()",
+      "readall()",
+      "readdata()"
+    ],
+    answer: "read()"
+  },
+  {
+    question: `What does the readline() function do?\nreadline() function क्या करता है?`,
+    options: [
+      "Reads the whole file / पूरी फ़ाइल पढ़ता है",
+      "Reads a single line / एक पंक्ति पढ़ता है",
+      "Reads all lines into a list / सभी पंक्तियों को लिस्ट में पढ़ता है",
+      "None of the above / उपरोक्त में से कोई नहीं"
+    ],
+    answer: "Reads a single line / एक पंक्ति पढ़ता है"
+  },
+  {
+    question: `Which method reads all lines and returns them as a list?\nकौन सा method सारी पंक्तियों को पढ़कर उन्हें list के रूप में देता है?`,
+    options: [
+      "readlist()",
+      "getlines()",
+      "readlines()",
+      "fetchlines()"
+    ],
+    answer: "readlines()"
+  },
+   {
+    question: `What does the 'w' mode do when opening a file?\nफ़ाइल खोलने के लिए 'w' मोड क्या करता है?`,
+    options: [
+      "Writes to the file and preserves old data / फ़ाइल में लिखता है और पुराना डेटा बचाता है",
+      "Writes to the file and erases old data / फ़ाइल में लिखता है और पुराना डेटा मिटा देता है",
+      "Reads and writes without overwriting / पढ़ता और लिखता है बिना overwrite किए",
+      "Appends data / डेटा जोड़ता है"
+    ],
+    answer: "Writes to the file and erases old data / फ़ाइल में लिखता है और पुराना डेटा मिटा देता है"
+  },
+  {
+    question: `Which method is used to write data to a file?\nफ़ाइल में डेटा लिखने के लिए कौन सा method इस्तेमाल होता है?`,
+    options: [
+      "add()",
+      "insert()",
+      "write()",
+      "put()"
+    ],
+    answer: "write()"
+  },
+  {
+    question: `Which mode is used to append data to an existing file?\nमौजूदा फ़ाइल में डेटा जोड़ने के लिए कौन सा मोड उपयोग होता है?`,
+    options: [
+      "'r'",
+      "'w'",
+      "'a'",
+      "'x'"
+    ],
+    answer: "'a'"
+  },
+  {
+    question: `What happens if the file does not exist and you open it in 'w' mode?\nअगर फ़ाइल मौजूद नहीं है और आप इसे 'w' मोड में खोलते हैं तो क्या होता है?`,
+    options: [
+      "FileNotFoundError",
+      "New file is created / नई फ़ाइल बन जाती है",
+      "File opens in read-only / फ़ाइल केवल पढ़ने के लिए खुलती है",
+      "Program crashes / प्रोग्राम क्रैश हो जाता है"
+    ],
+    answer: "New file is created / नई फ़ाइल बन जाती है"
+  },
+
+  // File Closing & Context Manager
+  {
+    question: `Which function is used to close an opened file?\nखुली हुई फ़ाइल बंद करने के लिए कौन सा function उपयोग होता है?`,
+    options: [
+      "end()",
+      "terminate()",
+      "close()",
+      "quit()"
+    ],
+    answer: "close()"
+  },
+  {
+    question: `Which of the following is the safest way to handle files in Python?\nPython में फ़ाइल संभालने का सबसे सुरक्षित तरीका कौन सा है?`,
+    options: [
+      "Using try-finally / try-finally का उपयोग",
+      "Using with statement / with स्टेटमेंट का उपयोग",
+      "Using only open() / केवल open() का उपयोग",
+      "Using file.close() after writing / लिखने के बाद file.close() का उपयोग"
+    ],
+    answer: "Using with statement / with स्टेटमेंट का उपयोग"
+  },
+  {
+    question: `What is the benefit of using with open(...) as file: syntax?\nwith open(...) as file: सिंटैक्स का क्या लाभ है?`,
+    options: [
+      "File is opened in append mode / फ़ाइल append मोड में खुलती है",
+      "File doesn't need to be closed manually / फ़ाइल को मैन्युअली बंद करने की जरूरत नहीं",
+      "File is automatically backed up / फ़ाइल अपने आप बैकअप हो जाती है",
+      "File opens in read-write mode / फ़ाइल read-write मोड में खुलती है"
+    ],
+    answer: "File doesn't need to be closed manually / फ़ाइल को मैन्युअली बंद करने की जरूरत नहीं"
+  },
+
+  // Advanced Concepts
+  {
+    question: `Which module helps in working with file paths and directories?\nफ़ाइल पाथ और डिरेक्टरीज़ के साथ काम करने के लिए कौन सा मॉड्यूल मदद करता है?`,
+    options: [
+      "file",
+      "shutil",
+      "os",
+      "pathlib"
+    ],
+    answer: "os"
+  },
+  {
+    question: `What will happen if file.read() is called after the file is closed?\nअगर फ़ाइल बंद होने के बाद file.read() कॉल किया जाए तो क्या होगा?`,
+    options: [
+      "Returns an empty string / खाली स्ट्रिंग लौटाता है",
+      "Returns None / None लौटाता है",
+      "Raises a ValueError / ValueError फेंकता है",
+      "Automatically reopens the file / फ़ाइल अपने आप फिर से खुल जाती है"
+    ],
+    answer: "Raises a ValueError / ValueError फेंकता है"
+  },
+  {
+    question: `Which mode allows reading and writing both in the same file?\nकौन सा मोड एक ही फ़ाइल में पढ़ने और लिखने दोनों की अनुमति देता है?`,
+    options: [
+      "'rw'",
+      "'w+'",
+      "'a+'",
+      "'r+'"
+    ],
+    answer: "'r+'"
+  },
+  {
+    question: `What is the role of the Python Interpreter?\nPython Interpreter की भूमिका क्या है?`,
+    options: [
+      "To convert Python code directly into machine code / Python को सीधे मशीन कोड में बदलना",
+      "To parse, compile, and execute Python code / Python कोड को पार्स, कम्पाइल और execute करना",
+      "To manage memory allocation only / केवल मेमोरी आवंटन प्रबंधित करना",
+      "To store Python modules / Python मॉड्यूल्स को स्टोर करना"
+    ],
+    answer: "To parse, compile, and execute Python code / Python कोड को पार्स, कम्पाइल और execute करना"
+  },
+  {
+    question: `Which component converts Python source code into an Abstract Syntax Tree (AST)?\nPython सोर्स कोड को Abstract Syntax Tree (AST) में कौन सा कम्पोनेंट बदलता है?`,
+    options: [
+      "Bytecode Compiler",
+      "Execution Engine",
+      "Parser",
+      "Garbage Collector"
+    ],
+    answer: "Parser"
+  },
+  {
+    question: `What is Python bytecode?\nPython bytecode क्या है?`,
+    options: [
+      "Machine-specific binary code / मशीन-विशिष्ट बाइनरी कोड",
+      "A high-level representation of Python code / Python कोड का उच्च-स्तरीय प्रतिनिधित्व",
+      "A platform-independent, low-level representation of code / प्लेटफ़ॉर्म-स्वतंत्र, निम्न-स्तरीय कोड का प्रतिनिधित्व",
+      "The raw source code / कच्चा सोर्स कोड"
+    ],
+    answer: "A platform-independent, low-level representation of code / प्लेटफ़ॉर्म-स्वतंत्र, निम्न-स्तरीय कोड का प्रतिनिधित्व"
+  },
+  {
+    question: `Which part of Python executes the bytecode?\nPython का कौन सा भाग bytecode को execute करता है?`,
+    options: [
+      "Memory Manager",
+      "Execution Engine (Python Virtual Machine)",
+      "Parser",
+      "Interpreter"
+    ],
+    answer: "Execution Engine (Python Virtual Machine)"
+  },
+  {
+    question: `What is the primary purpose of the Garbage Collector in Python?\nPython में Garbage Collector का मुख्य उद्देश्य क्या है?`,
+    options: [
+      "To compile Python code / Python कोड को compile करना",
+      "To optimize Python bytecode / Python bytecode को optimize करना",
+      "To free memory occupied by unused objects / उपयोग न होने वाले ऑब्जेक्ट्स की मेमोरी मुक्त करना",
+      "To execute Python code / Python कोड को execute करना"
+    ],
+    answer: "To free memory occupied by unused objects / उपयोग न होने वाले ऑब्जेक्ट्स की मेमोरी मुक्त करना"
+  },
+  {
+    question: `Which module contains built-in Python functions and modules?\nकौन सा मॉड्यूल built-in Python functions और modules रखता है?`,
+    options: [
+      "Object Model",
+      "Standard Library",
+      "Memory Manager",
+      "Execution Engine"
+    ],
+    answer: "Standard Library"
+  },
+  {
+    question: `Which of the following is NOT a mode when opening a file in Python?\nPython में फ़ाइल खोलते समय निम्नलिखित में से कौन सा मोड नहीं है?`,
+    options: [
+      "'r' (read)",
+      "'w' (write)",
+      "'x' (execute)",
+      "'a' (append)"
+    ],
+    answer: "'x' (execute) (Note: 'x' mode actually means exclusive creation)"
+  },
+   {
+    question: `Which keyword is used in Python for exception handling?\nPython में exception handling के लिए कौन सा keyword उपयोग होता है?`,
+    options: [
+      "try",
+      "catch",
+      "throw",
+      "except"
+    ],
+    answer: "try और except (दोनों साथ में उपयोग होते हैं)"
+  },
+  {
+    question: `Which built-in function converts a string to an integer in Python?\nPython में string को integer में बदलने के लिए कौन सा built-in function है?`,
+    options: [
+      "str()",
+      "int()",
+      "float()",
+      "convert()"
+    ],
+    answer: "int()"
+  },
+  {
+    question: `What does the 'with' statement do when opening a file in Python?\nPython में 'with' statement फ़ाइल खोलते समय क्या करता है?`,
+    options: [
+      "Opens the file and keeps it open forever / फ़ाइल खोलता है और हमेशा के लिए खुली रखता है",
+      "Automatically closes the file after the block of code completes / कोड ब्लॉक खत्म होने पर फ़ाइल अपने आप बंद हो जाती है",
+      "Deletes the file after usage / उपयोग के बाद फ़ाइल को हटाता है",
+      "None of the above / उपरोक्त में से कोई नहीं"
+    ],
+    answer: "Automatically closes the file after the block of code completes / कोड ब्लॉक खत्म होने पर फ़ाइल अपने आप बंद हो जाती है"
+  },
+  {
+    question: `What keyword is used to define a function in Python?\nPython में function को define करने के लिए कौन सा keyword उपयोग होता है?`,
+    options: [
+      "function",
+      "def",
+      "fun",
+      "define"
+    ],
+    answer: "def"
+  },
+  {
+    question: `Which of the following is a positional argument?\nनिम्न में से कौन positional argument है?`,
+    options: [
+      "func(a=5)",
+      "func(5)",
+      "func(*args)",
+      "func(**kwargs)"
+    ],
+    answer: "func(5)"
+  },
+  {
+    question: `Which statement is correct about Python modules?\nPython मॉड्यूल के बारे में सही कथन कौन सा है?`,
+    options: [
+      "A module is a file containing Python code with .mod extension / मॉड्यूल Python कोड वाली .mod एक्सटेंशन वाली फ़ाइल होती है",
+      "A module can contain variables, functions, and classes / मॉड्यूल में variables, functions और classes हो सकते हैं",
+      "You cannot import specific functions from a module / आप मॉड्यूल से specific functions import नहीं कर सकते",
+      "Modules cannot have executable code / मॉड्यूल में executable code नहीं हो सकता"
+    ],
+    answer: "A module can contain variables, functions, and classes / मॉड्यूल में variables, functions और classes हो सकते हैं"
+  },
+  {
+    question: `Which block is always executed regardless of exceptions?\nException होने पर भी कौन सा block हमेशा execute होता है?`,
+    options: [
+      "try",
+      "except",
+      "else",
+      "finally"
+    ],
+    answer: "finally"
+  },
+  {
+    question: `What will the function len() return when called on a list?\nList पर len() function call करने पर क्या लौटाता है?`,
+    options: [
+      "The size in bytes of the list / list का size बाइट्स में",
+      "The number of elements in the list / list में तत्वों की संख्या",
+      "The sum of all elements / सभी तत्वों का योग",
+      "The maximum element / सबसे बड़ा तत्व"
+    ],
+    answer: "The number of elements in the list / list में तत्वों की संख्या"
+  },
+  {
+    question: `Which of the following opens a file for appending in Python?\nPython में निम्न में से कौन सी फ़ाइल को append करने के लिए खोलती है?`,
+    options: [
+      "open('file.txt', 'r')",
+      "open('file.txt', 'w')",
+      "open('file.txt', 'a')",
+      "open('file.txt', 'x')"
+    ],
+    answer: "open('file.txt', 'a')"
+  },
+  {
+    question: `What is the role of the Garbage Collector in Python?\nPython में Garbage Collector की भूमिका क्या है?`,
+    options: [
+      "To compile Python code into bytecode / Python कोड को bytecode में compile करना",
+      "To free memory occupied by unused objects / उपयोग न हो रहे objects की मेमोरी खाली करना",
+      "To parse Python source code into AST / Python सोर्स कोड को AST में बदलना",
+      "To execute Python bytecode / Python bytecode को execute करना"
+    ],
+    answer: "To free memory occupied by unused objects / उपयोग न हो रहे objects की मेमोरी खाली करना"
+  },
+  {
+    question: `Which built-in function would you use to convert a string to an integer?\nString को integer में बदलने के लिए कौन सा built-in function उपयोग करेंगे?`,
+    options: [
+      "str()",
+      "int()",
+      "float()",
+      "convert()"
+    ],
+    answer: "int()"
+  },
+  {
+    question: `What does the with statement do in file handling?\nफ़ाइल हैंडलिंग में with statement क्या करता है?`,
+    options: [
+      "Opens multiple files at once / एक साथ कई फ़ाइलें खोलता है",
+      "Automatically closes the file after the block is executed / कोड ब्लॉक खत्म होने के बाद फ़ाइल अपने आप बंद कर देता है",
+      "Reads the whole file content / पूरी फ़ाइल पढ़ता है",
+      "Writes data to the file / फ़ाइल में डेटा लिखता है"
+    ],
+    answer: "Automatically closes the file after the block is executed / कोड ब्लॉक खत्म होने के बाद फ़ाइल अपने आप बंद कर देता है"
+  },
+  {
+    question: `How do you document a function in Python?\nPython में function का documentation कैसे लिखते हैं?`,
+    options: [
+      "Using single-line comments only / केवल एक लाइन के कमेंट से",
+      "Using docstrings inside triple quotes \"\"\" \"\"\" / triple quotes में docstrings का उपयोग करके",
+      "Using the # symbol before the function / function के आगे # प्रतीक लगाकर",
+      "Using @doc decorator / @doc डेकोरेटर का उपयोग करके"
+    ],
+    answer: "Using docstrings inside triple quotes \"\"\" \"\"\" / triple quotes में docstrings का उपयोग करके"
+  }
+];
+
+let quizData = []; // This will hold the selected subset of questions
+let currentQuestion = 0;
+let selectedAnswers = [];
+let skippedQuestions = [];
+let totalTime = 50 * 60; // 50 minutes in seconds
+let timerInterval;
+let quizStarted = false;
+
+// --- Confirmation Pop-up on Refresh/Close ---
+window.addEventListener('beforeunload', function (event) {
+    if (quizStarted && totalTime > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+// --- End Confirmation Pop-up ---
+
+
+function startTimer() {
+    updateTimer();
+    timerInterval = setInterval(() => {
+        totalTime--;
+        updateTimer();
+        if (totalTime <= 0) {
+            clearInterval(timerInterval);
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Function to shuffle an array (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startQuiz() {
+    const selectedRadio = document.querySelector('input[name="questionSet"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a question set to start the quiz.");
+        return;
+    }
+    const selectedValue = selectedRadio.value;
+
+    if (selectedValue.startsWith('set_')) {
+        const setIndex = parseInt(selectedValue.split('_')[1]);
+        const startIndex = setIndex * 25;
+        const endIndex = startIndex + 25;
+        quizData = fullQuizData.slice(startIndex, endIndex);
+    } else if (selectedValue === 'full') {
+        quizData = shuffleArray([...fullQuizData]); // Shuffle all questions for full test
+    } else {
+        // Default to a 25 question set if something unexpected happens
+        quizData = shuffleArray([...fullQuizData]).slice(0, 25);
+    }
+
+    selectedAnswers = new Array(quizData.length).fill(null);
+    skippedQuestions = new Array(quizData.length).fill(false);
+    currentQuestion = 0;
+    quizStarted = true;
+
+    document.getElementById('quantitySelection').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+
+    loadQuestion();
+    startTimer();
+}
+
+
+function loadQuestion() {
+    if(quizData.length === 0) {
+        document.getElementById('question').innerText = "No questions available.";
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('prevBtn').disabled = true;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        updateQuestionTracker();
+        return;
+    }
+    const q = quizData[currentQuestion];
+    document.getElementById('question').innerText = `${currentQuestion + 1}. ${q.question}`;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = "";
+
+    const isCurrentQuestionAnswered = (selectedAnswers[currentQuestion] !== null) || skippedQuestions[currentQuestion];
+
+    q.options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.classList.add("option-btn");
+        btn.innerText = option;
+        btn.setAttribute("role", "listitem");
+        btn.onclick = () => selectOption(option, btn);
+
+        if(isCurrentQuestionAnswered) {
+            btn.disabled = true;
+            if (option === q.answer) {
+                btn.classList.add("correct");
+            } else if (option === selectedAnswers[currentQuestion]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            if(selectedAnswers[currentQuestion] === option) {
+                btn.classList.add("selected");
+            }
+        }
+        optionsDiv.appendChild(btn);
+    });
+
+    document.getElementById('prevBtn').disabled = currentQuestion === 0 || totalTime <= 0;
+    document.getElementById('nextBtn').disabled = currentQuestion === quizData.length -1 || totalTime <= 0;
+    document.getElementById('skipBtn').style.display = isCurrentQuestionAnswered ? "none" : "inline-block";
+    document.getElementById('skipBtn').disabled = totalTime <= 0;
+    document.getElementById('submitBtn').style.display = currentQuestion === quizData.length - 1 ? "inline-block" : "none";
+
+    updateQuestionTracker();
+}
+
+function selectOption(option, clickedButton) {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    selectedAnswers[currentQuestion] = option;
+    skippedQuestions[currentQuestion] = false;
+
+    const q = quizData[currentQuestion];
+    const isCorrect = (option === q.answer);
+
+    const optionButtons = document.querySelectorAll('#options .option-btn');
+    optionButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === q.answer) {
+            btn.classList.add("correct");
+        } else if (btn === clickedButton && !isCorrect) {
+            btn.classList.add("incorrect");
+        }
+        btn.classList.remove("selected");
+    });
+
+    updateQuestionTracker();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function skipQuestion() {
+    if(totalTime <= 0 || (selectedAnswers[currentQuestion] !== null && !skippedQuestions[currentQuestion])) return;
+
+    skippedQuestions[currentQuestion] = true;
+    selectedAnswers[currentQuestion] = null;
+    updateQuestionTracker();
+    nextQuestion();
+}
+
+function updateQuestionTracker() {
+    const tracker = document.getElementById("questionTracker");
+    tracker.innerHTML = "";
+    quizData.forEach((_, index) => {
+        const indicator = document.createElement("div");
+        indicator.classList.add("question-indicator");
+
+        if(selectedAnswers[index] !== null) {
+            indicator.classList.add("answered");
+            indicator.classList.remove("skipped");
+        } else if(skippedQuestions[index]) {
+            indicator.classList.add("skipped");
+            indicator.classList.remove("answered");
+        } else {
+            indicator.classList.remove("answered", "skipped");
+        }
+
+        if(index === currentQuestion) {
+            indicator.classList.add("active");
+        }
+        indicator.innerText = index + 1;
+        indicator.setAttribute("aria-label", `Question ${index + 1} ${index === currentQuestion ? '(current)' : ''} ${selectedAnswers[index] !== null ? 'answered' : skippedQuestions[index] ? 'skipped' : 'not attempted'}`);
+        indicator.onclick = () => {
+            if(totalTime <= 0) return;
+            currentQuestion = index;
+            loadQuestion();
+        };
+        tracker.appendChild(indicator);
+    });
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizStarted = false;
+    document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
+    document.getElementById("prevBtn").disabled = true;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("skipBtn").disabled = true;
+    document.getElementById("submitBtn").disabled = true;
+
+    let correctCount = 0;
+    let incorrectQuestions = [];
+
+    quizData.forEach((q, i) => {
+        if (selectedAnswers[i] !== null) {
+            if (selectedAnswers[i] === q.answer) {
+                correctCount++;
+            } else {
+                incorrectQuestions.push({
+                    question: q.question,
+                    yourAnswer: selectedAnswers[i],
+                    correctAnswer: q.answer
+                });
+            }
+        } else if (skippedQuestions[i]) {
+             incorrectQuestions.push({
+                question: q.question,
+                yourAnswer: "(Skipped)",
+                correctAnswer: q.answer
+            });
+        }
+    });
+
+    sessionStorage.setItem('quizScore', correctCount);
+    sessionStorage.setItem('quizTotal', quizData.length);
+    sessionStorage.setItem('quizIncorrect', JSON.stringify(incorrectQuestions));
+
+    // Redirect to results page, ensure you have a results.html file
+    window.location.href = "results.html";
+}
+
+
+// Event Listener for Skip Button
+document.getElementById("skipBtn").addEventListener("click", skipQuestion);
+
+// Function to generate quantity selection radio buttons
+function generateQuantityOptions() {
+    const radioOptionsDiv = document.getElementById('radioOptions');
+    radioOptionsDiv.innerHTML = ''; // Clear existing options
+
+    const totalQuestions = fullQuizData.length;
+    const questionsPerSet = 25;
+    const num25QuestionSets = Math.floor(totalQuestions / questionsPerSet);
+    const remainingQuestions = totalQuestions % questionsPerSet;
+
+    // Add 25-question sets
+    for (let i = 0; i < num25QuestionSets; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${i}" ${i === 0 ? 'checked' : ''}> Set ${i + 1} (${questionsPerSet} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add a set for remaining questions if any
+    if (remainingQuestions > 0) {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="radio" name="questionSet" value="set_${num25QuestionSets}"> Set ${num25QuestionSets + 1} (${remainingQuestions} Questions)
+        `;
+        radioOptionsDiv.appendChild(label);
+    }
+
+    // Add Full Test option
+    const fullTestLabel = document.createElement('label');
+    fullTestLabel.innerHTML = `
+        <input type="radio" name="questionSet" value="full" ${num25QuestionSets === 0 && remainingQuestions === 0 ? 'checked' : ''}> Full Test (${totalQuestions} Questions)
+    `;
+    radioOptionsDiv.appendChild(fullTestLabel);
+}
+
+// Initialize quiz setup on page load
+window.onload = function() {
+    document.getElementById('quiz').style.display = 'none'; // Hide quiz initially
+    document.getElementById('timer').style.display = 'none'; // Hide timer initially
+    generateQuantityOptions(); // Populate radio buttons
+};
+</script>
+</body>
+</html>
